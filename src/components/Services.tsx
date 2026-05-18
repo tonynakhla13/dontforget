@@ -139,7 +139,7 @@ export default function Services() {
 
   return (
     /* Outer div height = sticky scroll range. CSS sticky keeps inner at top. */
-    <div ref={outerRef} id="services" style={{ minHeight: "750vh" }}>
+    <div ref={outerRef} id="services" style={{ minHeight: "750vh", background: "var(--bg)" }}>
       <div
         ref={stickyRef}
         className="sticky top-0 h-screen overflow-hidden border-t border-[var(--border)]"
@@ -157,6 +157,8 @@ export default function Services() {
             style={{
               width:  660,
               height: 660,
+              opacity: 0,
+              visibility: "hidden",
               background:
                 "radial-gradient(circle at 34% 28%,rgba(58,191,138,0.92) 0%,rgba(18,85,58,0.90) 40%,rgba(9,22,15,0.97) 80%,rgba(9,9,9,1) 100%)",
               boxShadow:
@@ -187,6 +189,7 @@ export default function Services() {
             key={svc.id}
             ref={el => { panelsRef.current[i] = el; }}
             className="absolute inset-0 flex items-center justify-center"
+            style={{ opacity: 0, visibility: "hidden" }}
           >
             {/* Left card */}
             <div
