@@ -38,7 +38,7 @@ export default function Contact() {
         {/* Left */}
         <div ref={headRef}>
           <p className="eyebrow mb-8">Contact</p>
-          <h2 className="hed text-[clamp(2.5rem,5.5vw,6rem)]">
+          <h2 className="hed text-[3rem]">
             Got a project<br />
             worth<br />
             remembering?
@@ -120,14 +120,15 @@ export default function Contact() {
 
       {/* Footer */}
       <div className="wrap mt-24 flex flex-col gap-5 border-t border-[var(--border)] pt-8 md:flex-row md:items-center md:justify-between">
-        <a href="#" className="flex items-center gap-2.5 font-mono text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[var(--fg)]">
-          <svg width="18" height="18" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-            <polygon points="14,1.5 25,7.75 25,20.25 14,26.5 3,20.25 3,7.75"
-              stroke="#3ABF8A" strokeWidth="1.5" fill="none" />
-            <circle cx="14" cy="10.5" r="1.8" fill="#3ABF8A" />
-            <line x1="14" y1="14" x2="14" y2="19" stroke="#3ABF8A" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-          Don&apos;t <span className="text-[var(--teal)]">Forget</span>
+        <a href="#" className="flex shrink-0 items-center">
+          <div className="flex items-center justify-center rounded-[5px] bg-white px-2.5 py-[5px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/dont%20forget%20logo.png"
+              alt="DON'T FORGET"
+              style={{ height: 22, width: "auto" }}
+            />
+          </div>
         </a>
         <div className="flex gap-8 font-mono text-[0.58rem] uppercase tracking-[0.28em] text-[var(--body)]">
           <span>Web Development Agency</span>

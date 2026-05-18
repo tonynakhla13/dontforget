@@ -35,7 +35,7 @@ export default function Principles() {
         <div ref={headRef} className="mb-16 grid gap-8 md:grid-cols-2 md:items-end">
           <div>
             <p className="eyebrow mb-8">The Rules</p>
-            <h2 className="hed text-[clamp(2.8rem,6.5vw,7rem)]">
+            <h2 className="hed text-[3rem]">
               Not guidelines.<br />Rules.
             </h2>
           </div>
@@ -52,7 +52,7 @@ export default function Principles() {
             >
               <div className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-[var(--teal)] transition-transform duration-500 group-hover:scale-x-100" />
               <span className="eyebrow">{r.n}</span>
-              <h3 className="hed mt-7 text-[clamp(1.4rem,2.4vw,2rem)] text-[var(--fg)]">
+              <h3 className="hed mt-7 text-[1.4rem] text-[var(--fg)]">
                 {r.title}
               </h3>
               <p className="mt-4 text-sm leading-[1.85] text-[var(--body)]">

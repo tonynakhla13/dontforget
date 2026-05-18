@@ -44,15 +44,13 @@ export default function Hero() {
             </p>
 
             <h1
-              className="hed text-[5.4rem] leading-[0.92] text-[#F8F5EE]"
+              className="hed text-[3.8rem] leading-[0.95] text-[#F8F5EE]"
               style={{ color: "#F8F5EE" }}
               data-anim
             >
               We build things<br />
               people won&apos;t<br />
-              <span
-                className="script text-[var(--teal)] text-[1.1em]"
-              >forget.</span>
+              <span className="script text-[1.05em]">forget.</span>
             </h1>
 
             <p

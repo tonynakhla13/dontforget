@@ -101,26 +101,18 @@ export default function About() {
 
         <h2
           ref={headingRef}
-          className="hed mx-auto max-w-4xl text-[clamp(3rem,7vw,8rem)] leading-[0.9] [perspective:900px]"
+          className="hed mx-auto max-w-2xl text-[4.2rem] leading-[1.15] [perspective:900px]"
         >
           <span data-line className="block overflow-hidden">
             We design systems
           </span>
           <span data-line className="block overflow-hidden">
             with enough{" "}
-            <span
-              className="italic normal-case"
-              style={{
-                fontFamily: "var(--font-script-next)",
-                fontSize: "1.05em",
-                color: "var(--teal)",
-              }}
-            >
-              personality
-            </span>
+            <span className="script text-[1.05em]">personality</span>
           </span>
           <span data-line className="block overflow-hidden">
-            to survive the scroll.
+            to survive the{" "}
+            <span className="text-[var(--teal)]">scroll.</span>
           </span>
         </h2>
 
@@ -140,28 +132,28 @@ export default function About() {
           {stats.map((s) => (
             <div
               key={s.value}
-              className={`absolute flex min-w-[220px] flex-col gap-2 rounded-[1.5rem] border bg-[rgba(9,9,9,0.72)] px-7 py-6 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-md ${
-                s.featured ? "min-w-[270px] border-[var(--teal)] bg-[rgba(58,191,138,0.96)] px-8 py-7" : ""
+              className={`absolute flex min-w-[180px] flex-col gap-2 rounded-[1.2rem] border bg-[rgba(9,9,9,0.72)] px-6 py-5 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-md ${
+                s.featured ? "min-w-[200px] border-[var(--teal)] bg-[rgba(58,191,138,0.96)] px-7 py-6" : "border-[var(--border)]"
               }`}
               style={
                 s.value === "14+"
-                  ? { left: "1rem", top: "0.25rem" }
+                  ? { left: "0", top: "22%" }
                   : s.value === "6"
-                    ? { right: "1rem", top: "0.25rem" }
+                    ? { right: "0", top: "22%" }
                     : s.value === "24h"
-                      ? { left: "1.5rem", bottom: "0.75rem" }
-                      : { right: "1.5rem", bottom: "0.75rem" }
+                      ? { left: "0", bottom: "22%" }
+                      : { right: "0", bottom: "22%" }
               }
             >
               <span
-                className={`hed text-[clamp(3rem,6vw,6rem)] text-[var(--teal)] ${
-                  s.featured ? "text-[clamp(4rem,7vw,7rem)] !text-white" : ""
+                className={`hed text-[clamp(2rem,4vw,4rem)] text-[var(--teal)] ${
+                  s.featured ? "!text-white" : ""
                 }`}
               >
                 {s.value}
               </span>
               <span
-                className={`font-mono text-[0.58rem] uppercase tracking-[0.38em] ${
+                className={`font-mono text-[0.55rem] uppercase tracking-[0.32em] ${
                   s.featured ? "text-white" : "text-[var(--body)]"
                 }`}
               >

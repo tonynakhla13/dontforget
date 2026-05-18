@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, Bebas_Neue, Caveat, Space_Mono } from "next/font/google";
+import { Inter, Caveat, Space_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,10 +8,13 @@ const inter = Inter({
   variable: "--font-body-next",
 });
 
-const bebasNeue = Bebas_Neue({
-  subsets: ["latin"],
+const csRobust = localFont({
+  src: [
+    { path: "../../public/CSRobust-Regular.woff2",       weight: "400", style: "normal" },
+    { path: "../../public/CSRobust-Italic.woff2",        weight: "400", style: "italic" },
+    { path: "../../public/CSRobust-ReverseItalic.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-display-next",
-  weight: "400",
 });
 
 const caveat = Caveat({
@@ -47,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${bebasNeue.variable} ${caveat.variable} ${spaceMono.variable}`}
+      className={`${inter.variable} ${csRobust.variable} ${caveat.variable} ${spaceMono.variable}`}
     >
       <body className="antialiased" suppressHydrationWarning>
         {children}

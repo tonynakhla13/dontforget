@@ -41,7 +41,7 @@ function Row({ s, i }: { s: Service; i: number }) {
       <span className="font-mono text-[0.6rem] tracking-[0.3em] text-[var(--teal)] self-start pt-1">
         {s.icon ?? String(i + 1).padStart(2, "0")}
       </span>
-      <h3 className="hed text-[clamp(2rem,4.5vw,4rem)] text-[var(--fg)] transition-transform duration-300 group-hover:translate-x-1">
+      <h3 className="hed text-[1.8rem] text-[var(--fg)] transition-transform duration-300 group-hover:translate-x-1">
         {s.title}
       </h3>
       <p className="col-span-2 self-center text-[0.875rem] leading-[1.85] text-[var(--body)] md:col-span-1">
@@ -61,7 +61,7 @@ export default function Services({ services }: { services?: Service[] }) {
         <div ref={headRef} className="mb-4 grid gap-8 md:grid-cols-2 md:items-end">
           <div>
             <p className="eyebrow mb-8">Services</p>
-            <h2 className="hed text-[clamp(2.8rem,6.5vw,7rem)]">
+            <h2 className="hed text-[3rem]">
               Systems for<br />brands that move.
             </h2>
           </div>

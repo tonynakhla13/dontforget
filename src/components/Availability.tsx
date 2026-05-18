@@ -11,7 +11,7 @@ export default function Availability() {
         <div className="grid gap-16 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <p className="eyebrow mb-10">Availability</p>
-            <h2 className="hed text-[clamp(2.8rem,7vw,8.5rem)]">
+            <h2 className="hed text-[3.2rem]">
               We take 3–4<br />
               projects per<br />
               <span className="text-[var(--teal)]">quarter.</span>

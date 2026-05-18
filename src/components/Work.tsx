@@ -79,7 +79,7 @@ function Card({ p, large = false }: { p: Project; large?: boolean }) {
             <p className="font-mono text-[0.57rem] uppercase tracking-[0.32em] text-white/45 mb-2">
               {p.category} · {p.year}
             </p>
-            <h3 className={`hed text-[var(--fg)] ${large ? "text-[clamp(2rem,4.5vw,4rem)]" : "text-[clamp(1.7rem,3vw,2.8rem)]"}`}>
+            <h3 className={`hed text-[var(--fg)] ${large ? "text-[2.2rem]" : "text-[1.6rem]"}`}>
               {p.title}
             </h3>
           </div>
@@ -105,7 +105,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
         <div ref={headRef} className="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="eyebrow mb-7">Selected work</p>
-            <h2 className="hed text-[clamp(2.8rem,6.5vw,7rem)]">
+            <h2 className="hed text-[3rem]">
               Projects shaped<br />to be remembered.
             </h2>
           </div>
