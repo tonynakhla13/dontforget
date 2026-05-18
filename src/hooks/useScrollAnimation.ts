@@ -61,8 +61,8 @@ export function useFadeUp(delay = 0) {
       },
     });
 
-    return () => tween.kill();
-  }, []);
+    return () => { tween.kill(); };
+  }, [delay]);
 
   return ref;
 }

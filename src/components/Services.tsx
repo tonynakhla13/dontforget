@@ -1,44 +1,19 @@
 "use client";
 
-import { useRef } from "react";
 import { useFadeUp } from "@/hooks/useScrollAnimation";
 
-const services = [
-  {
-    number: "01",
-    title: "Web Design",
-    description:
-      "Pixel-perfect designs that convert. We craft visually stunning interfaces that feel as good as they look.",
-    icon: "✦",
-  },
-  {
-    number: "02",
-    title: "Development",
-    description:
-      "Clean, performant code. From React to Next.js — we build fast, scalable web applications.",
-    icon: "⟡",
-  },
-  {
-    number: "03",
-    title: "3D & Motion",
-    description:
-      "Immersive Three.js experiences and GSAP animations that make your brand unforgettable.",
-    icon: "◈",
-  },
-  {
-    number: "04",
-    title: "Strategy",
-    description:
-      "Data-driven digital strategy. We help you define goals, audience, and roadmap to grow online.",
-    icon: "◎",
-  },
-];
+interface Service {
+  id: string;
+  title: string;
+  description: string | null;
+  icon: string | null;
+}
 
 function ServiceCard({
   service,
   index,
 }: {
-  service: (typeof services)[0];
+  service: Service;
   index: number;
 }) {
   const ref = useFadeUp(index * 0.1) as React.RefObject<HTMLDivElement>;
@@ -49,8 +24,10 @@ function ServiceCard({
       className="group p-8 border border-white/10 rounded-2xl hover:border-indigo-500/50 transition-all duration-500 hover:bg-indigo-950/20 cursor-default"
     >
       <div className="flex items-start justify-between mb-6">
-        <span className="text-indigo-400 text-3xl">{service.icon}</span>
-        <span className="text-white/20 text-sm font-mono">{service.number}</span>
+        <span className="text-indigo-400 text-3xl">{service.icon ?? "✦"}</span>
+        <span className="text-white/20 text-sm font-mono">
+          {String(index + 1).padStart(2, "0")}
+        </span>
       </div>
       <h3 className="text-white text-2xl font-bold mb-3 group-hover:text-indigo-300 transition-colors duration-300">
         {service.title}
@@ -60,13 +37,20 @@ function ServiceCard({
   );
 }
 
-export default function Services() {
+const FALLBACK: Service[] = [
+  { id: "1", title: "Web Design", description: "Pixel-perfect designs that convert. We craft visually stunning interfaces that feel as good as they look.", icon: "✦" },
+  { id: "2", title: "Development", description: "Clean, performant code. From React to Next.js — we build fast, scalable web applications.", icon: "⟡" },
+  { id: "3", title: "3D & Motion", description: "Immersive Three.js experiences and GSAP animations that make your brand unforgettable.", icon: "◈" },
+  { id: "4", title: "Strategy", description: "Data-driven digital strategy. We help you define goals, audience, and roadmap to grow online.", icon: "◎" },
+];
+
+export default function Services({ services }: { services?: Service[] }) {
   const titleRef = useFadeUp() as React.RefObject<HTMLDivElement>;
+  const list = services && services.length > 0 ? services : FALLBACK;
 
   return (
     <section id="services" className="bg-black py-32 px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div ref={titleRef} className="mb-20">
           <p className="text-indigo-400 text-sm font-mono uppercase tracking-widest mb-4">
             What We Do
@@ -78,10 +62,9 @@ export default function Services() {
           </h2>
         </div>
 
-        {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {services.map((service, i) => (
-            <ServiceCard key={service.number} service={service} index={i} />
+          {list.map((service, i) => (
+            <ServiceCard key={service.id} service={service} index={i} />
           ))}
         </div>
       </div>
