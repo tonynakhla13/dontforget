@@ -121,14 +121,12 @@ export default function Contact() {
       {/* Footer */}
       <div className="wrap mt-24 flex flex-col gap-5 border-t border-[var(--border)] pt-8 md:flex-row md:items-center md:justify-between">
         <a href="#" className="flex shrink-0 items-center">
-          <div className="flex items-center justify-center rounded-[5px] bg-white px-2.5 py-[5px]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/dont%20forget%20logo.png"
-              alt="DON'T FORGET"
-              style={{ height: 22, width: "auto" }}
-            />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/dont%20forget%20logo.png"
+            alt="DON'T FORGET"
+            style={{ height: 28, width: "auto" }}
+          />
         </a>
         <div className="flex gap-8 font-mono text-[0.58rem] uppercase tracking-[0.28em] text-[var(--body)]">
           <span>Web Development Agency</span>

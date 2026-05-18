@@ -14,14 +14,12 @@ const links = [
 function LogoMark() {
   return (
     <a href="#" className="flex shrink-0 items-center">
-      <div className="flex items-center justify-center rounded-[6px] bg-white px-3 py-[7px]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/dont%20forget%20logo.png"
-          alt="DON'T FORGET"
-          style={{ height: 28, width: "auto" }}
-        />
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/dont%20forget%20logo.png"
+        alt="DON'T FORGET"
+        style={{ height: 36, width: "auto" }}
+      />
     </a>
   );
 }
@@ -123,17 +121,13 @@ export default function Navbar() {
           <div className="py-[18px]">
             <div className="wrap flex w-full items-center justify-between">
 
-              {/* Pill 1 — Logo white tile */}
-              <a
-                href="#"
-                className="flex shrink-0 items-center justify-center rounded-[8px] bg-white px-4"
-                style={{ height: 54 }}
-              >
+              {/* Pill 1 — Logo */}
+              <a href="#" className="flex shrink-0 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/dont%20forget%20logo.png"
                   alt="DON'T FORGET"
-                  style={{ height: 30, width: "auto" }}
+                  style={{ height: 36, width: "auto" }}
                 />
               </a>
 
