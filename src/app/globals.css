@@ -1,14 +1,23 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────
+   DESIGN TOKENS
+───────────────────────────────────────── */
+
 :root {
-  --ink: #080808;
-  --surface: #0f0f0f;
-  --paper: #f0ece3;
-  --teal: #3abf8a;
-  --text-muted: #666666;
-  --page-gutter: clamp(1.25rem, 5vw, 5.5rem);
-  --section-gap: clamp(9rem, 18vw, 20rem);
-  --card-radius: 16px;
+  --bg:          #090909;
+  --surface:     #111111;
+  --surface2:    #161616;
+  --border:      rgba(255, 255, 255, 0.07);
+  --fg:          #F0ECE3;
+  --body:        #7A7A7A;
+  --teal:        #3ABF8A;
+  --teal-faint:  rgba(58, 191, 138, 0.06);
+  --teal-mid:    rgba(58, 191, 138, 0.22);
+
+  --gutter:     clamp(1.5rem, 5vw, 6rem);
+  --section-py: clamp(7rem, 14vw, 16rem);
+  --radius:     12px;
 }
 
 @theme inline {
@@ -16,151 +25,164 @@
   --font-mono: var(--font-mono-next);
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* ─────────────────────────────────────────
+   BASE — inside @layer base so Tailwind
+   utilities can override it
+───────────────────────────────────────── */
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    background: var(--bg);
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--body);
+    font-family: var(--font-body-next), system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  button, input, textarea, select { font: inherit; }
+  img, video { display: block; max-width: 100%; }
+
+  ::selection { background: var(--teal); color: var(--bg); }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(58,191,138,0.25); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--teal); }
 }
 
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 6rem;
-  background: var(--ink);
-}
-
-body {
-  min-height: 100vh;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--font-body-next), system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 16px;
-  line-height: 1.6;
-}
-
-a { color: inherit; text-decoration: none; }
-
-button, input, textarea, select { font: inherit; }
-
-::selection { background: var(--teal); color: var(--ink); }
-
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--ink); }
-::-webkit-scrollbar-thumb { background: rgba(58,191,138,0.35); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: var(--teal); }
-
-/* ── Layout ── */
+/* ─────────────────────────────────────────
+   LAYOUT UTILITIES
+───────────────────────────────────────── */
 
 .wrap {
-  width: min(calc(100% - var(--page-gutter) * 2), 1360px);
+  width: min(calc(100% - var(--gutter) * 2), 1320px);
   margin-inline: auto;
 }
 
-.noise-layer {
+.section-py {
+  padding-top: var(--section-py);
+  padding-bottom: var(--section-py);
+}
+
+/* ─────────────────────────────────────────
+   NOISE OVERLAY
+───────────────────────────────────────── */
+
+.noise {
   pointer-events: none;
   position: fixed;
   inset: 0;
   z-index: 40;
-  opacity: 0.035;
+  opacity: 0.028;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ── Typography ── */
+/* ─────────────────────────────────────────
+   TYPOGRAPHY COMPONENTS
+───────────────────────────────────────── */
 
-/* Orbitron — brand name only */
-.brand-text {
-  font-family: var(--font-display-next), monospace;
-  font-weight: 700;
+.hed {
+  font-family: var(--font-display-next), sans-serif;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* Inter ExtraBold — all display headings */
-.display-text {
-  font-family: var(--font-body-next), sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 0.9;
+  letter-spacing: 0.01em;
+  line-height: 0.92;
+  color: var(--fg);
 }
 
 .eyebrow {
   font-family: var(--font-mono-next), monospace;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   letter-spacing: 0.38em;
   text-transform: uppercase;
   color: var(--teal);
 }
 
-.divider {
-  border: none;
-  border-top: 1px solid rgba(240,236,227,0.08);
+.script {
+  font-family: var(--font-script-next), cursive;
+  font-style: italic;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1;
 }
 
-/* ── Buttons ── */
+/* ─────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────── */
 
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 1rem 2rem;
-  border-radius: 999px;
+  gap: 0.5rem;
+  padding: 0.9rem 1.9rem;
+  border-radius: 99px;
   font-family: var(--font-mono-next), monospace;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
-  cursor: pointer;
   white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease,
+              background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
 }
 
 .btn-primary {
   background: var(--teal);
-  color: var(--ink);
+  color: var(--bg);
   border: 1px solid var(--teal);
 }
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 36px rgba(58,191,138,0.38);
+  box-shadow: 0 12px 36px rgba(58,191,138,0.32);
 }
 
-.btn-ghost {
+.btn-outline {
   background: transparent;
-  color: var(--paper);
-  border: 1px solid rgba(240,236,227,0.18);
+  color: var(--fg);
+  border: 1px solid var(--border);
 }
-.btn-ghost:hover {
+.btn-outline:hover {
   border-color: rgba(58,191,138,0.45);
   color: var(--teal);
 }
 
-/* ── Cards ── */
-
-.card {
-  border-radius: var(--card-radius);
-  border: 1px solid rgba(240,236,227,0.08);
-  background: var(--surface);
-}
-
-/* ── Marquee ── */
+/* ─────────────────────────────────────────
+   MARQUEE
+───────────────────────────────────────── */
 
 .marquee-track {
   display: flex;
   width: max-content;
   min-width: 100%;
-  gap: 3rem;
+  gap: 2.5rem;
   white-space: nowrap;
 }
 
-/* ── Reduced motion ── */
+/* ─────────────────────────────────────────
+   REDUCED MOTION
+───────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    animation-iteration-count: 1 !important;
   }
 }

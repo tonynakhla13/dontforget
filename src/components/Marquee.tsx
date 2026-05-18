@@ -3,39 +3,43 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
-const items = ["Brand systems", "Digital products", "Immersive web", "Motion identities"];
+const items = [
+  "Brand systems",
+  "Digital products",
+  "Immersive web",
+  "Motion identities",
+  "No boring websites",
+];
 
 export default function Marquee() {
   const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    const tween = gsap.to(track, {
-      xPercent: -50,
-      repeat: -1,
-      duration: 18,
-      ease: "none",
+    const tween = gsap.to(trackRef.current, {
+      xPercent: -50, repeat: -1, duration: 22, ease: "none",
     });
-
-    return () => {
-      tween.kill();
-    };
+    return () => { tween.kill(); };
   }, []);
 
-  const sequence = [...items, ...items];
+  const seq = [...items, ...items];
 
   return (
-    <section aria-hidden="true" className="overflow-hidden border-b hairline py-10 md:py-12">
-      <div ref={trackRef} className="marquee-track display-text text-4xl text-[rgba(248,243,234,0.18)] md:text-6xl">
-        {sequence.map((item, index) => (
-          <span key={`${item}-${index}`} className="flex items-center gap-12">
+    <div
+      aria-hidden="true"
+      className="overflow-hidden border-y border-[var(--border)] py-7"
+      style={{ background: "var(--surface)" }}
+    >
+      <div
+        ref={trackRef}
+        className="marquee-track hed text-[clamp(1.8rem,3.5vw,3.2rem)] text-[rgba(240,236,227,0.09)]"
+      >
+        {seq.map((item, i) => (
+          <span key={`${item}-${i}`} className="flex items-center gap-8">
             {item}
-            <span className="text-[var(--teal)]">•</span>
+            <span className="text-[var(--teal)] opacity-50 text-xl">◆</span>
           </span>
         ))}
       </div>
-    </section>
+    </div>
   );
 }

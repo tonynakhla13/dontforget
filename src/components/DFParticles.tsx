@@ -1,0 +1,399 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
+
+const COUNT = 3500;
+
+// ── canvas helpers ────────────────────────────────────────────────────
+function makeCtx(CW: number, CH: number): CanvasRenderingContext2D {
+  const cv = document.createElement("canvas");
+  cv.width = CW; cv.height = CH;
+  return cv.getContext("2d")!;
+}
+
+// Draw text with manual letter tracking (spacing between each char)
+function drawTracked(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  centerX: number,
+  centerY: number,
+  tracking: number
+) {
+  const chars = text.split("");
+  const widths = chars.map(c => ctx.measureText(c).width);
+  const totalW = widths.reduce((s, w) => s + w, 0) + tracking * (chars.length - 1);
+  let x = centerX - totalW / 2;
+  ctx.textAlign = "left";
+  chars.forEach((char, i) => {
+    ctx.fillText(char, x, centerY);
+    x += widths[i] + tracking;
+  });
+}
+
+// All shapes map to the right half of the viewport, flat (z ≈ 0)
+function sampleCanvas(
+  ctx: CanvasRenderingContext2D,
+  CW: number,
+  CH: number,
+  step: number
+): Float32Array {
+  const px = ctx.getImageData(0, 0, CW, CH).data;
+  const hits: [number, number][] = [];
+  for (let y = 0; y < CH; y += step)
+    for (let x = 0; x < CW; x += step)
+      if (px[(y * CW + x) * 4 + 3] > 100) hits.push([x, y]);
+
+  for (let i = hits.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [hits[i], hits[j]] = [hits[j], hits[i]];
+  }
+
+  const pos = new Float32Array(COUNT * 3);
+  for (let i = 0; i < COUNT; i++) {
+    const [cx, cy] = hits[i % hits.length];
+    pos[i * 3]     =  (cx / CW) * 4.2 + 1.2;           // x: 1.2 → 5.4 (pushed into right third)
+    pos[i * 3 + 1] = -((cy / CH) - 0.5) * 4.2 - 0.2;   // y: centered, nudged below navbar
+    pos[i * 3 + 2] =  (Math.random() - 0.5) * 0.04;     // z: nearly flat
+  }
+  return pos;
+}
+
+// ── shape 0: </> ─────────────────────────────────────────────────────
+function buildCodePos(): Float32Array {
+  const CW = 1000, CH = 480;
+  const ctx = makeCtx(CW, CH);
+  ctx.fillStyle = "#fff";
+  ctx.font = `900 260px 'Arial Black', Impact, sans-serif`;
+  ctx.textBaseline = "middle";
+  drawTracked(ctx, "</>", CW / 2, CH / 2, 28);
+  return sampleCanvas(ctx, CW, CH, 6);
+}
+
+// ── shape 1: UI/UX ───────────────────────────────────────────────────
+function buildUIUXPos(): Float32Array {
+  const CW = 1000, CH = 480;
+  const ctx = makeCtx(CW, CH);
+  ctx.fillStyle = "#fff";
+  ctx.font = `900 230px 'Arial Black', Impact, sans-serif`;
+  ctx.textBaseline = "middle";
+  drawTracked(ctx, "UI/UX", CW / 2, CH / 2, 22);
+  return sampleCanvas(ctx, CW, CH, 6);
+}
+
+// ── shape 2: app icon grid ────────────────────────────────────────────
+function buildAppsPos(): Float32Array {
+  const CW = 1000, CH = 580;
+  const ctx = makeCtx(CW, CH);
+  ctx.fillStyle = "#fff";
+
+  const cols = 4, rows = 4, iconSize = 100, gap = 30;
+  const gridW = cols * iconSize + (cols - 1) * gap;
+  const gridH = rows * iconSize + (rows - 1) * gap;
+  const ox = (CW - gridW) / 2, oy = (CH - gridH) / 2;
+  const r = 20;
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const x = ox + col * (iconSize + gap);
+      const y = oy + row * (iconSize + gap);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + iconSize - r, y);
+      ctx.quadraticCurveTo(x + iconSize, y, x + iconSize, y + r);
+      ctx.lineTo(x + iconSize, y + iconSize - r);
+      ctx.quadraticCurveTo(x + iconSize, y + iconSize, x + iconSize - r, y + iconSize);
+      ctx.lineTo(x + r, y + iconSize);
+      ctx.quadraticCurveTo(x, y + iconSize, x, y + iconSize - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  return sampleCanvas(ctx, CW, CH, 8);
+}
+
+// ── shape 3: CRM ─────────────────────────────────────────────────────
+function buildCRMPos(): Float32Array {
+  const CW = 1000, CH = 480;
+  const ctx = makeCtx(CW, CH);
+  ctx.fillStyle = "#fff";
+  ctx.font = `900 270px 'Arial Black', Impact, sans-serif`;
+  ctx.textBaseline = "middle";
+  drawTracked(ctx, "CRM", CW / 2, CH / 2, 28);
+  return sampleCanvas(ctx, CW, CH, 6);
+}
+
+// ── shape 4: DON'T FORGET ─────────────────────────────────────────────
+function buildLetterPos(): Float32Array {
+  const CW = 1000, CH = 500;
+  const ctx = makeCtx(CW, CH);
+  ctx.fillStyle = "#fff";
+  ctx.font = `900 185px 'Arial Black', Impact, sans-serif`;
+  ctx.textBaseline = "middle";
+  drawTracked(ctx, "DON'T",  CW / 2, CH * 0.27, 18);
+  drawTracked(ctx, "FORGET", CW / 2, CH * 0.74, 18);
+  return sampleCanvas(ctx, CW, CH, 6);
+}
+
+// ── scatter ───────────────────────────────────────────────────────────
+function buildScatterPos(): Float32Array {
+  const pos = new Float32Array(COUNT * 3);
+  for (let i = 0; i < COUNT; i++) {
+    pos[i * 3]     = (Math.random() - 0.5) * 22;
+    pos[i * 3 + 1] = (Math.random() - 0.5) * 14;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * 10;
+  }
+  return pos;
+}
+
+// ── blob sphere ───────────────────────────────────────────────────────
+function buildBlobPos(): Float32Array {
+  const pos  = new Float32Array(COUNT * 3);
+  const gold = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < COUNT; i++) {
+    const r     = Math.random() < 0.72 ? 1.7 + (Math.random() - 0.5) * 0.35 : Math.random() * 1.4;
+    const y     = 1 - (i / (COUNT - 1)) * 2;
+    const rad   = Math.sqrt(Math.max(0, 1 - y * y));
+    const theta = gold * i;
+    pos[i * 3]     = r * rad * Math.cos(theta);
+    pos[i * 3 + 1] = r * y * 1.25;
+    pos[i * 3 + 2] = r * rad * Math.sin(theta);
+  }
+  return pos;
+}
+
+// ── GLSL ──────────────────────────────────────────────────────────────
+const VERT = /* glsl */`
+  attribute vec3 aUIUX;
+  attribute vec3 aApps;
+  attribute vec3 aCRM;
+  attribute vec3 aLetters;
+  attribute vec3 aScatter;
+  attribute vec3 aBlob;
+
+  uniform float uScene;
+  uniform float uShapeA;
+  uniform float uShapeB;
+  uniform float uShapeBlend;
+  uniform vec2  uMouse;
+  uniform float uSize;
+  uniform float uTime;
+
+  varying float vDepth;
+
+  vec3 getShape(float idx) {
+    if (idx < 0.5) return position;
+    if (idx < 1.5) return aUIUX;
+    if (idx < 2.5) return aApps;
+    if (idx < 3.5) return aCRM;
+    return aLetters;
+  }
+
+  void main() {
+    float t1 = clamp(uScene,       0.0, 1.0);
+    float t2 = clamp(uScene - 1.0, 0.0, 1.0);
+
+    vec3 heroPos = mix(getShape(uShapeA), getShape(uShapeB), smoothstep(0.0, 1.0, uShapeBlend));
+    vec3 pos     = mix(mix(heroPos, aScatter, t1), aBlob, t2);
+
+    // Gentle idle drift (hero only)
+    float idle = 1.0 - smoothstep(0.0, 0.4, uScene);
+    pos.x += sin(uTime * 0.7 + heroPos.y * 4.0) * 0.006 * idle;
+    pos.y += cos(uTime * 0.55 + heroPos.x * 3.2) * 0.004 * idle;
+
+    // Blob rotation + breathing
+    float blobAmt = smoothstep(0.5, 1.0, t2);
+    float angle   = uTime * 0.25 * blobAmt;
+    float cosA    = cos(angle), sinA = sin(angle);
+    float rx      = pos.x * cosA - pos.z * sinA;
+    float rz      = pos.x * sinA + pos.z * cosA;
+    pos.x = mix(pos.x, rx, blobAmt);
+    pos.z = mix(pos.z, rz, blobAmt);
+    pos  *= mix(1.0, 1.0 + sin(uTime * 0.9) * 0.04, blobAmt);
+
+    // Mouse repulsion
+    vec2  diff = pos.xy - uMouse;
+    float dist = length(diff);
+    float rep  = smoothstep(1.3, 0.0, dist);
+    pos.xy += normalize(diff + 0.001) * rep * 0.22;
+
+    vDepth = normalize(pos).z;
+    vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+    gl_Position = projectionMatrix * mv;
+
+    // Flat (constant) size in hero — perspective only for blob
+    float szFlat = uSize * 1.5;
+    float szPersp = uSize * (3.8 / -mv.z);
+    gl_PointSize = mix(szFlat, szPersp, blobAmt);
+  }
+`;
+
+const FRAG = /* glsl */`
+  uniform float uScene;
+  varying float vDepth;
+
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    if (d > 0.5) discard;
+    float alpha = 1.0 - smoothstep(0.36, 0.5, d);
+
+    vec3 teal    = vec3(0.227, 0.749, 0.541);
+    vec3 scatter = vec3(0.22,  0.22,  0.22);
+    vec3 blobFg  = vec3(0.16,  0.55,  0.40);
+    vec3 blobBg  = vec3(0.05,  0.05,  0.06);
+
+    float t2     = clamp(uScene - 1.0, 0.0, 1.0);
+    float blobD  = vDepth * 0.5 + 0.5;
+    vec3  blobCol = mix(blobBg, blobFg, pow(blobD, 1.8));
+
+    vec3  col    = mix(teal, scatter, clamp(uScene, 0.0, 1.0));
+    col          = mix(col, blobCol, t2);
+    float bright = mix(1.0, 0.28, clamp(uScene, 0.0, 1.0));
+    bright       = mix(bright, 1.0, t2 * 0.9);
+
+    gl_FragColor = vec4(col, alpha * bright);
+  }
+`;
+
+export default function DFParticles() {
+  const mountRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = mountRef.current;
+    if (!el) return;
+
+    const W = window.innerWidth, H = window.innerHeight;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(W, H);
+    renderer.setClearColor(0, 0);
+    el.appendChild(renderer.domElement);
+
+    const scene  = new THREE.Scene();
+    const aspect = W / H;
+    const camera = new THREE.PerspectiveCamera(55, aspect, 0.1, 100);
+    camera.position.z = 5;
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(buildCodePos(),    3));
+    geo.setAttribute("aUIUX",    new THREE.BufferAttribute(buildUIUXPos(),    3));
+    geo.setAttribute("aApps",    new THREE.BufferAttribute(buildAppsPos(),    3));
+    geo.setAttribute("aCRM",     new THREE.BufferAttribute(buildCRMPos(),     3));
+    geo.setAttribute("aLetters", new THREE.BufferAttribute(buildLetterPos(),  3));
+    geo.setAttribute("aScatter", new THREE.BufferAttribute(buildScatterPos(), 3));
+    geo.setAttribute("aBlob",    new THREE.BufferAttribute(buildBlobPos(),    3));
+
+    const uniforms = {
+      uScene:      { value: 0 },
+      uShapeA:     { value: 0 },
+      uShapeB:     { value: 1 },
+      uShapeBlend: { value: 0 },
+      uMouse:      { value: new THREE.Vector2(9999, 9999) },
+      uSize:       { value: window.devicePixelRatio * 2.4 },
+      uTime:       { value: 0 },
+    };
+
+    const mat = new THREE.ShaderMaterial({
+      uniforms, vertexShader: VERT, fragmentShader: FRAG,
+      transparent: true, depthWrite: false,
+    });
+    scene.add(new THREE.Points(geo, mat));
+
+    // ── auto-cycle through 5 shapes ──
+    let shapeIdx = 0;
+    let cycleTween: gsap.core.Tween | null = null;
+    let cycleDelay: gsap.core.Tween | null = null;
+
+    const doTransition = () => {
+      const next = (shapeIdx + 1) % 5;
+      uniforms.uShapeA.value = shapeIdx;
+      uniforms.uShapeB.value = next;
+      cycleTween = gsap.fromTo(uniforms.uShapeBlend, { value: 0 }, {
+        value: 1,
+        duration: 1.6,
+        ease: "power2.inOut",
+        onComplete: () => {
+          shapeIdx = next;
+          cycleDelay = gsap.delayedCall(3.0, doTransition);
+        },
+      });
+    };
+    cycleDelay = gsap.delayedCall(3.4, doTransition);
+
+    // ── scroll: hero → scatter ──
+    const st1 = gsap.to(uniforms.uScene, {
+      value: 1, ease: "none",
+      scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: 5 },
+    });
+
+    // ── scroll: about → blob ──
+    let st2: ReturnType<typeof ScrollTrigger.create> | null = null;
+    const aboutEl = document.querySelector("#about");
+    if (aboutEl) {
+      st2 = ScrollTrigger.create({
+        trigger: aboutEl, start: "top 65%", end: "bottom 35%", scrub: 1.8,
+        onUpdate(self) {
+          const p = self.progress;
+          uniforms.uScene.value = 1 + (p < 0.5 ? p * 2 : (1 - p) * 2);
+        },
+      });
+    }
+
+    // ── mouse ──
+    const vFov = (55 * Math.PI) / 180;
+    const hH   = Math.tan(vFov / 2) * 5;
+    const hW   = hH * aspect;
+
+    const onMove = (e: MouseEvent) => {
+      gsap.to(uniforms.uMouse.value, {
+        x:  (e.clientX / W - 0.5) * hW * 2,
+        y: -(e.clientY / H - 0.5) * hH * 2,
+        duration: 0.12, overwrite: true,
+      });
+    };
+    const onLeave = () =>
+      gsap.to(uniforms.uMouse.value, { x: 9999, y: 9999, duration: 0.6 });
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseleave", onLeave);
+
+    const onResize = () => {
+      const w = window.innerWidth, h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener("resize", onResize);
+
+    const clock = new THREE.Clock();
+    let raf: number;
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      uniforms.uTime.value = clock.getElapsedTime();
+      renderer.render(scene, camera);
+    };
+    tick();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      cycleTween?.kill();
+      cycleDelay?.kill();
+      st1.scrollTrigger?.kill();
+      st2?.kill();
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseleave", onLeave);
+      window.removeEventListener("resize", onResize);
+      renderer.dispose(); geo.dispose(); mat.dispose();
+      if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
+    };
+  }, []);
+
+  return (
+    <div ref={mountRef} className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }} />
+  );
+}

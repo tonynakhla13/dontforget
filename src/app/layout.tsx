@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Orbitron, Space_Mono } from "next/font/google";
+import { Inter, Bebas_Neue, Caveat, Space_Mono } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,10 +7,16 @@ const inter = Inter({
   variable: "--font-body-next",
 });
 
-const orbitron = Orbitron({
+const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
   variable: "--font-display-next",
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: "400",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-script-next",
+  weight: ["400", "500", "600", "700"],
 });
 
 const spaceMono = Space_Mono({
@@ -22,7 +28,7 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   title: "DON'T FORGET — Web Development Agency",
   description:
-    "DON'T FORGET builds fast, scalable, and secure web experiences that help brands grow in the digital world.",
+    "DON'T FORGET builds fast, scalable, and memorable web experiences that help brands grow in the digital world.",
   keywords: [
     "web development agency",
     "web design",
@@ -41,7 +47,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${orbitron.variable} ${spaceMono.variable} scroll-smooth`}
+      className={`${inter.variable} ${bebasNeue.variable} ${caveat.variable} ${spaceMono.variable}`}
     >
       <body className="antialiased" suppressHydrationWarning>
         {children}

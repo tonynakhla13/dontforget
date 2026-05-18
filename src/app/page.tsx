@@ -11,6 +11,7 @@ import Process from "@/components/Process";
 import Services from "@/components/Services";
 import SmoothScroll from "@/components/SmoothScroll";
 import Work from "@/components/Work";
+import ParticleLayer from "@/components/ParticleLayer";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -33,8 +34,10 @@ export default async function Home() {
     <>
       <Loader />
       <SmoothScroll />
-      <main className="relative overflow-x-clip">
-      <div className="noise-layer" />
+      {/* ParticleLayer must live OUTSIDE <main> to avoid stacking context trapping z-index:-1 */}
+      <ParticleLayer />
+      <main className="relative z-[1] overflow-x-clip">
+      <div className="noise" />
       <AmbientGlow />
       <Navbar />
       <Hero />
