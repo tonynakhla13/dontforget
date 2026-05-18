@@ -3,11 +3,13 @@ import Availability from "@/components/Availability";
 import AmbientGlow from "@/components/AmbientGlow";
 import Contact from "@/components/Contact";
 import Hero from "@/components/Hero";
+import Loader from "@/components/Loader";
 import Marquee from "@/components/Marquee";
 import Navbar from "@/components/Navbar";
 import Principles from "@/components/Principles";
 import Process from "@/components/Process";
 import Services from "@/components/Services";
+import SmoothScroll from "@/components/SmoothScroll";
 import Work from "@/components/Work";
 import { prisma } from "@/lib/prisma";
 
@@ -28,7 +30,10 @@ export default async function Home() {
     : [[], []];
 
   return (
-    <main className="relative overflow-x-clip">
+    <>
+      <Loader />
+      <SmoothScroll />
+      <main className="relative overflow-x-clip">
       <div className="noise-layer" />
       <AmbientGlow />
       <Navbar />
@@ -42,5 +47,6 @@ export default async function Home() {
       <Availability />
       <Contact />
     </main>
+    </>
   );
 }

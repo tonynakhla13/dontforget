@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bodoni_Moda, Inter, Space_Mono } from "next/font/google";
+import { Inter, Orbitron, Space_Mono } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,9 +7,10 @@ const inter = Inter({
   variable: "--font-body-next",
 });
 
-const bodoniModa = Bodoni_Moda({
+const orbitron = Orbitron({
   subsets: ["latin"],
   variable: "--font-display-next",
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 const spaceMono = Space_Mono({
@@ -19,16 +20,16 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "dontforget — Digital studio",
+  title: "DON'T FORGET — Web Development Agency",
   description:
-    "dontforget builds brand systems, digital products, immersive web experiences, and motion identities.",
+    "DON'T FORGET builds fast, scalable, and secure web experiences that help brands grow in the digital world.",
   keywords: [
-    "creative agency",
+    "web development agency",
     "web design",
-    "web development",
+    "brand systems",
     "GSAP",
     "Three.js",
-    "digital studio",
+    "digital agency",
   ],
 };
 
@@ -40,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${bodoniModa.variable} ${spaceMono.variable} scroll-smooth`}
+      className={`${inter.variable} ${orbitron.variable} ${spaceMono.variable} scroll-smooth`}
     >
       <body className="antialiased" suppressHydrationWarning>
         {children}

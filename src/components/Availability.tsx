@@ -1,29 +1,30 @@
 "use client";
 
-import { useFadeUp } from "@/hooks/useScrollAnimation";
+import { useRevealUp } from "@/hooks/useScrollAnimation";
 
 export default function Availability() {
-  const ref = useFadeUp();
+  const ref = useRevealUp();
 
   return (
-    <section className="relative border-y hairline py-[var(--section-space)]">
-      <div
-        ref={ref}
-        className="section-shell grid gap-10 rounded-[32px] border hairline bg-[linear-gradient(135deg,rgba(248,243,234,0.04),rgba(0,200,176,0.08))] p-8 md:grid-cols-[1fr_auto] md:items-end md:p-10"
-      >
-        <div>
-          <p className="eyebrow mb-6">Availability</p>
-          <h2 className="display-text max-w-3xl text-4xl leading-[0.98] text-[var(--paper)] md:text-6xl">
-            Taking on a small number of focused builds this season.
-          </h2>
-        </div>
+    <section className="relative overflow-hidden border-y border-white/8 py-[var(--section-gap)]">
+      <div aria-hidden="true" className="pointer-events-none absolute right-[12%] top-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,rgba(58,191,138,0.09),transparent_65%)] blur-[120px]" />
 
-        <a
-          href="#contact"
-          className="inline-flex w-fit items-center rounded-full bg-[var(--teal)] px-7 py-4 font-mono text-xs uppercase tracking-[0.25em] text-[var(--ink)] transition-transform duration-300 hover:-translate-y-1"
-        >
-          Start a project
-        </a>
+      <div ref={ref} className="wrap">
+        <div className="grid gap-12 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="eyebrow mb-8">Availability</p>
+            <h2 className="display-text text-[clamp(2.8rem,7vw,7rem)] leading-[0.9] text-[var(--paper)]">
+              Taking on focused<br />builds this season.
+            </h2>
+            <p className="mt-8 max-w-lg text-[0.9375rem] leading-[1.85] text-[var(--text-muted)]">
+              We work with a limited number of clients at a time to ensure every project gets the depth it deserves. Slots are limited.
+            </p>
+          </div>
+          <div className="flex flex-col items-start gap-4 md:items-end">
+            <a href="#contact" className="btn btn-primary">Start a project →</a>
+            <span className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-[var(--text-muted)]">Response within 24h</span>
+          </div>
+        </div>
       </div>
     </section>
   );

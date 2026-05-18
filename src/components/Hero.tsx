@@ -6,51 +6,34 @@ import { gsap } from "@/lib/gsap";
 
 const HeroScene = dynamic(() => import("./three/HeroScene"), { ssr: false });
 
-const headline = ["We build", "what stays", "with people."];
-
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
-  const lineRefs = useRef<Array<HTMLSpanElement | null>>([]);
-  const copyRef = useRef<HTMLParagraphElement>(null);
+  const headRef = useRef<HTMLHeadingElement>(null);
+  const subRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const metaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap
-        .timeline({ delay: 0.2 })
-        .from(lineRefs.current, {
-          y: 28,
-          stagger: 0.12,
-          duration: 1,
-          ease: "power4.out",
-        })
-        .from(
-          copyRef.current,
-          {
-            y: 18,
-            duration: 0.8,
-            ease: "power3.out",
-          },
-          "-=0.45"
+      gsap.timeline({ delay: 2.6 })
+        .fromTo(headRef.current,
+          { autoAlpha: 0, y: 60 },
+          { autoAlpha: 1, y: 0, duration: 1.2, ease: "power4.out" }
         )
-        .from(
-          ctaRef.current,
-          {
-            y: 16,
-            duration: 0.7,
-            ease: "power3.out",
-          },
-          "-=0.45"
+        .fromTo(subRef.current,
+          { autoAlpha: 0, y: 30 },
+          { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
+          "-=0.6"
         )
-        .from(
-          metaRef.current,
-          {
-            y: 14,
-            duration: 0.7,
-            ease: "power3.out",
-          },
-          "-=0.35"
+        .fromTo(ctaRef.current,
+          { autoAlpha: 0, y: 20 },
+          { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" },
+          "-=0.5"
+        )
+        .fromTo(metaRef.current,
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: 0.8, ease: "power2.out" },
+          "-=0.4"
         );
     }, sectionRef);
 
@@ -60,68 +43,63 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative isolate flex min-h-[100svh] items-center overflow-hidden pb-16 pt-28 md:min-h-screen md:pb-16 md:pt-40"
+      className="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden pb-20 pt-36 md:pb-28"
     >
+      {/* Three.js */}
       <div className="absolute inset-0 -z-20">
         <HeroScene />
       </div>
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_48%,rgba(0,200,176,0.18),transparent_26%),radial-gradient(circle_at_74%_48%,rgba(248,243,234,0.06),transparent_18%),linear-gradient(90deg,#050505_0%,rgba(5,5,5,0.9)_42%,rgba(5,5,5,0.42)_100%)]" />
 
-      <div className="section-shell grid gap-14 md:grid-cols-[0.95fr_1.05fr] md:items-end lg:gap-24">
-        <div className="relative z-10 max-w-3xl">
-          <h1 className="display-text text-[clamp(2.7rem,7vw,5.8rem)] leading-[0.88] tracking-[-0.05em] text-[var(--paper)]">
-            {headline.map((line, index) => (
-              <span key={line} className="block pb-2">
-                <span
-                  ref={(element) => {
-                    lineRefs.current[index] = element;
-                  }}
-                  className="block"
-                >
-                  {line}
-                </span>
-              </span>
-            ))}
-          </h1>
+      {/* Gradient */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_40%,rgba(58,191,138,0.14),transparent_50%),linear-gradient(170deg,rgba(8,8,8,0.2)_0%,rgba(8,8,8,0.7)_50%,rgba(8,8,8,0.98)_100%)]" />
 
-          <p
-            ref={copyRef}
-            className="mt-9 max-w-xl text-base leading-8 text-[var(--text-dark)] md:text-lg"
-          >
-            Strategy, design, code, and motion for brands that refuse to blur into the
-            background.
-          </p>
+      {/* Hex decoration */}
+      <div aria-hidden="true" className="pointer-events-none absolute right-[-80px] top-[-60px] opacity-[0.13]">
+        <svg width="560" height="560" viewBox="0 0 100 100" fill="none">
+          <polygon points="50,3 91,26 91,74 50,97 9,74 9,26" stroke="#3abf8a" strokeWidth="0.55" fill="none" strokeDasharray="4 8" />
+          <polygon points="50,16 81,33 81,67 50,84 19,67 19,33" stroke="#3abf8a" strokeWidth="0.25" fill="none" />
+        </svg>
+      </div>
 
-          <div ref={ctaRef} className="mt-11 flex flex-wrap gap-4">
-            <a
-              href="#contact"
-              className="rounded-full bg-[var(--teal)] px-6 py-3 font-mono text-xs uppercase tracking-[0.24em] text-[var(--ink)] transition-transform duration-300 hover:-translate-y-1"
-            >
-              Start a project
-            </a>
-            <a
-              href="#work"
-              className="rounded-full border border-white/15 px-6 py-3 font-mono text-xs uppercase tracking-[0.24em] text-[var(--paper)] transition-all duration-300 hover:border-[rgba(0,200,176,0.55)] hover:text-[var(--teal)]"
-            >
-              View work
-            </a>
+      <div className="wrap">
+        {/* Main headline */}
+        <h1
+          ref={headRef}
+          className="display-text text-[clamp(4rem,13vw,12rem)] leading-[0.88] text-[var(--paper)]"
+        >
+          We build<br />
+          <span className="text-[var(--teal)]">what stays</span><br />
+          with people.
+        </h1>
+
+        {/* Bottom row */}
+        <div className="mt-14 flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p ref={subRef} className="max-w-md text-base leading-[1.85] text-[var(--text-muted)] md:text-lg">
+              Strategy, design, code, and motion for brands that refuse to blur into the background.
+            </p>
+            <div ref={ctaRef} className="mt-8 flex flex-wrap gap-4">
+              <a href="#contact" className="btn btn-primary">Start a project</a>
+              <a href="#work" className="btn btn-ghost">View work</a>
+            </div>
+          </div>
+
+          {/* Meta */}
+          <div ref={metaRef} className="flex flex-col gap-3 text-right">
+            <span className="eyebrow">Web Development Agency</span>
+            <div className="flex gap-6 justify-end font-mono text-[0.65rem] uppercase tracking-[0.25em] text-[var(--text-muted)]">
+              <span>GSAP</span>
+              <span>Three.js</span>
+              <span>Next.js</span>
+            </div>
           </div>
         </div>
 
-        <div
-          ref={metaRef}
-          className="relative z-10 flex flex-col gap-5 self-end border-t hairline pt-6 text-[var(--text-dark)] md:justify-self-end md:text-right"
-        >
-          <span className="font-mono text-xs uppercase tracking-[0.28em]">Creative systems studio</span>
-          <span className="max-w-xs text-sm leading-7">
-            Built for identities, websites, and products that need memory—not noise.
-          </span>
+        {/* Scroll hint */}
+        <div className="mt-20 hidden items-center gap-4 md:flex">
+          <span className="h-px w-16 bg-[var(--teal)] opacity-60" />
+          <span className="font-mono text-[0.62rem] uppercase tracking-[0.38em] text-[var(--text-muted)]">Scroll to explore</span>
         </div>
-      </div>
-
-      <div className="absolute bottom-7 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-3 text-[var(--text-dark)] md:flex">
-        <span className="font-mono text-[10px] uppercase tracking-[0.36em]">Scroll</span>
-        <span className="h-16 w-px bg-gradient-to-b from-[var(--teal)] to-transparent" />
       </div>
     </section>
   );
