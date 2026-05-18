@@ -30,11 +30,11 @@ export default function Services({ services }: { services?: Service[] }) {
   const list = services?.length ? services : FALLBACK;
 
   return (
-    <section id="services" className="relative overflow-hidden py-[var(--section-gap)]">
+    <section id="services" className="relative overflow-hidden section-py">
       <div ref={orbRef} aria-hidden="true" className="pointer-events-none absolute right-0 top-1/3 h-[600px] w-[400px] rounded-full bg-[radial-gradient(circle,rgba(58,191,138,0.06),transparent_65%)] blur-[120px]" />
 
       <div className="wrap">
-        <div ref={headRef} className="mb-4 grid gap-8 md:grid-cols-2 md:items-end">
+        <div ref={headRef} className="mb-16 grid gap-8 md:grid-cols-2 md:items-end">
           <div>
             <p className="eyebrow mb-8">Services</p>
             <h2 className="display-text text-[clamp(2.8rem,7vw,7rem)] leading-[0.9] text-[var(--paper)]">
@@ -46,7 +46,7 @@ export default function Services({ services }: { services?: Service[] }) {
           </p>
         </div>
 
-        <div className="mt-4 border-t border-white/8">
+        <div className="border-t border-white/8">
           {list.map((s, i) => <Row key={s.id} service={s} index={i} />)}
         </div>
       </div>

@@ -106,7 +106,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
   const [featured, ...rest] = list;
 
   return (
-    <section id="work" className="relative overflow-hidden py-[var(--section-gap)]">
+    <section id="work" className="relative overflow-hidden section-py">
       {/* Hex */}
       <div ref={hexRef} aria-hidden="true" className="pointer-events-none absolute -right-10 top-[6%] opacity-[0.09]">
         <svg width="280" height="280" viewBox="0 0 100 100" fill="none">
@@ -130,7 +130,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
 
         {/* Featured */}
         {featured && (
-          <div ref={featRef} className="mb-4">
+          <div ref={featRef} className="mb-6">
             <ProjectCard project={featured} large />
           </div>
         )}

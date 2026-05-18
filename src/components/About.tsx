@@ -14,7 +14,7 @@ export default function About() {
   const hexRef = useParallax(-30, 30);
 
   return (
-    <section id="about" className="relative overflow-hidden py-[var(--section-gap)]">
+    <section id="about" className="relative overflow-hidden section-py">
       {/* Hex */}
       <div ref={hexRef} aria-hidden="true" className="pointer-events-none absolute -right-20 top-0 opacity-[0.1]">
         <svg width="480" height="480" viewBox="0 0 100 100" fill="none">

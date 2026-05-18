@@ -13,7 +13,7 @@ export default function Process() {
   const stepsRef = useStaggerChildren(0.1, 0.12);
 
   return (
-    <section className="relative overflow-hidden border-y border-white/8 py-[var(--section-gap)]">
+    <section className="relative overflow-hidden border-y border-white/8 section-py">
       <div className="wrap">
         <div ref={headRef} className="mb-20 grid gap-8 md:grid-cols-2 md:items-end">
           <div>

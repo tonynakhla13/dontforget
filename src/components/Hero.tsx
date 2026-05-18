@@ -65,7 +65,7 @@ export default function Hero() {
         {/* Main headline */}
         <h1
           ref={headRef}
-          className="display-text text-[clamp(4rem,13vw,12rem)] leading-[0.88] text-[var(--paper)]"
+          className="display-text text-[clamp(3.5rem,9vw,9rem)] leading-[0.88] text-[var(--paper)]"
         >
           We build<br />
           <span className="text-[var(--teal)]">what stays</span><br />
@@ -73,21 +73,21 @@ export default function Hero() {
         </h1>
 
         {/* Bottom row */}
-        <div className="mt-14 flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
+        <div className="mt-12 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>
-            <p ref={subRef} className="max-w-md text-base leading-[1.85] text-[var(--text-muted)] md:text-lg">
+            <p ref={subRef} className="max-w-lg text-[1.05rem] leading-[1.8] text-[var(--paper)] opacity-70 md:text-[1.1rem]">
               Strategy, design, code, and motion for brands that refuse to blur into the background.
             </p>
-            <div ref={ctaRef} className="mt-8 flex flex-wrap gap-4">
+            <div ref={ctaRef} className="mt-7 flex flex-wrap gap-4">
               <a href="#contact" className="btn btn-primary">Start a project</a>
               <a href="#work" className="btn btn-ghost">View work</a>
             </div>
           </div>
 
           {/* Meta */}
-          <div ref={metaRef} className="flex flex-col gap-3 text-right">
-            <span className="eyebrow">Web Development Agency</span>
-            <div className="flex gap-6 justify-end font-mono text-[0.65rem] uppercase tracking-[0.25em] text-[var(--text-muted)]">
+          <div ref={metaRef} className="flex flex-col gap-2 text-right">
+            <span className="eyebrow text-[0.68rem]">Web Development Agency</span>
+            <div className="flex gap-5 justify-end font-mono text-[0.68rem] uppercase tracking-[0.22em] text-[var(--text-muted)]">
               <span>GSAP</span>
               <span>Three.js</span>
               <span>Next.js</span>
@@ -96,9 +96,9 @@ export default function Hero() {
         </div>
 
         {/* Scroll hint */}
-        <div className="mt-20 hidden items-center gap-4 md:flex">
-          <span className="h-px w-16 bg-[var(--teal)] opacity-60" />
-          <span className="font-mono text-[0.62rem] uppercase tracking-[0.38em] text-[var(--text-muted)]">Scroll to explore</span>
+        <div className="mt-14 hidden items-center gap-4 md:flex">
+          <span className="h-px w-12 bg-[var(--teal)] opacity-50" />
+          <span className="font-mono text-[0.68rem] uppercase tracking-[0.32em] text-[var(--text-muted)]">Scroll to explore</span>
         </div>
       </div>
     </section>

@@ -27,7 +27,7 @@ export default function Contact() {
   const label = "block font-mono text-[0.62rem] uppercase tracking-[0.3em] text-[var(--text-muted)] mb-3";
 
   return (
-    <section id="contact" className="relative overflow-hidden py-[var(--section-gap)]">
+    <section id="contact" className="relative overflow-hidden section-py">
       {/* Hex */}
       <div ref={hexRef} aria-hidden="true" className="pointer-events-none absolute -left-20 top-[8%] opacity-[0.1]">
         <svg width="420" height="420" viewBox="0 0 100 100" fill="none">

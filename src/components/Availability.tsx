@@ -6,7 +6,7 @@ export default function Availability() {
   const ref = useRevealUp();
 
   return (
-    <section className="relative overflow-hidden border-y border-white/8 py-[var(--section-gap)]">
+    <section className="relative overflow-hidden border-y border-white/8 section-py">
       <div aria-hidden="true" className="pointer-events-none absolute right-[12%] top-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,rgba(58,191,138,0.09),transparent_65%)] blur-[120px]" />
 
       <div ref={ref} className="wrap">

@@ -14,7 +14,7 @@ export default function Principles() {
   const cardsRef = useStaggerChildren(0.1, 0.09);
 
   return (
-    <section className="relative overflow-hidden py-[var(--section-gap)]">
+    <section className="relative overflow-hidden section-py">
       <div className="wrap">
         <div ref={headRef} className="mb-16 grid gap-8 md:grid-cols-2 md:items-end">
           <div>

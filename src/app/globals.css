@@ -2,13 +2,13 @@
 
 :root {
   --ink: #080808;
-  --surface: #0f0f0f;
+  --surface: #111111;
   --paper: #f0ece3;
   --teal: #3abf8a;
-  --text-muted: #666666;
-  --page-gutter: clamp(1.25rem, 5vw, 5.5rem);
-  --section-gap: clamp(9rem, 18vw, 20rem);
-  --card-radius: 16px;
+  --text-muted: #9a9a9a;
+  --page-gutter: clamp(1.5rem, 5vw, 5rem);
+  --section-gap: clamp(7rem, 14vw, 14rem);
+  --card-radius: 14px;
 }
 
 @theme inline {
@@ -57,6 +57,11 @@ button, input, textarea, select { font: inherit; }
   margin-inline: auto;
 }
 
+.section-py {
+  padding-top: var(--section-gap);
+  padding-bottom: var(--section-gap);
+}
+
 .noise-layer {
   pointer-events: none;
   position: fixed;
@@ -102,13 +107,13 @@ button, input, textarea, select { font: inherit; }
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 1rem 2rem;
+  gap: 0.5rem;
+  padding: 0.85rem 1.75rem;
   border-radius: 999px;
   font-family: var(--font-mono-next), monospace;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
   cursor: pointer;
