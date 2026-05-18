@@ -8,7 +8,7 @@ const NAV_H = 86;
 const navLinks = [
   { label: "Work",    href: "#work"    },
   { label: "Process", href: "#process" },
-  { label: "About",   href: "#about"   },
+  { label: "About",   href: "/about"   },
   { label: "Contact", href: "#contact" },
 ];
 
