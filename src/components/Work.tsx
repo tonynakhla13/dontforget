@@ -58,16 +58,16 @@ export default function Work({ projects }: { projects?: Project[] }) {
   return (
     <section
       id="work"
-      className="relative flex min-h-screen scroll-mt-28 items-center border-y hairline py-32 md:py-40"
+      className="relative flex min-h-screen scroll-mt-28 items-center border-y hairline py-[var(--section-space)]"
     >
-      <div className="section-shell grid gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+      <div className="section-shell grid gap-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-start lg:gap-28">
         <div ref={titleRef} className="lg:sticky lg:top-32">
           <p className="eyebrow mb-6">Selected work</p>
           <h2 className="display-text text-3xl leading-tight text-[var(--paper)] md:text-5xl">
             Projects shaped to be remembered.
           </h2>
 
-          <div className="mt-12 rounded-[28px] border hairline bg-[linear-gradient(135deg,rgba(248,243,234,0.06),rgba(0,200,176,0.08))] p-6 md:p-7">
+          <div className="mt-14 rounded-[28px] border hairline bg-[linear-gradient(135deg,rgba(248,243,234,0.06),rgba(0,200,176,0.08))] p-7 md:p-8">
             <div className="mb-12 flex items-center justify-between gap-4 font-mono text-xs uppercase tracking-[0.25em] text-[var(--text-dark)]">
               <span>{currentProject.category ?? "Selected project"}</span>
               <span>{currentProject.year ?? "—"}</span>
@@ -82,7 +82,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
           </div>
         </div>
 
-        <div ref={listRef} className="pt-1">
+        <div ref={listRef} className="pt-2">
           {list.map((project) => {
             const isActive = project.id === currentProject.id;
 
@@ -96,7 +96,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
                   setActiveProjectId(project.id);
                   if (project.liveUrl) window.open(project.liveUrl, "_blank", "noopener,noreferrer");
                 }}
-                className="group flex w-full items-center justify-between border-t hairline py-9 text-left"
+                className="group flex w-full items-center justify-between border-t hairline py-10 text-left"
               >
                 <div>
                   <div className="font-mono text-xs uppercase tracking-[0.26em] text-[var(--text-dark)]">

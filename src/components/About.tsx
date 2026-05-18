@@ -15,9 +15,9 @@ export default function About() {
   return (
     <section
       id="about"
-      className="relative flex min-h-[70vh] scroll-mt-28 items-center border-y hairline py-28 md:py-40"
+      className="relative flex min-h-[72vh] scroll-mt-28 items-center border-y hairline py-[var(--section-space)]"
     >
-      <div className="section-shell grid gap-16 md:grid-cols-[1.2fr_0.8fr] md:items-end">
+      <div className="section-shell grid gap-20 md:grid-cols-[1.2fr_0.8fr] md:items-end lg:gap-28">
         <div ref={copyRef}>
           <p className="eyebrow mb-6">Studio</p>
           <h2 className="display-text max-w-4xl text-3xl leading-tight text-[var(--paper)] md:text-5xl">
@@ -25,7 +25,7 @@ export default function About() {
           </h2>
         </div>
 
-        <div ref={statsRef} className="grid gap-6 sm:grid-cols-3 md:grid-cols-1">
+        <div ref={statsRef} className="grid gap-8 sm:grid-cols-3 md:grid-cols-1">
           {metrics.map((metric) => (
             <div key={metric.label} className="border-t hairline pt-4">
               <div className="display-text text-3xl text-[var(--paper)]">{metric.value}</div>

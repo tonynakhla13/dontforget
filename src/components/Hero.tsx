@@ -60,14 +60,14 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative isolate flex min-h-screen items-end overflow-hidden pb-10 pt-32 md:items-center md:pb-0"
+      className="relative isolate flex min-h-screen items-end overflow-hidden pb-14 pt-36 md:items-center md:pb-16 md:pt-40"
     >
       <div className="absolute inset-0 -z-20">
         <HeroScene />
       </div>
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_48%,rgba(0,200,176,0.18),transparent_26%),radial-gradient(circle_at_74%_48%,rgba(248,243,234,0.06),transparent_18%),linear-gradient(90deg,#050505_0%,rgba(5,5,5,0.9)_42%,rgba(5,5,5,0.42)_100%)]" />
 
-      <div className="section-shell grid gap-14 md:grid-cols-[0.95fr_1.05fr] md:items-end">
+      <div className="section-shell grid gap-16 md:grid-cols-[0.95fr_1.05fr] md:items-end lg:gap-24">
         <div className="relative z-10 max-w-3xl">
           <h1 className="display-text text-[clamp(2.7rem,7vw,5.8rem)] leading-[0.88] tracking-[-0.05em] text-[var(--paper)]">
             {headline.map((line, index) => (
@@ -86,13 +86,13 @@ export default function Hero() {
 
           <p
             ref={copyRef}
-            className="mt-8 max-w-xl text-base leading-8 text-[var(--text-dark)] md:text-lg"
+            className="mt-9 max-w-xl text-base leading-8 text-[var(--text-dark)] md:text-lg"
           >
             Strategy, design, code, and motion for brands that refuse to blur into the
             background.
           </p>
 
-          <div ref={ctaRef} className="mt-10 flex flex-wrap gap-3">
+          <div ref={ctaRef} className="mt-11 flex flex-wrap gap-4">
             <a
               href="#contact"
               className="rounded-full bg-[var(--teal)] px-6 py-3 font-mono text-xs uppercase tracking-[0.24em] text-[var(--ink)] transition-transform duration-300 hover:-translate-y-1"
@@ -110,7 +110,7 @@ export default function Hero() {
 
         <div
           ref={metaRef}
-          className="relative z-10 flex flex-col gap-4 self-end border-t hairline pt-5 text-[var(--text-dark)] md:justify-self-end md:text-right"
+          className="relative z-10 flex flex-col gap-5 self-end border-t hairline pt-6 text-[var(--text-dark)] md:justify-self-end md:text-right"
         >
           <span className="font-mono text-xs uppercase tracking-[0.28em]">Creative systems studio</span>
           <span className="max-w-xs text-sm leading-7">

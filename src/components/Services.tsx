@@ -48,7 +48,7 @@ function ServiceRow({
   return (
     <article
       ref={ref}
-      className="group grid gap-4 border-t hairline py-6 transition-colors duration-300 md:grid-cols-[80px_1fr_1fr] md:items-start"
+      className="group grid gap-5 border-t hairline py-8 transition-colors duration-300 md:grid-cols-[88px_1fr_1fr] md:items-start"
     >
       <span className="font-mono text-xs tracking-[0.28em] text-[var(--teal)]">
         {String(index + 1).padStart(2, "0")}
@@ -70,9 +70,9 @@ export default function Services({ services }: { services?: Service[] }) {
   return (
     <section
       id="services"
-      className="relative flex min-h-screen scroll-mt-28 items-center py-32 md:py-40"
+      className="relative flex min-h-screen scroll-mt-28 items-center py-[var(--section-space)]"
     >
-      <div className="section-shell grid gap-16 md:grid-cols-[0.8fr_1.2fr]">
+      <div className="section-shell grid gap-20 md:grid-cols-[0.8fr_1.2fr] lg:gap-28">
         <div ref={titleRef}>
           <p className="eyebrow mb-6">Services</p>
           <h2 className="display-text max-w-md text-3xl leading-tight text-[var(--paper)] md:text-5xl">
@@ -80,7 +80,7 @@ export default function Services({ services }: { services?: Service[] }) {
           </h2>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {list.map((service, index) => (
             <ServiceRow key={service.id} service={service} index={index} />
           ))}

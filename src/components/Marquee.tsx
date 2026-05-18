@@ -27,7 +27,7 @@ export default function Marquee() {
   const sequence = [...items, ...items];
 
   return (
-    <section aria-hidden="true" className="overflow-hidden border-b hairline py-9 md:py-10">
+    <section aria-hidden="true" className="overflow-hidden border-b hairline py-10 md:py-12">
       <div ref={trackRef} className="marquee-track display-text text-4xl text-[rgba(248,243,234,0.18)] md:text-6xl">
         {sequence.map((item, index) => (
           <span key={`${item}-${index}`} className="flex items-center gap-12">

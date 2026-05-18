@@ -9,6 +9,8 @@
   --teal: #00c8b0;
   --text-dark: #c0c0c0;
   --text-light: #3a3a3a;
+  --page-gutter: clamp(2rem, 5vw, 5rem);
+  --section-space: clamp(7rem, 12vw, 12rem);
 }
 
 @theme inline {
@@ -96,8 +98,7 @@ textarea {
 }
 
 .section-shell {
-  width: calc(100% - 48px);
-  max-width: 1240px;
+  width: min(calc(100% - (var(--page-gutter) * 2)), 1280px);
   margin: 0 auto;
 }
 
