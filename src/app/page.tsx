@@ -11,16 +11,18 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [projects, services] = await Promise.all([
-    prisma.project.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-    }),
-    prisma.service.findMany({
-      where: { active: true },
-      orderBy: { order: "asc" },
-    }),
-  ]);
+  const [projects, services] = process.env.DATABASE_URL
+    ? await Promise.all([
+        prisma.project.findMany({
+          where: { status: "PUBLISHED" },
+          orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+        }),
+        prisma.service.findMany({
+          where: { active: true },
+          orderBy: { order: "asc" },
+        }),
+      ])
+    : [[], []];
 
   return (
     <main className="relative overflow-x-clip">

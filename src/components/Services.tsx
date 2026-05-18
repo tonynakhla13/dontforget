@@ -68,8 +68,11 @@ export default function Services({ services }: { services?: Service[] }) {
   const list = services && services.length > 0 ? services : FALLBACK_SERVICES;
 
   return (
-    <section id="services" className="relative py-24 md:py-32">
-      <div className="section-shell grid gap-12 md:grid-cols-[0.8fr_1.2fr]">
+    <section
+      id="services"
+      className="relative flex min-h-screen scroll-mt-28 items-center py-32 md:py-40"
+    >
+      <div className="section-shell grid gap-16 md:grid-cols-[0.8fr_1.2fr]">
         <div ref={titleRef}>
           <p className="eyebrow mb-6">Services</p>
           <h2 className="display-text max-w-md text-3xl leading-tight text-[var(--paper)] md:text-5xl">
@@ -77,7 +80,7 @@ export default function Services({ services }: { services?: Service[] }) {
           </h2>
         </div>
 
-        <div>
+        <div className="space-y-2">
           {list.map((service, index) => (
             <ServiceRow key={service.id} service={service} index={index} />
           ))}

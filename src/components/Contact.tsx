@@ -39,8 +39,11 @@ export default function Contact() {
     "rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]";
 
   return (
-    <section id="contact" className="relative py-24 md:py-32">
-      <div className="section-shell grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+    <section
+      id="contact"
+      className="relative flex min-h-screen scroll-mt-28 flex-col justify-center py-32 md:py-40"
+    >
+      <div className="section-shell grid gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         <div ref={titleRef}>
           <p className="eyebrow mb-6">Contact</p>
           <h2 className="display-text max-w-xl text-3xl leading-tight text-[var(--paper)] md:text-5xl">
@@ -52,7 +55,7 @@ export default function Contact() {
           </p>
         </div>
 
-        <div ref={formRef} className="rounded-[28px] border hairline bg-white/[0.02] p-5 md:p-7">
+        <div ref={formRef} className="rounded-[28px] border hairline bg-white/[0.02] p-6 md:p-8">
           {status === "sent" ? (
             <div className="flex min-h-[320px] flex-col items-start justify-center">
               <p className="eyebrow mb-4">Sent</p>
@@ -119,7 +122,7 @@ export default function Contact() {
         </div>
       </div>
 
-      <div className="section-shell mt-20 flex items-center justify-between border-t hairline pt-6 text-[var(--text-dark)]">
+      <div className="section-shell mt-24 flex items-center justify-between border-t hairline pt-6 text-[var(--text-dark)] md:mt-28">
         <span className="display-text text-lg text-[var(--paper)]">
           dont<span className="text-[var(--teal)]">forget</span>
         </span>

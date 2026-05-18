@@ -13,8 +13,11 @@ export default function About() {
   const statsRef = useFadeUp(0.12);
 
   return (
-    <section id="about" className="relative border-y hairline py-24 md:py-32">
-      <div className="section-shell grid gap-14 md:grid-cols-[1.25fr_0.75fr] md:items-end">
+    <section
+      id="about"
+      className="relative flex min-h-[70vh] scroll-mt-28 items-center border-y hairline py-28 md:py-40"
+    >
+      <div className="section-shell grid gap-16 md:grid-cols-[1.2fr_0.8fr] md:items-end">
         <div ref={copyRef}>
           <p className="eyebrow mb-6">Studio</p>
           <h2 className="display-text max-w-4xl text-3xl leading-tight text-[var(--paper)] md:text-5xl">
