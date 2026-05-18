@@ -8,37 +8,37 @@ const SERVICES = [
     id: "webdev",
     num: "01",
     title: "Web Dev",
-    body: "Fast, interactive, built to convert. From a single landing page to a full-scale web application — we engineer the whole stack.",
+    body: "From high-converting landing pages to complex web applications, we build fast, scalable, and interactive digital experiences. Every decision is made with performance, clarity, and real results in mind.",
   },
   {
     id: "uiux",
     num: "02",
     title: "UI / UX",
-    body: "Market research, interaction design, obsessive prototyping. We find what works and design what users actually want.",
+    body: "We start with research, not assumptions. Through competitive analysis, user testing, and relentless iteration, we shape interfaces that feel effortless — and perform even better than they look.",
   },
   {
     id: "ecomm",
     num: "03",
     title: "E-Commerce",
-    body: "Shopify, WooCommerce, Salla, or fully custom. Full SEO and organic reach baked in from day one.",
+    body: "Shopify, WooCommerce, Salla, or fully custom-built — we design and develop stores that actually sell. SEO and organic growth strategy are engineered in from day one, not added as an afterthought.",
   },
   {
     id: "mobile",
     num: "04",
     title: "Mobile",
-    body: "iOS and Android. React Native or native. We give apps a spirit, a character, and a reason to open again.",
+    body: "iOS and Android. React Native or fully native — whichever fits your product best. We don't just ship apps; we define the feel, the flow, and the personality that keeps users coming back every day.",
   },
   {
     id: "seo",
     num: "05",
     title: "SEO",
-    body: "On-page to fully integrated AI SEO systems. Plus full marketing — plans, branding, posters, everything search and beyond.",
+    body: "From technical on-page SEO to fully integrated AI-powered search strategies, we move the needle in ways most agencies simply can't. We also handle full marketing — plans, visual design, branding, and everything in between.",
   },
   {
     id: "crm",
     num: "06",
     title: "CRM",
-    body: "Custom CRMs for booking, travel, medical, and complex operations. Engineer-minded systems that just work.",
+    body: "We build custom CRMs for booking systems, travel platforms, medical practices, and complex business workflows. Engineer-minded and precision-built — systems that understand exactly how your operations work.",
   },
 ];
 
@@ -155,14 +155,29 @@ export default function Services() {
             ref={sphereRef}
             className="rounded-full"
             style={{
-              width:  660,
-              height: 660,
+              width:  680,
+              height: 680,
               opacity: 0,
               visibility: "hidden",
-              background:
-                "radial-gradient(circle at 34% 28%,rgba(58,191,138,0.92) 0%,rgba(18,85,58,0.90) 40%,rgba(9,22,15,0.97) 80%,rgba(9,9,9,1) 100%)",
-              boxShadow:
-                "inset -55px -55px 110px rgba(0,0,0,0.62), inset 18px 18px 55px rgba(58,191,138,0.09), 0 0 160px rgba(58,191,138,0.07)",
+              border: "1px solid rgba(58,191,138,0.38)",
+              background: [
+                /* lens-flare highlight */
+                "radial-gradient(circle at 28% 20%, rgba(160,255,220,0.22) 0%, transparent 32%)",
+                /* inner dark core */
+                "radial-gradient(circle at 50% 50%, rgba(9,9,9,0.78) 0%, rgba(9,22,14,0.72) 45%, transparent 72%)",
+                /* glowing teal rim */
+                "radial-gradient(circle at 50% 50%, transparent 50%, rgba(58,191,138,0.42) 66%, rgba(58,191,138,0.08) 82%, transparent 100%)",
+                /* subtle grid — horizontal */
+                "repeating-linear-gradient(0deg, rgba(58,191,138,0.045) 0px, rgba(58,191,138,0.045) 1px, transparent 1px, transparent 22px)",
+                /* subtle grid — vertical */
+                "repeating-linear-gradient(90deg, rgba(58,191,138,0.045) 0px, rgba(58,191,138,0.045) 1px, transparent 1px, transparent 22px)",
+              ].join(","),
+              boxShadow: [
+                "inset 0 0 100px rgba(0,0,0,0.55)",
+                "inset 0 0 40px rgba(58,191,138,0.07)",
+                "0 0 80px rgba(58,191,138,0.18)",
+                "0 0 200px rgba(58,191,138,0.07)",
+              ].join(","),
             }}
           />
         </div>
