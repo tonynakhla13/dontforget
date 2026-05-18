@@ -3,39 +3,57 @@
 import { useMemo, useState } from "react";
 import { useFadeUp } from "@/hooks/useScrollAnimation";
 
-const projects = [
+interface Project {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  year: string | null;
+  liveUrl: string | null;
+}
+
+const FALLBACK_PROJECTS: Project[] = [
   {
+    id: "elia-clinic",
     title: "Elia Clinic",
     category: "Healthcare / digital presence",
     year: "2025",
-    summary:
+    description:
       "A calm, conversion-led medical site with a modular content system and refined motion.",
+    liveUrl: null,
   },
   {
+    id: "montgab",
     title: "Montgab",
     category: "Commerce / product experience",
     year: "2025",
-    summary:
+    description:
       "A tactile storefront balancing product storytelling, speed, and editorial whitespace.",
+    liveUrl: null,
   },
   {
+    id: "180-degrees",
     title: "180 Degrees",
     category: "Agency / brand platform",
     year: "2026",
-    summary:
+    description:
       "A flexible studio identity translated into web, motion, and campaign surfaces.",
+    liveUrl: null,
   },
 ];
 
-export default function Work() {
+export default function Work({ projects }: { projects?: Project[] }) {
   const titleRef = useFadeUp();
   const listRef = useFadeUp(0.1);
-  const [activeProject, setActiveProject] = useState(projects[0].title);
+  const list = projects && projects.length > 0 ? projects : FALLBACK_PROJECTS;
+  const [activeProjectId, setActiveProjectId] = useState(list[0]?.id);
 
   const currentProject = useMemo(
-    () => projects.find((project) => project.title === activeProject) ?? projects[0],
-    [activeProject]
+    () => list.find((project) => project.id === activeProjectId) ?? list[0],
+    [activeProjectId, list]
   );
+
+  if (!currentProject) return null;
 
   return (
     <section id="work" className="relative border-y hairline py-24 md:py-32">
@@ -47,33 +65,39 @@ export default function Work() {
           </h2>
 
           <div className="mt-10 rounded-[28px] border hairline bg-[linear-gradient(135deg,rgba(248,243,234,0.06),rgba(0,200,176,0.08))] p-5">
-            <div className="mb-12 flex items-center justify-between font-mono text-xs uppercase tracking-[0.25em] text-[var(--text-dark)]">
-              <span>{currentProject.category}</span>
-              <span>{currentProject.year}</span>
+            <div className="mb-12 flex items-center justify-between gap-4 font-mono text-xs uppercase tracking-[0.25em] text-[var(--text-dark)]">
+              <span>{currentProject.category ?? "Selected project"}</span>
+              <span>{currentProject.year ?? "—"}</span>
             </div>
-            <h3 className="display-text text-3xl text-[var(--paper)]">{currentProject.title}</h3>
+            <h3 className="display-text text-3xl text-[var(--paper)]">
+              {currentProject.title}
+            </h3>
             <p className="mt-5 max-w-md leading-7 text-[var(--text-dark)]">
-              {currentProject.summary}
+              {currentProject.description ??
+                "A carefully built digital experience with room for story, speed, and motion."}
             </p>
           </div>
         </div>
 
         <div ref={listRef}>
-          {projects.map((project) => {
-            const isActive = project.title === activeProject;
+          {list.map((project) => {
+            const isActive = project.id === currentProject.id;
 
             return (
               <button
-                key={project.title}
+                key={project.id}
                 type="button"
-                onMouseEnter={() => setActiveProject(project.title)}
-                onFocus={() => setActiveProject(project.title)}
-                onClick={() => setActiveProject(project.title)}
+                onMouseEnter={() => setActiveProjectId(project.id)}
+                onFocus={() => setActiveProjectId(project.id)}
+                onClick={() => {
+                  setActiveProjectId(project.id);
+                  if (project.liveUrl) window.open(project.liveUrl, "_blank", "noopener,noreferrer");
+                }}
                 className="group flex w-full items-center justify-between border-t hairline py-7 text-left"
               >
                 <div>
                   <div className="font-mono text-xs uppercase tracking-[0.26em] text-[var(--text-dark)]">
-                    {project.category}
+                    {project.category ?? "Selected project"}
                   </div>
                   <div
                     className={`display-text mt-3 text-3xl transition-all duration-300 md:text-4xl ${

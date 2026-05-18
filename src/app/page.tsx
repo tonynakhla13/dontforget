@@ -6,8 +6,22 @@ import Marquee from "@/components/Marquee";
 import Navbar from "@/components/Navbar";
 import Services from "@/components/Services";
 import Work from "@/components/Work";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [projects, services] = await Promise.all([
+    prisma.project.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+    }),
+    prisma.service.findMany({
+      where: { active: true },
+      orderBy: { order: "asc" },
+    }),
+  ]);
+
   return (
     <main className="relative overflow-x-clip">
       <div className="noise-layer" />
@@ -16,8 +30,8 @@ export default function Home() {
       <Hero />
       <About />
       <Marquee />
-      <Services />
-      <Work />
+      <Services services={services} />
+      <Work projects={projects} />
       <Contact />
     </main>
   );

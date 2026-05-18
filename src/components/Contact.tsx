@@ -1,10 +1,42 @@
 "use client";
 
+import { useState } from "react";
 import { useFadeUp } from "@/hooks/useScrollAnimation";
 
 export default function Contact() {
   const titleRef = useFadeUp();
   const formRef = useFadeUp(0.12);
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    projectType: "",
+    message: "",
+  });
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle"
+  );
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStatus("sending");
+
+    const response = await fetch("/api/inquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    if (response.ok) {
+      setStatus("sent");
+      setForm({ name: "", email: "", projectType: "", message: "" });
+    } else {
+      setStatus("error");
+    }
+  }
+
+  const inputClass =
+    "rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]";
 
   return (
     <section id="contact" className="relative py-24 md:py-32">
@@ -21,36 +53,69 @@ export default function Contact() {
         </div>
 
         <div ref={formRef} className="rounded-[28px] border hairline bg-white/[0.02] p-5 md:p-7">
-          <form className="grid gap-4" onSubmit={(event) => event.preventDefault()}>
-            <div className="grid gap-4 md:grid-cols-2">
+          {status === "sent" ? (
+            <div className="flex min-h-[320px] flex-col items-start justify-center">
+              <p className="eyebrow mb-4">Sent</p>
+              <h3 className="display-text text-3xl text-[var(--paper)]">Message received.</h3>
+              <p className="mt-4 max-w-sm leading-7 text-[var(--text-dark)]">
+                We&apos;ll be in touch within 24 hours.
+              </p>
+            </div>
+          ) : (
+            <form className="grid gap-4" onSubmit={handleSubmit}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <input
+                  type="text"
+                  placeholder="Name"
+                  className={inputClass}
+                  value={form.name}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, name: event.target.value }))
+                  }
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  className={inputClass}
+                  value={form.email}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, email: event.target.value }))
+                  }
+                  required
+                />
+              </div>
               <input
                 type="text"
-                placeholder="Name"
-                className="rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]"
+                placeholder="Project type"
+                className={inputClass}
+                value={form.projectType}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, projectType: event.target.value }))
+                }
               />
-              <input
-                type="email"
-                placeholder="Email"
-                className="rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]"
+              <textarea
+                placeholder="Message"
+                rows={6}
+                className={`${inputClass} resize-none`}
+                value={form.message}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, message: event.target.value }))
+                }
+                required
               />
-            </div>
-            <input
-              type="text"
-              placeholder="Project type"
-              className="rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]"
-            />
-            <textarea
-              placeholder="Message"
-              rows={6}
-              className="resize-none rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]"
-            />
-            <button
-              type="submit"
-              className="mt-2 rounded-full bg-[var(--teal)] px-6 py-4 font-mono text-xs uppercase tracking-[0.25em] text-[var(--ink)] transition-transform duration-300 hover:-translate-y-1"
-            >
-              Send inquiry
-            </button>
-          </form>
+              {status === "error" && (
+                <p className="text-sm text-red-300">Something went wrong. Please try again.</p>
+              )}
+              <button
+                type="submit"
+                disabled={status === "sending"}
+                className="mt-2 rounded-full bg-[var(--teal)] px-6 py-4 font-mono text-xs uppercase tracking-[0.25em] text-[var(--ink)] transition-transform duration-300 hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {status === "sending" ? "Sending…" : "Send inquiry"}
+              </button>
+            </form>
+          )}
         </div>
       </div>
 

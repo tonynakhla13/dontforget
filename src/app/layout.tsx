@@ -38,7 +38,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${bodoniModa.variable} ${spaceMono.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${bodoniModa.variable} ${spaceMono.variable} scroll-smooth`}
+    >
       <body className="antialiased" suppressHydrationWarning>
         {children}
       </body>
