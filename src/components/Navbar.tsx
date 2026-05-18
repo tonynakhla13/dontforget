@@ -5,43 +5,43 @@ import { gsap } from "@/lib/gsap";
 
 const NAV_H = 86;
 
-const links = [
+const navLinks = [
   { label: "Work",    href: "#work"    },
   { label: "Process", href: "#process" },
   { label: "About",   href: "#about"   },
+  { label: "Contact", href: "#contact" },
 ];
-
-function LogoMark() {
-  return (
-    <a href="#" className="flex shrink-0 items-center">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/dont%20forget%20logo.png"
-        alt="DON'T FORGET"
-        style={{ height: 36, width: "auto" }}
-      />
-    </a>
-  );
-}
 
 export default function Navbar() {
   const primaryRef = useRef<HTMLElement>(null);
   const floatRef   = useRef<HTMLDivElement>(null);
-  const menuRef    = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const linksRef   = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  /* Close dropdown on outside click */
+  /* Full-screen overlay animation */
   useEffect(() => {
-    if (!menuOpen) return;
-    const handle = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handle);
-    return () => document.removeEventListener("mousedown", handle);
+    const overlay = overlayRef.current;
+    const linkEls = linksRef.current?.querySelectorAll("a");
+    if (!overlay || !linkEls) return;
+
+    if (menuOpen) {
+      gsap.set(overlay, { display: "flex" });
+      gsap.to(overlay, { autoAlpha: 1, duration: 0.35, ease: "power2.out" });
+      gsap.fromTo(
+        linkEls,
+        { autoAlpha: 0, yPercent: 40 },
+        { autoAlpha: 1, yPercent: 0, stagger: 0.07, duration: 0.55, ease: "power3.out", delay: 0.12 }
+      );
+    } else {
+      gsap.to(overlay, {
+        autoAlpha: 0, duration: 0.28, ease: "power2.in",
+        onComplete: () => gsap.set(overlay, { display: "none" }),
+      });
+    }
   }, [menuOpen]);
 
+  /* Scroll-swap primary ↔ floating */
   useEffect(() => {
     gsap.fromTo(primaryRef.current,
       { autoAlpha: 0, y: -16 },
@@ -60,11 +60,11 @@ export default function Navbar() {
       const atTop     = y < 50;
 
       gsap.to(primaryRef.current, {
-        y:        (atTop || goingDown) ? "0%" : "-100%",
+        y: (atTop || goingDown) ? "0%" : "-100%",
         duration: 0.4, ease: "expo.out", overwrite: true,
       });
       gsap.to(floatRef.current, {
-        y:        (!atTop && !goingDown) ? "0%" : "-100%",
+        y: (!atTop && !goingDown) ? "0%" : "-100%",
         duration: 0.4, ease: "expo.out", overwrite: true,
       });
 
@@ -82,6 +82,55 @@ export default function Navbar() {
 
   return (
     <>
+      {/* ── Full-screen menu overlay ── */}
+      <div
+        ref={overlayRef}
+        className="fixed inset-0 z-[998] hidden flex-col"
+        style={{ background: "var(--bg)", visibility: "hidden" }}
+      >
+        {/* Top bar inside overlay */}
+        <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <a href="#" onClick={() => setMenuOpen(false)}>
+            <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 44, width: "auto" }} />
+          </a>
+          <button
+            onClick={() => setMenuOpen(false)}
+            className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7"
+          >
+            <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">Close</span>
+            <span className="flex flex-col gap-[5px]" aria-hidden="true">
+              <span className="block h-px w-[18px] origin-center rotate-45 bg-[var(--fg)]" style={{ transform: "rotate(45deg) translate(4px, 3px)" }} />
+              <span className="block h-px w-[18px] origin-center bg-[var(--fg)]" style={{ transform: "rotate(-45deg) translate(4px, -3px)" }} />
+            </span>
+          </button>
+        </div>
+
+        {/* Giant nav links */}
+        <div ref={linksRef} className="flex flex-1 flex-col items-center justify-center gap-0">
+          {navLinks.map(({ label, href }) => (
+            <a
+              key={label}
+              href={href}
+              onClick={() => setMenuOpen(false)}
+              className="hed text-[6.5rem] leading-[1.05] text-[var(--fg)] transition-colors duration-200 hover:text-[var(--teal)]"
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+
+        {/* Footer row */}
+        <div className="wrap flex items-center justify-between border-t border-[var(--border)] py-6">
+          <span className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[var(--body)]">
+            © {new Date().getFullYear()} Don&apos;t Forget
+          </span>
+          <span className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[var(--body)]">
+            hello@dontforget.studio
+          </span>
+        </div>
+      </div>
+
       {/* ── Header A: Primary — absolute, inline links ── */}
       <header
         ref={primaryRef}
@@ -89,10 +138,13 @@ export default function Navbar() {
         style={{ height: NAV_H, visibility: "hidden" }}
       >
         <div className="wrap flex w-full items-center justify-between">
-          <LogoMark />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <a href="#">
+            <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 44, width: "auto" }} />
+          </a>
 
           <ul className="hidden items-center gap-8 md:flex">
-            {links.map(({ label, href }) => (
+            {navLinks.slice(0, 3).map(({ label, href }) => (
               <li key={label}>
                 <a
                   href={href}
@@ -111,7 +163,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* ── Header B: Floating — three independent pills ── */}
+      {/* ── Header B: Floating — three pills ── */}
       <aside className="pointer-events-none fixed inset-x-0 top-0 z-[999]">
         <div
           ref={floatRef}
@@ -121,55 +173,29 @@ export default function Navbar() {
           <div className="py-[18px]">
             <div className="wrap flex w-full items-center justify-between">
 
-              {/* Pill 1 — Logo */}
+              {/* Logo */}
               <a href="#" className="flex shrink-0 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/dont%20forget%20logo.png"
-                  alt="DON'T FORGET"
-                  style={{ height: 36, width: "auto" }}
-                />
+                <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 44, width: "auto" }} />
               </a>
 
-              {/* Pill 2 — MENU + hamburger */}
-              <div ref={menuRef} className="relative">
-                <button
-                  onClick={() => setMenuOpen(o => !o)}
-                  className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
-                >
-                  <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">
-                    Menu
-                  </span>
-                  <span className="flex flex-col gap-[5px]" aria-hidden="true">
-                    <span
-                      className="block h-px bg-[var(--fg)] transition-all duration-300"
-                      style={{ width: 18, transform: menuOpen ? "rotate(45deg) translate(3px, 3px)" : "none" }}
-                    />
-                    <span
-                      className="block h-px bg-[var(--fg)] transition-all duration-300"
-                      style={{ width: 18, transform: menuOpen ? "rotate(-45deg) translate(3px, -3px)" : "none" }}
-                    />
-                  </span>
-                </button>
+              {/* MENU pill */}
+              <button
+                onClick={() => setMenuOpen(o => !o)}
+                className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
+              >
+                <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">
+                  Menu
+                </span>
+                <span className="flex flex-col gap-[5px]" aria-hidden="true">
+                  <span className="block h-px w-[18px] bg-[var(--fg)] transition-all duration-300"
+                    style={{ transform: menuOpen ? "rotate(45deg) translate(4px, 3px)" : "none" }} />
+                  <span className="block h-px w-[18px] bg-[var(--fg)] transition-all duration-300"
+                    style={{ transform: menuOpen ? "rotate(-45deg) translate(4px, -3px)" : "none" }} />
+                </span>
+              </button>
 
-                {/* Dropdown */}
-                {menuOpen && (
-                  <div className="absolute left-1/2 top-[calc(100%+10px)] -translate-x-1/2 min-w-[160px] rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.98)] py-2 backdrop-blur-xl">
-                    {links.map(({ label, href }) => (
-                      <a
-                        key={label}
-                        href={href}
-                        onClick={() => setMenuOpen(false)}
-                        className="block px-6 py-3.5 font-mono text-[0.63rem] uppercase tracking-[0.26em] text-[var(--body)] transition-colors hover:text-[var(--teal)]"
-                      >
-                        {label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Pill 3 — LET'S TALK */}
+              {/* LET'S TALK pill */}
               <a
                 href="#contact"
                 className="flex h-[54px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
