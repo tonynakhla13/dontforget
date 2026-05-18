@@ -146,40 +146,63 @@ export default function Services() {
         style={{ background: "var(--bg)" }}
       >
 
-        {/* ── 3-D teal sphere ── */}
+        {/* ── Holographic wireframe sphere ── */}
         <div
+          ref={sphereRef}
           className="pointer-events-none absolute"
-          style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}
+          style={{
+            top: "50%", left: "50%",
+            transform: "translate(-50%,-50%)",
+            width: 620, height: 620,
+            opacity: 0, visibility: "hidden",
+          }}
         >
-          <div
-            ref={sphereRef}
-            className="rounded-full"
-            style={{
-              width:  680,
-              height: 680,
-              opacity: 0,
-              visibility: "hidden",
-              border: "1px solid rgba(58,191,138,0.38)",
-              background: [
-                /* lens-flare highlight */
-                "radial-gradient(circle at 28% 20%, rgba(160,255,220,0.22) 0%, transparent 32%)",
-                /* inner dark core */
-                "radial-gradient(circle at 50% 50%, rgba(9,9,9,0.78) 0%, rgba(9,22,14,0.72) 45%, transparent 72%)",
-                /* glowing teal rim */
-                "radial-gradient(circle at 50% 50%, transparent 50%, rgba(58,191,138,0.42) 66%, rgba(58,191,138,0.08) 82%, transparent 100%)",
-                /* subtle grid — horizontal */
-                "repeating-linear-gradient(0deg, rgba(58,191,138,0.045) 0px, rgba(58,191,138,0.045) 1px, transparent 1px, transparent 22px)",
-                /* subtle grid — vertical */
-                "repeating-linear-gradient(90deg, rgba(58,191,138,0.045) 0px, rgba(58,191,138,0.045) 1px, transparent 1px, transparent 22px)",
-              ].join(","),
-              boxShadow: [
-                "inset 0 0 100px rgba(0,0,0,0.55)",
-                "inset 0 0 40px rgba(58,191,138,0.07)",
-                "0 0 80px rgba(58,191,138,0.18)",
-                "0 0 200px rgba(58,191,138,0.07)",
-              ].join(","),
-            }}
-          />
+          {/* Outer glow bloom */}
+          <div className="absolute rounded-full" style={{
+            inset: -40,
+            background: "radial-gradient(circle, rgba(58,191,138,0.07) 0%, transparent 70%)",
+          }} />
+          {/* Outer ring */}
+          <div className="absolute rounded-full" style={{
+            inset: 0,
+            border: "1px solid rgba(58,191,138,0.50)",
+            boxShadow: "0 0 30px rgba(58,191,138,0.15), inset 0 0 30px rgba(58,191,138,0.05)",
+          }} />
+          {/* Latitude ring — equator */}
+          <div className="absolute rounded-full" style={{
+            top: "50%", left: "0", right: "0",
+            height: "18%", transform: "translateY(-50%)",
+            border: "1px solid rgba(58,191,138,0.38)",
+          }} />
+          {/* Latitude ring — upper */}
+          <div className="absolute rounded-full" style={{
+            top: "22%", left: "8%", right: "8%",
+            height: "12%", transform: "translateY(-50%)",
+            border: "1px solid rgba(58,191,138,0.22)",
+          }} />
+          {/* Latitude ring — lower */}
+          <div className="absolute rounded-full" style={{
+            top: "78%", left: "8%", right: "8%",
+            height: "12%", transform: "translateY(-50%)",
+            border: "1px solid rgba(58,191,138,0.22)",
+          }} />
+          {/* Meridian — center vertical */}
+          <div className="absolute rounded-full" style={{
+            top: "0", bottom: "0", left: "50%",
+            width: "18%", transform: "translateX(-50%)",
+            border: "1px solid rgba(58,191,138,0.32)",
+          }} />
+          {/* Meridian — tilted */}
+          <div className="absolute rounded-full" style={{
+            inset: "4%",
+            border: "1px solid rgba(58,191,138,0.18)",
+            transform: "rotate(42deg) scaleX(0.28)",
+          }} />
+          {/* Inner soft glow */}
+          <div className="absolute rounded-full" style={{
+            inset: "18%",
+            background: "radial-gradient(circle at 38% 35%, rgba(58,191,138,0.10) 0%, transparent 65%)",
+          }} />
         </div>
 
         {/* ── Intro ── */}
@@ -210,26 +233,30 @@ export default function Services() {
             <div
               data-card-l
               className="absolute hidden md:block"
-              style={{ left: "5%", top: "13%" }}
+              style={{ left: "4%", top: "10%" }}
             >
               <Card num={svc.num} title={svc.title} tall />
             </div>
 
-            {/* Giant title */}
-            <div data-title className="relative z-20 text-center" style={{ pointerEvents: "none" }}>
-              <h2 className="hed text-[9rem] leading-[0.88] text-[var(--fg)]">
+            {/* Giant title — upper zone */}
+            <div
+              data-title
+              className="absolute z-20 w-full text-center"
+              style={{ top: "10%", pointerEvents: "none" }}
+            >
+              <h2 className="hed text-[8rem] leading-[0.9] text-[var(--fg)]">
                 {svc.title}
               </h2>
             </div>
 
-            {/* Description — bottom centre */}
+            {/* Description — lower zone, well below title */}
             <div
               data-desc
               className="absolute z-20 text-center"
-              style={{ bottom: "11%", left: "50%", transform: "translateX(-50%)", width: 340 }}
+              style={{ bottom: "8%", left: "50%", transform: "translateX(-50%)", width: 380 }}
             >
               <span className="mb-3 block font-mono text-[0.5rem] uppercase tracking-[0.42em] text-[var(--teal)]">
-                {svc.num} — {svc.title}
+                {svc.num}
               </span>
               <p className="text-[0.875rem] leading-[1.85] text-[var(--body)]">{svc.body}</p>
               <a href="#contact" className="btn btn-primary mt-6 inline-flex py-2.5 px-6 text-[0.62rem]">
@@ -241,7 +268,7 @@ export default function Services() {
             <div
               data-card-r
               className="absolute hidden md:block"
-              style={{ right: "5%", bottom: "18%" }}
+              style={{ right: "4%", bottom: "14%" }}
             >
               <Card num={svc.num} title={svc.title} />
             </div>
