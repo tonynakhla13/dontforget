@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 
-const NAV_H = 86;
+const NAV_H = 150;
 
 const navLinks = [
   { label: "Work",    href: "#work"    },
@@ -92,11 +92,11 @@ export default function Navbar() {
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <a href="#" onClick={() => setMenuOpen(false)}>
-            <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 44, width: "auto" }} />
+            <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
           </a>
           <button
             onClick={() => setMenuOpen(false)}
-            className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7"
+            className="flex h-[134px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7"
           >
             <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">Close</span>
             <span className="flex flex-col gap-[5px]" aria-hidden="true">
@@ -140,7 +140,7 @@ export default function Navbar() {
         <div className="wrap flex w-full items-center justify-between">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <a href="#">
-            <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 44, width: "auto" }} />
+            <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
           </a>
 
           <ul className="hidden items-center gap-8 md:flex">
@@ -176,13 +176,13 @@ export default function Navbar() {
               {/* Logo */}
               <a href="#" className="flex shrink-0 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 44, width: "auto" }} />
+                <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
               </a>
 
               {/* MENU pill */}
               <button
                 onClick={() => setMenuOpen(o => !o)}
-                className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
+                className="flex h-[134px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
               >
                 <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">
                   Menu
@@ -198,7 +198,7 @@ export default function Navbar() {
               {/* LET'S TALK pill */}
               <a
                 href="#contact"
-                className="flex h-[54px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
+                className="flex h-[134px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
               >
                 Let&apos;s talk
               </a>
