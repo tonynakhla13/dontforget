@@ -41,7 +41,7 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="relative flex min-h-screen scroll-mt-28 flex-col justify-center py-[var(--section-space)]"
+      className="relative flex min-h-[110vh] scroll-mt-28 flex-col justify-center py-[var(--section-space)]"
     >
       <div className="section-shell grid gap-20 lg:grid-cols-[0.88fr_1.12fr] lg:items-start lg:gap-32">
         <div ref={titleRef}>

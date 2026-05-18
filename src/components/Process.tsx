@@ -51,7 +51,7 @@ export default function Process() {
   const titleRef = useFadeUp();
 
   return (
-    <section className="relative border-y hairline py-[var(--section-space)]">
+    <section className="relative border-y hairline py-[calc(var(--section-space)*1.1)]">
       <div className="section-shell">
         <div ref={titleRef} className="max-w-3xl">
           <p className="eyebrow mb-6">Process</p>

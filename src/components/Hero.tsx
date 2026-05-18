@@ -60,14 +60,14 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative isolate flex min-h-screen items-end overflow-hidden pb-14 pt-36 md:items-center md:pb-16 md:pt-40"
+      className="relative isolate flex min-h-[100svh] items-center overflow-hidden pb-16 pt-28 md:min-h-screen md:pb-16 md:pt-40"
     >
       <div className="absolute inset-0 -z-20">
         <HeroScene />
       </div>
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_48%,rgba(0,200,176,0.18),transparent_26%),radial-gradient(circle_at_74%_48%,rgba(248,243,234,0.06),transparent_18%),linear-gradient(90deg,#050505_0%,rgba(5,5,5,0.9)_42%,rgba(5,5,5,0.42)_100%)]" />
 
-      <div className="section-shell grid gap-16 md:grid-cols-[0.95fr_1.05fr] md:items-end lg:gap-24">
+      <div className="section-shell grid gap-14 md:grid-cols-[0.95fr_1.05fr] md:items-end lg:gap-24">
         <div className="relative z-10 max-w-3xl">
           <h1 className="display-text text-[clamp(2.7rem,7vw,5.8rem)] leading-[0.88] tracking-[-0.05em] text-[var(--paper)]">
             {headline.map((line, index) => (

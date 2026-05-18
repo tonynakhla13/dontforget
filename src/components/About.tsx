@@ -15,7 +15,7 @@ export default function About() {
   return (
     <section
       id="about"
-      className="relative flex min-h-[72vh] scroll-mt-28 items-center border-y hairline py-[var(--section-space)]"
+      className="relative flex min-h-[84vh] scroll-mt-28 items-center border-y hairline py-[var(--section-space)]"
     >
       <div className="section-shell grid gap-20 md:grid-cols-[1.15fr_0.85fr] md:items-end lg:gap-32">
         <div ref={copyRef}>

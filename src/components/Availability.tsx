@@ -6,7 +6,7 @@ export default function Availability() {
   const ref = useFadeUp();
 
   return (
-    <section className="relative border-y hairline py-[calc(var(--section-space)*0.8)]">
+    <section className="relative border-y hairline py-[var(--section-space)]">
       <div
         ref={ref}
         className="section-shell grid gap-10 rounded-[32px] border hairline bg-[linear-gradient(135deg,rgba(248,243,234,0.04),rgba(0,200,176,0.08))] p-8 md:grid-cols-[1fr_auto] md:items-end md:p-10"

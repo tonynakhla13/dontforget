@@ -70,7 +70,7 @@ export default function Services({ services }: { services?: Service[] }) {
   return (
     <section
       id="services"
-      className="relative flex min-h-screen scroll-mt-28 items-center py-[var(--section-space)]"
+      className="relative flex min-h-[110vh] scroll-mt-28 items-center py-[var(--section-space)]"
     >
       <div className="section-shell grid gap-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-32">
         <div ref={titleRef}>

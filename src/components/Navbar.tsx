@@ -25,10 +25,10 @@ export default function Navbar() {
   return (
     <nav
       ref={navRef}
-      className={`fixed left-1/2 top-4 z-50 flex w-[min(1240px,calc(100vw-32px))] -translate-x-1/2 items-center justify-between rounded-full border px-4 py-3 transition-all duration-500 md:px-5 ${
+      className={`fixed left-1/2 top-4 z-50 flex w-[min(1240px,calc(100vw-32px))] -translate-x-1/2 items-center justify-between rounded-full border px-4 py-3 backdrop-blur-xl transition-all duration-500 md:px-5 ${
         scrolled
           ? "border-white/10 bg-black/70 backdrop-blur-xl"
-          : "border-white/0 bg-transparent"
+          : "border-white/10 bg-black/45"
       }`}
     >
       <a href="#" className="display-text text-lg tracking-tight text-[var(--paper)]">

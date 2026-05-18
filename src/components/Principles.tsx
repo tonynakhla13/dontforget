@@ -49,7 +49,7 @@ export default function Principles() {
   const titleRef = useFadeUp();
 
   return (
-    <section className="relative py-[var(--section-space)]">
+    <section className="relative py-[calc(var(--section-space)*1.05)]">
       <div className="section-shell grid gap-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-32">
         <div ref={titleRef}>
           <p className="eyebrow mb-6">Principles</p>

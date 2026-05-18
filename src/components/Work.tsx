@@ -58,7 +58,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
   return (
     <section
       id="work"
-      className="relative flex min-h-screen scroll-mt-28 items-center border-y hairline py-[var(--section-space)]"
+      className="relative flex min-h-[110vh] scroll-mt-28 items-center border-y hairline py-[var(--section-space)]"
     >
       <div className="section-shell grid gap-20 lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:gap-32">
         <div ref={titleRef} className="lg:sticky lg:top-32">
