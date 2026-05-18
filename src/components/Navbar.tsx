@@ -69,8 +69,10 @@ export default function Navbar() {
         ))}
       </ul>
 
-      <a href="#contact" className="btn btn-primary py-2.5 px-5 text-[0.62rem]">
-        Let&apos;s talk
+      <a href="#contact" className="btn btn-primary btn-glitch py-2.5 px-5 text-[0.62rem]">
+        <span className="btn-label">Let&apos;s talk</span>
+        <span className="glitch-layer layer-1">Let&apos;s talk</span>
+        <span className="glitch-layer layer-2">Let&apos;s talk</span>
       </a>
     </nav>
   );

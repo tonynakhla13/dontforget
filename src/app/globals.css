@@ -144,6 +144,9 @@
 }
 
 .btn-primary {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   background: var(--teal);
   color: var(--bg);
   border: 1px solid var(--teal);
@@ -151,6 +154,45 @@
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 36px rgba(58,191,138,0.32);
+}
+
+.btn-ripple::before,
+.btn-ripple::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  animation: btn-ripple 1.2s linear infinite;
+  pointer-events: none;
+}
+
+.btn-ripple::before {
+  left: 1.2rem;
+}
+
+.btn-ripple::after {
+  right: 1.2rem;
+  animation-delay: 0.6s;
+}
+
+@keyframes btn-ripple {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(9, 9, 9, 0.18),
+      0 0 0 10px rgba(9, 9, 9, 0.14),
+      0 0 0 20px rgba(9, 9, 9, 0.08),
+      0 0 0 30px rgba(9, 9, 9, 0.03);
+  }
+  100% {
+    box-shadow:
+      0 0 0 10px rgba(9, 9, 9, 0.14),
+      0 0 0 20px rgba(9, 9, 9, 0.08),
+      0 0 0 30px rgba(9, 9, 9, 0.03),
+      0 0 0 40px rgba(9, 9, 9, 0);
+  }
 }
 
 .btn-outline {
@@ -161,6 +203,184 @@
 .btn-outline:hover {
   border-color: rgba(58,191,138,0.45);
   color: var(--teal);
+}
+
+.btn-tilt {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #8ff0ca, #2f9d77);
+  color: white;
+  transform: perspective(850px) rotateX(12deg) rotateY(7deg) rotateZ(-8deg);
+  box-shadow:
+    -4px 4px 0 rgba(17, 70, 54, 0.95),
+    -5px 7px 8px rgba(17, 70, 54, 0.45),
+    -10px 13px 18px rgba(17, 70, 54, 0.28),
+    -20px 20px 40px rgba(17, 70, 54, 0.42);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.btn-tilt:hover {
+  transform: perspective(850px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  box-shadow:
+    0 4px 5px rgba(17, 70, 54, 0.75),
+    0 7px 8px rgba(17, 70, 54, 0.42),
+    0 13px 18px rgba(17, 70, 54, 0.28),
+    0 20px 40px rgba(17, 70, 54, 0.4);
+}
+
+.btn-tilt-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.9rem 1.25rem 0.9rem 1.55rem;
+  background: linear-gradient(180deg, #67dfb0, #238463);
+  color: #f8f5ee;
+  box-shadow: inset 0 -6px 10px rgba(11, 45, 35, 0.28);
+  transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-tilt:hover .btn-tilt-inner {
+  background: linear-gradient(180deg, #7fe9bd, #1f7659);
+  box-shadow:
+    inset 0 -10px 20px rgba(11, 45, 35, 0.34),
+    0 8px 15px rgba(34, 132, 99, 0.36);
+  transform: translateY(-2px);
+}
+
+.btn-tilt-arrow {
+  margin-left: 0.35rem;
+  font-size: 1rem;
+  display: inline-block;
+  filter: drop-shadow(-2px 2px 1px rgba(11, 45, 35, 0.35));
+  animation: btn-arrow-pulse 1.5s infinite alternate;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.btn-tilt:hover .btn-tilt-arrow {
+  transform: translateX(0.5rem);
+  color: #d6fff0;
+}
+
+@keyframes btn-arrow-pulse {
+  0% {
+    transform: translateX(0);
+    color: #f8f5ee;
+  }
+  100% {
+    transform: translateX(0.25rem);
+    color: #c6ffe9;
+  }
+}
+
+.btn-glitch {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.btn-glitch .btn-label {
+  position: relative;
+  z-index: 2;
+}
+
+.btn-glitch .glitch-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.btn-glitch .layer-1 {
+  color: #7ff7d0;
+}
+
+.btn-glitch .layer-2 {
+  color: #0b3c32;
+}
+
+.btn-glitch::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  z-index: 0;
+  opacity: 0;
+  background: repeating-radial-gradient(
+    circle at 50% 50%,
+    transparent 0,
+    rgba(9, 9, 9, 0.14) 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+}
+
+.btn-glitch:hover {
+  box-shadow:
+    0 0 18px rgba(58, 191, 138, 0.4),
+    0 0 28px rgba(127, 247, 208, 0.22);
+}
+
+.btn-glitch:hover .layer-1 {
+  opacity: 1;
+  visibility: visible;
+  animation: btn-glitch-layer-1 0.42s steps(2) infinite;
+}
+
+.btn-glitch:hover .layer-2 {
+  opacity: 1;
+  visibility: visible;
+  animation: btn-glitch-layer-2 0.42s steps(2) infinite;
+}
+
+.btn-glitch:hover::after {
+  opacity: 1;
+  animation: btn-glitch-noise 0.22s steps(2) infinite;
+}
+
+@keyframes btn-glitch-layer-1 {
+  0% {
+    transform: translate(-8px, -4px);
+    clip-path: polygon(0 18%, 100% 18%, 100% 44%, 0 44%);
+  }
+  50% {
+    transform: translate(7px, 3px);
+    clip-path: polygon(0 34%, 100% 34%, 100% 64%, 0 64%);
+  }
+  100% {
+    transform: translate(-8px, -4px);
+    clip-path: polygon(0 18%, 100% 18%, 100% 44%, 0 44%);
+  }
+}
+
+@keyframes btn-glitch-layer-2 {
+  0% {
+    transform: translate(8px, 4px);
+    clip-path: polygon(0 54%, 100% 54%, 100% 82%, 0 82%);
+  }
+  50% {
+    transform: translate(-7px, -3px);
+    clip-path: polygon(0 46%, 100% 46%, 100% 74%, 0 74%);
+  }
+  100% {
+    transform: translate(8px, 4px);
+    clip-path: polygon(0 54%, 100% 54%, 100% 82%, 0 82%);
+  }
+}
+
+@keyframes btn-glitch-noise {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-3%, 2%); }
+  50% { transform: translate(4%, -2%); }
+  75% { transform: translate(-2%, 4%); }
+  100% { transform: translate(0, 0); }
 }
 
 /* ─────────────────────────────────────────
@@ -184,5 +404,17 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .btn-ripple::before,
+  .btn-ripple::after {
+    animation: none;
+  }
+
+  .btn-glitch,
+  .btn-glitch .layer-1,
+  .btn-glitch .layer-2,
+  .btn-glitch::after {
+    animation: none !important;
   }
 }

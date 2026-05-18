@@ -24,11 +24,17 @@ export default function Hero() {
       <section
         ref={secRef}
         id="hero"
-        className="relative z-10 flex min-h-[100svh] flex-col justify-center overflow-hidden pt-28 pb-16"
+        className="relative z-10 flex min-h-[100svh] flex-col justify-center overflow-visible pt-28 pb-16"
         style={{ background: "transparent" }}
       >
         {/* Bottom fade into next section */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[var(--bg)] to-transparent" />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-80"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(9,9,9,0.34) 0%, rgba(9,9,9,0.14) 46%, transparent 100%)",
+          }}
+        />
 
         <div className="wrap relative">
           <div ref={colRef} className="max-w-[640px]">
@@ -38,7 +44,8 @@ export default function Hero() {
             </p>
 
             <h1
-              className="hed text-[5.4rem] leading-[0.92]"
+              className="hed text-[5.4rem] leading-[0.92] text-[#F8F5EE]"
+              style={{ color: "#F8F5EE" }}
               data-anim
             >
               We build things<br />
@@ -57,8 +64,17 @@ export default function Hero() {
             </p>
 
             <div className="mt-9 flex flex-wrap gap-4" data-anim>
-              <a href="#contact" className="btn btn-primary">Start a project</a>
-              <a href="#work"    className="btn btn-outline">View work →</a>
+              <a href="#contact" className="btn btn-primary btn-glitch">
+                <span className="btn-label">Start a project</span>
+                <span className="glitch-layer layer-1">Start a project</span>
+                <span className="glitch-layer layer-2">Start a project</span>
+              </a>
+              <a href="#work" className="btn btn-tilt">
+                <span className="btn-tilt-inner">
+                  View work
+                  <span className="btn-tilt-arrow">➔</span>
+                </span>
+              </a>
             </div>
 
             <div className="mt-14 flex items-center gap-4" data-anim>
