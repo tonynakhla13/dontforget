@@ -1,9 +1,12 @@
 import About from "@/components/About";
+import Availability from "@/components/Availability";
 import AmbientGlow from "@/components/AmbientGlow";
 import Contact from "@/components/Contact";
 import Hero from "@/components/Hero";
 import Marquee from "@/components/Marquee";
 import Navbar from "@/components/Navbar";
+import Principles from "@/components/Principles";
+import Process from "@/components/Process";
 import Services from "@/components/Services";
 import Work from "@/components/Work";
 import { prisma } from "@/lib/prisma";
@@ -33,7 +36,10 @@ export default async function Home() {
       <About />
       <Marquee />
       <Services services={services} />
+      <Process />
       <Work projects={projects} />
+      <Principles />
+      <Availability />
       <Contact />
     </main>
   );
