@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 
-const NAV_H = 150;
+const NAV_H = 86;
 
 const navLinks = [
   { label: "Work",    href: "#work"    },
@@ -96,7 +96,7 @@ export default function Navbar() {
           </a>
           <button
             onClick={() => setMenuOpen(false)}
-            className="flex h-[134px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7"
+            className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7"
           >
             <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">Close</span>
             <span className="flex flex-col gap-[5px]" aria-hidden="true">
@@ -182,7 +182,7 @@ export default function Navbar() {
               {/* MENU pill */}
               <button
                 onClick={() => setMenuOpen(o => !o)}
-                className="flex h-[134px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
+                className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
               >
                 <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">
                   Menu
@@ -198,7 +198,7 @@ export default function Navbar() {
               {/* LET'S TALK pill */}
               <a
                 href="#contact"
-                className="flex h-[134px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
+                className="flex h-[54px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
               >
                 Let&apos;s talk
               </a>
