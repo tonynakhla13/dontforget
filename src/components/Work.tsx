@@ -60,22 +60,22 @@ export default function Work({ projects }: { projects?: Project[] }) {
       id="work"
       className="relative flex min-h-screen scroll-mt-28 items-center border-y hairline py-[var(--section-space)]"
     >
-      <div className="section-shell grid gap-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-start lg:gap-28">
+      <div className="section-shell grid gap-20 lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:gap-32">
         <div ref={titleRef} className="lg:sticky lg:top-32">
           <p className="eyebrow mb-6">Selected work</p>
-          <h2 className="display-text text-3xl leading-tight text-[var(--paper)] md:text-5xl">
+          <h2 className="display-text max-w-2xl text-4xl leading-[0.98] text-[var(--paper)] md:text-6xl">
             Projects shaped to be remembered.
           </h2>
 
-          <div className="mt-14 rounded-[28px] border hairline bg-[linear-gradient(135deg,rgba(248,243,234,0.06),rgba(0,200,176,0.08))] p-7 md:p-8">
+          <div className="mt-16 rounded-[32px] border hairline bg-[linear-gradient(135deg,rgba(248,243,234,0.06),rgba(0,200,176,0.08))] p-8 md:p-10">
             <div className="mb-12 flex items-center justify-between gap-4 font-mono text-xs uppercase tracking-[0.25em] text-[var(--text-dark)]">
               <span>{currentProject.category ?? "Selected project"}</span>
               <span>{currentProject.year ?? "—"}</span>
             </div>
-            <h3 className="display-text text-3xl text-[var(--paper)]">
+            <h3 className="display-text text-4xl text-[var(--paper)]">
               {currentProject.title}
             </h3>
-            <p className="mt-5 max-w-md leading-7 text-[var(--text-dark)]">
+            <p className="mt-6 max-w-lg text-base leading-8 text-[var(--text-dark)]">
               {currentProject.description ??
                 "A carefully built digital experience with room for story, speed, and motion."}
             </p>
@@ -96,14 +96,14 @@ export default function Work({ projects }: { projects?: Project[] }) {
                   setActiveProjectId(project.id);
                   if (project.liveUrl) window.open(project.liveUrl, "_blank", "noopener,noreferrer");
                 }}
-                className="group flex w-full items-center justify-between border-t hairline py-10 text-left"
+                className="group flex w-full items-center justify-between border-t hairline py-12 text-left"
               >
                 <div>
                   <div className="font-mono text-xs uppercase tracking-[0.26em] text-[var(--text-dark)]">
                     {project.category ?? "Selected project"}
                   </div>
                   <div
-                    className={`display-text mt-3 text-3xl transition-all duration-300 md:text-4xl ${
+                    className={`display-text mt-4 text-4xl transition-all duration-300 md:text-5xl ${
                       isActive
                         ? "translate-x-3 text-[var(--paper)]"
                         : "text-[rgba(248,243,234,0.42)] group-hover:translate-x-3 group-hover:text-[var(--paper)]"
@@ -114,7 +114,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
                 </div>
 
                 <span
-                  className={`flex h-11 w-11 items-center justify-center rounded-full border font-mono text-sm transition-all duration-300 ${
+                  className={`flex h-14 w-14 items-center justify-center rounded-full border font-mono text-sm transition-all duration-300 ${
                     isActive
                       ? "border-[var(--teal)] text-[var(--teal)]"
                       : "border-white/15 text-[var(--text-dark)] group-hover:border-[var(--teal)] group-hover:text-[var(--teal)]"

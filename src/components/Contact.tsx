@@ -43,19 +43,19 @@ export default function Contact() {
       id="contact"
       className="relative flex min-h-screen scroll-mt-28 flex-col justify-center py-[var(--section-space)]"
     >
-      <div className="section-shell grid gap-20 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-28">
+      <div className="section-shell grid gap-20 lg:grid-cols-[0.88fr_1.12fr] lg:items-start lg:gap-32">
         <div ref={titleRef}>
           <p className="eyebrow mb-6">Contact</p>
-          <h2 className="display-text max-w-xl text-3xl leading-tight text-[var(--paper)] md:text-5xl">
+          <h2 className="display-text max-w-2xl text-4xl leading-[0.98] text-[var(--paper)] md:text-6xl">
             Have an idea worth remembering?
           </h2>
-          <p className="mt-7 max-w-md leading-8 text-[var(--text-dark)]">
+          <p className="mt-8 max-w-lg text-base leading-8 text-[var(--text-dark)] md:text-lg">
             Tell us what you&apos;re building. We&apos;ll help shape the system, the story,
             and the motion around it.
           </p>
         </div>
 
-        <div ref={formRef} className="rounded-[28px] border hairline bg-white/[0.02] p-7 md:p-9">
+        <div ref={formRef} className="rounded-[32px] border hairline bg-white/[0.02] p-8 md:p-10">
           {status === "sent" ? (
             <div className="flex min-h-[320px] flex-col items-start justify-center">
               <p className="eyebrow mb-4">Sent</p>
