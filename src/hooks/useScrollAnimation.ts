@@ -10,22 +10,21 @@ interface ScrollAnimationOptions {
   toggleActions?: string;
 }
 
-export function useScrollAnimation(
-  animation: (el: HTMLElement) => gsap.core.Tween | gsap.core.Timeline,
+export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>(
+  animation: (el: T) => gsap.core.Tween | gsap.core.Timeline,
   options: ScrollAnimationOptions = {}
 ) {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<T>(null);
+  const {
+    start = "top 80%",
+    end = "bottom 20%",
+    scrub = false,
+    toggleActions = "play none none none",
+  } = options;
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
-    const {
-      start = "top 80%",
-      end = "bottom 20%",
-      scrub = false,
-      toggleActions = "play none none none",
-    } = options;
 
     const trigger = ScrollTrigger.create({
       trigger: el,
@@ -37,31 +36,37 @@ export function useScrollAnimation(
     });
 
     return () => trigger.kill();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return ref;
 }
 
-export function useFadeUp(delay = 0) {
-  const ref = useRef<HTMLElement>(null);
+export function useFadeUp<T extends HTMLElement = HTMLDivElement>(delay = 0) {
+  const ref = useRef<T>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
     const tween = gsap.from(el, {
-      y: 60,
-      opacity: 0,
-      duration: 1,
+      y: 28,
+      duration: 0.9,
       delay,
       ease: "power3.out",
       scrollTrigger: {
         trigger: el,
-        start: "top 85%",
+        start: "top 86%",
       },
     });
 
-    return () => tween.kill();
+    return () => {
+      tween.kill();
+      ScrollTrigger.getAll().forEach((trigger) => {
+        if (trigger.trigger === el) trigger.kill();
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return ref;

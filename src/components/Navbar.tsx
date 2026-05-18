@@ -10,52 +10,50 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    // Animate nav in on load
     gsap.from(navRef.current, {
-      y: -80,
-      opacity: 0,
-      duration: 1,
+      y: -18,
+      duration: 0.9,
       ease: "power3.out",
     });
 
-    // Track scroll for background blur
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 24);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <nav
       ref={navRef}
-      className={`fixed top-0 left-0 w-full z-50 px-8 py-5 flex items-center justify-between transition-all duration-500 ${
-        scrolled ? "bg-black/60 backdrop-blur-md border-b border-white/10" : ""
+      className={`fixed left-1/2 top-4 z-50 flex w-[min(1240px,calc(100vw-32px))] -translate-x-1/2 items-center justify-between rounded-full border px-4 py-3 transition-all duration-500 md:px-5 ${
+        scrolled
+          ? "border-white/10 bg-black/70 backdrop-blur-xl"
+          : "border-white/0 bg-transparent"
       }`}
     >
-      {/* Logo */}
-      <a href="#" className="text-white font-bold text-xl tracking-tight">
-        don<span className="text-indigo-400">forget</span>
+      <a href="#" className="display-text text-lg tracking-tight text-[var(--paper)]">
+        dont<span className="text-[var(--teal)]">forget</span>
       </a>
 
-      {/* Links */}
-      <ul className="hidden md:flex items-center gap-8">
+      <ul className="hidden items-center gap-8 md:flex">
         {navLinks.map((link) => (
           <li key={link}>
             <a
               href={`#${link.toLowerCase()}`}
-              className="text-white/70 hover:text-white text-sm tracking-wide transition-colors duration-200"
+              className="group relative font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--text-dark)] transition-colors duration-300 hover:text-[var(--paper)]"
             >
               {link}
+              <span className="absolute -bottom-2 left-0 h-px w-0 bg-[var(--teal)] transition-all duration-300 group-hover:w-full" />
             </a>
           </li>
         ))}
       </ul>
 
-      {/* CTA */}
       <a
         href="#contact"
-        className="hidden md:block px-5 py-2 rounded-full border border-indigo-500 text-indigo-400 text-sm hover:bg-indigo-500 hover:text-white transition-all duration-300"
+        className="rounded-full border border-[rgba(0,200,176,0.45)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.24em] text-[var(--paper)] transition-all duration-300 hover:bg-[var(--teal)] hover:text-[var(--ink)]"
       >
-        Let&apos;s Talk
+        Start
       </a>
     </nav>
   );

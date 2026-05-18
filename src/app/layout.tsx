@@ -1,17 +1,35 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Bodoni_Moda, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-body-next",
+});
+
+const bodoniModa = Bodoni_Moda({
+  subsets: ["latin"],
+  variable: "--font-display-next",
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-mono-next",
 });
 
 export const metadata: Metadata = {
-  title: "dontforget — Creative Web Agency",
+  title: "dontforget — Digital studio",
   description:
-    "A creative web agency that crafts fast, beautiful, and memorable digital experiences. Web design, development, 3D & motion.",
-  keywords: ["web agency", "web design", "web development", "GSAP", "Three.js", "Next.js"],
+    "dontforget builds brand systems, digital products, immersive web experiences, and motion identities.",
+  keywords: [
+    "creative agency",
+    "web design",
+    "web development",
+    "GSAP",
+    "Three.js",
+    "digital studio",
+  ],
 };
 
 export default function RootLayout({
@@ -20,8 +38,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} scroll-smooth`}>
-      <body className="font-sans bg-black antialiased">{children}</body>
+    <html lang="en" className={`${inter.variable} ${bodoniModa.variable} ${spaceMono.variable}`}>
+      <body className="antialiased" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

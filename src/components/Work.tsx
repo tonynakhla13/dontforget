@@ -1,90 +1,103 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useState } from "react";
 import { useFadeUp } from "@/hooks/useScrollAnimation";
 
 const projects = [
   {
     title: "Elia Clinic",
-    category: "Healthcare · Web Design",
+    category: "Healthcare / digital presence",
     year: "2025",
-    color: "from-emerald-900/40",
+    summary:
+      "A calm, conversion-led medical site with a modular content system and refined motion.",
   },
   {
     title: "Montgab",
-    category: "E-commerce · Development",
+    category: "Commerce / product experience",
     year: "2025",
-    color: "from-rose-900/40",
+    summary:
+      "A tactile storefront balancing product storytelling, speed, and editorial whitespace.",
   },
   {
     title: "180 Degrees",
-    category: "Agency · Branding",
+    category: "Agency / brand platform",
     year: "2026",
-    color: "from-indigo-900/40",
+    summary:
+      "A flexible studio identity translated into web, motion, and campaign surfaces.",
   },
 ];
 
-function ProjectCard({
-  project,
-  index,
-}: {
-  project: (typeof projects)[0];
-  index: number;
-}) {
-  const ref = useFadeUp(index * 0.15) as React.RefObject<HTMLDivElement>;
-
-  return (
-    <div
-      ref={ref}
-      className={`group flex items-center justify-between p-8 rounded-2xl bg-gradient-to-r ${project.color} to-transparent border border-white/10 hover:border-white/30 transition-all duration-500 cursor-pointer`}
-    >
-      <div>
-        <p className="text-white/40 text-xs font-mono mb-2">{project.category}</p>
-        <h3 className="text-white text-3xl font-bold group-hover:text-indigo-300 transition-colors duration-300">
-          {project.title}
-        </h3>
-      </div>
-      <div className="flex items-center gap-6">
-        <span className="text-white/30 text-sm font-mono">{project.year}</span>
-        <span className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/50 group-hover:border-indigo-500 group-hover:text-indigo-400 transition-all duration-300">
-          →
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export default function Work() {
-  const titleRef = useFadeUp() as React.RefObject<HTMLDivElement>;
+  const titleRef = useFadeUp();
+  const listRef = useFadeUp(0.1);
+  const [activeProject, setActiveProject] = useState(projects[0].title);
+
+  const currentProject = useMemo(
+    () => projects.find((project) => project.title === activeProject) ?? projects[0],
+    [activeProject]
+  );
 
   return (
-    <section id="work" className="bg-black py-32 px-8 border-t border-white/5">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div ref={titleRef} className="mb-20 flex items-end justify-between flex-wrap gap-6">
-          <div>
-            <p className="text-indigo-400 text-sm font-mono uppercase tracking-widest mb-4">
-              Selected Work
+    <section id="work" className="relative border-y hairline py-24 md:py-32">
+      <div className="section-shell grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+        <div ref={titleRef} className="lg:sticky lg:top-32">
+          <p className="eyebrow mb-6">Selected work</p>
+          <h2 className="display-text text-3xl leading-tight text-[var(--paper)] md:text-5xl">
+            Projects shaped to be remembered.
+          </h2>
+
+          <div className="mt-10 rounded-[28px] border hairline bg-[linear-gradient(135deg,rgba(248,243,234,0.06),rgba(0,200,176,0.08))] p-5">
+            <div className="mb-12 flex items-center justify-between font-mono text-xs uppercase tracking-[0.25em] text-[var(--text-dark)]">
+              <span>{currentProject.category}</span>
+              <span>{currentProject.year}</span>
+            </div>
+            <h3 className="display-text text-3xl text-[var(--paper)]">{currentProject.title}</h3>
+            <p className="mt-5 max-w-md leading-7 text-[var(--text-dark)]">
+              {currentProject.summary}
             </p>
-            <h2 className="text-5xl md:text-6xl font-black text-white">
-              Projects we&apos;re
-              <br />
-              <span className="text-white/30">proud of</span>
-            </h2>
           </div>
-          <a
-            href="#contact"
-            className="text-white/50 hover:text-white text-sm underline underline-offset-4 transition-colors"
-          >
-            Start your project →
-          </a>
         </div>
 
-        {/* Project list */}
-        <div className="flex flex-col gap-4">
-          {projects.map((project, i) => (
-            <ProjectCard key={project.title} project={project} index={i} />
-          ))}
+        <div ref={listRef}>
+          {projects.map((project) => {
+            const isActive = project.title === activeProject;
+
+            return (
+              <button
+                key={project.title}
+                type="button"
+                onMouseEnter={() => setActiveProject(project.title)}
+                onFocus={() => setActiveProject(project.title)}
+                onClick={() => setActiveProject(project.title)}
+                className="group flex w-full items-center justify-between border-t hairline py-7 text-left"
+              >
+                <div>
+                  <div className="font-mono text-xs uppercase tracking-[0.26em] text-[var(--text-dark)]">
+                    {project.category}
+                  </div>
+                  <div
+                    className={`display-text mt-3 text-3xl transition-all duration-300 md:text-4xl ${
+                      isActive
+                        ? "translate-x-3 text-[var(--paper)]"
+                        : "text-[rgba(248,243,234,0.42)] group-hover:translate-x-3 group-hover:text-[var(--paper)]"
+                    }`}
+                  >
+                    {project.title}
+                  </div>
+                </div>
+
+                <span
+                  className={`flex h-11 w-11 items-center justify-center rounded-full border font-mono text-sm transition-all duration-300 ${
+                    isActive
+                      ? "border-[var(--teal)] text-[var(--teal)]"
+                      : "border-white/15 text-[var(--text-dark)] group-hover:border-[var(--teal)] group-hover:text-[var(--teal)]"
+                  }`}
+                >
+                  ↗
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>

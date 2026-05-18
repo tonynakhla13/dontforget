@@ -3,69 +3,64 @@
 import { useFadeUp } from "@/hooks/useScrollAnimation";
 
 export default function Contact() {
-  const titleRef = useFadeUp() as React.RefObject<HTMLDivElement>;
-  const formRef = useFadeUp(0.2) as React.RefObject<HTMLFormElement>;
+  const titleRef = useFadeUp();
+  const formRef = useFadeUp(0.12);
 
   return (
-    <section id="contact" className="bg-black py-32 px-8 border-t border-white/5">
-      <div className="max-w-3xl mx-auto text-center">
-        {/* Header */}
-        <div ref={titleRef} className="mb-16">
-          <p className="text-indigo-400 text-sm font-mono uppercase tracking-widest mb-4">
-            Get In Touch
-          </p>
-          <h2 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
-            Let&apos;s build
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
-              something great
-            </span>
+    <section id="contact" className="relative py-24 md:py-32">
+      <div className="section-shell grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+        <div ref={titleRef}>
+          <p className="eyebrow mb-6">Contact</p>
+          <h2 className="display-text max-w-xl text-3xl leading-tight text-[var(--paper)] md:text-5xl">
+            Have an idea worth remembering?
           </h2>
-          <p className="text-white/50 text-lg">
-            Tell us about your project and we&apos;ll get back to you within 24 hours.
+          <p className="mt-7 max-w-md leading-8 text-[var(--text-dark)]">
+            Tell us what you&apos;re building. We&apos;ll help shape the system, the story,
+            and the motion around it.
           </p>
         </div>
 
-        {/* Form */}
-        <form
-          ref={formRef}
-          className="flex flex-col gap-4 text-left"
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div ref={formRef} className="rounded-[28px] border hairline bg-white/[0.02] p-5 md:p-7">
+          <form className="grid gap-4" onSubmit={(event) => event.preventDefault()}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <input
+                type="text"
+                placeholder="Name"
+                className="rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]"
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                className="rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]"
+              />
+            </div>
             <input
               type="text"
-              placeholder="Your name"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition-colors duration-300"
+              placeholder="Project type"
+              className="rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]"
             />
-            <input
-              type="email"
-              placeholder="Your email"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition-colors duration-300"
+            <textarea
+              placeholder="Message"
+              rows={6}
+              className="resize-none rounded-2xl border hairline bg-white/[0.02] px-4 py-4 text-[var(--paper)] outline-none transition-colors placeholder:text-[var(--text-dark)] focus:border-[rgba(0,200,176,0.55)]"
             />
-          </div>
-          <input
-            type="text"
-            placeholder="Project type (e.g. Web App, Landing Page)"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition-colors duration-300"
-          />
-          <textarea
-            placeholder="Tell us about your project..."
-            rows={5}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition-colors duration-300 resize-none"
-          />
-          <button
-            type="submit"
-            className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-[1.02] mt-2"
-          >
-            Send Message →
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="mt-2 rounded-full bg-[var(--teal)] px-6 py-4 font-mono text-xs uppercase tracking-[0.25em] text-[var(--ink)] transition-transform duration-300 hover:-translate-y-1"
+            >
+              Send inquiry
+            </button>
+          </form>
+        </div>
+      </div>
 
-        {/* Footer note */}
-        <p className="text-white/20 text-sm mt-12">
-          © {new Date().getFullYear()} dontforget agency. All rights reserved.
-        </p>
+      <div className="section-shell mt-20 flex items-center justify-between border-t hairline pt-6 text-[var(--text-dark)]">
+        <span className="display-text text-lg text-[var(--paper)]">
+          dont<span className="text-[var(--teal)]">forget</span>
+        </span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.28em]">
+          © {new Date().getFullYear()}
+        </span>
       </div>
     </section>
   );
