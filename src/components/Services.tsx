@@ -259,14 +259,9 @@ export default function Services() {
                 {svc.num}
               </span>
               <p className="text-[0.875rem] leading-[1.85] text-[var(--body)]">{svc.body}</p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <a href="#contact" className="btn btn-primary inline-flex py-2.5 px-6 text-[0.62rem]">
-                  Start this project →
-                </a>
-                <a href={`/services/${svc.id}`} className="btn btn-outline inline-flex py-2.5 px-6 text-[0.62rem]">
-                  Learn more
-                </a>
-              </div>
+              <a href="#contact" className="btn btn-primary mt-6 inline-flex py-2.5 px-6 text-[0.62rem]">
+                Start this project →
+              </a>
             </div>
 
             {/* Right card */}
