@@ -8,39 +8,68 @@ const SERVICES = [
     id: "webdev",
     num: "01",
     title: "Web Dev",
-    body: "From high-converting landing pages to complex web applications, we build fast, scalable, and interactive digital experiences. Every decision is made with performance, clarity, and real results in mind.",
+    body: "From high-converting landing pages to complex web applications, we build fast, scalable, and interactive digital experiences. Every decision is made with performance, clarity, conversion, and long-term maintainability in mind.",
+    examples: ["Landing pages", "Commercial sites", "Blogs", "Portfolios", "Dashboards", "Web apps"],
   },
   {
     id: "uiux",
     num: "02",
     title: "UI / UX",
-    body: "We start with research, not assumptions. Through competitive analysis, user testing, and relentless iteration, we shape interfaces that feel effortless — and perform even better than they look.",
+    body: "We start with research, not assumptions. Through competitive analysis, user testing, wireframes, prototypes, and relentless iteration, we shape interfaces that feel effortless — and perform even better than they look.",
+    examples: ["Wireframes", "Design systems", "User flows", "Prototypes", "Usability tests", "Product UX"],
   },
   {
     id: "ecomm",
     num: "03",
     title: "E-Commerce",
-    body: "Shopify, WooCommerce, Salla, or fully custom-built — we design and develop stores that actually sell. SEO and organic growth strategy are engineered in from day one, not added as an afterthought.",
+    body: "Shopify, WooCommerce, Salla, or fully custom-built — we design and develop stores that actually sell. Product structure, checkout flow, SEO, retention, and organic growth strategy are engineered in from day one.",
+    examples: ["Shopify", "WooCommerce", "Salla", "Product pages", "Checkout", "Subscriptions"],
   },
   {
     id: "mobile",
     num: "04",
     title: "Mobile",
-    body: "iOS and Android. React Native or fully native — whichever fits your product best. We don't just ship apps; we define the feel, the flow, and the personality that keeps users coming back every day.",
+    body: "iOS and Android. React Native or fully native — whichever fits your product best. We do not just ship apps; we define the feel, the flow, and the product rhythm that keeps users coming back every day.",
+    examples: ["iOS", "Android", "React Native", "Onboarding", "Push flows", "App systems"],
   },
   {
     id: "seo",
     num: "05",
     title: "SEO",
-    body: "From technical on-page SEO to fully integrated AI-powered search strategies, we move the needle in ways most agencies simply can't. We also handle full marketing — plans, visual design, branding, and everything in between.",
+    body: "From technical on-page SEO to AI-aware search strategies, we move the needle in ways most agencies cannot. We connect structure, content, authority, and reporting so growth compounds instead of appearing as a one-off spike.",
+    examples: ["Technical SEO", "Content plans", "AI search", "Local SEO", "Audits", "Reporting"],
   },
   {
     id: "crm",
     num: "06",
     title: "CRM",
-    body: "We build custom CRMs for booking systems, travel platforms, medical practices, and complex business workflows. Engineer-minded and precision-built — systems that understand exactly how your operations work.",
+    body: "We build custom CRMs for booking systems, travel platforms, medical practices, and complex business workflows. Engineer-minded and precision-built, these systems reflect exactly how your operations work in the real world.",
+    examples: ["Bookings", "Pipelines", "Dashboards", "Automations", "Permissions", "Integrations"],
   },
 ];
+
+function MiniIcon({ index }: { index: number }) {
+  const common = {
+    className: "h-4 w-4",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  const icons = [
+    <svg key="screen" {...common}><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M8 20h8" /></svg>,
+    <svg key="grid" {...common}><rect x="4" y="4" width="6" height="6" /><rect x="14" y="4" width="6" height="6" /><rect x="4" y="14" width="6" height="6" /><rect x="14" y="14" width="6" height="6" /></svg>,
+    <svg key="cart" {...common}><path d="M3 5h2l2.4 10.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.5L21 8H7" /><circle cx="10" cy="20" r="1" /><circle cx="18" cy="20" r="1" /></svg>,
+    <svg key="phone" {...common}><rect x="7" y="2" width="10" height="20" rx="2" /><path d="M11 18h2" /></svg>,
+    <svg key="search" {...common}><circle cx="11" cy="11" r="6" /><path d="m20 20-4.2-4.2" /></svg>,
+    <svg key="nodes" {...common}><circle cx="6" cy="12" r="2" /><circle cx="18" cy="6" r="2" /><circle cx="18" cy="18" r="2" /><path d="M8 12h4" /><path d="m14 11 2-3" /><path d="m14 13 2 3" /></svg>,
+  ];
+
+  return icons[index % icons.length];
+}
 
 function Card({ num, title, tall }: { num: string; title: string; tall?: boolean }) {
   return (
@@ -70,20 +99,17 @@ export default function Services() {
   const outerRef  = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const introRef  = useRef<HTMLDivElement>(null);
-  const sphereRef = useRef<HTMLDivElement>(null);
   const panelsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const outer  = outerRef.current;
     const intro  = introRef.current;
-    const sphere = sphereRef.current;
-    if (!outer || !intro || !sphere) return;
+    if (!outer || !intro) return;
 
     const panels = panelsRef.current.filter((p): p is HTMLDivElement => p !== null);
     if (panels.length !== SERVICES.length) return;
 
     /* Initial states */
-    gsap.set(sphere, { scale: 0, autoAlpha: 0 });
     gsap.set(panels, { autoAlpha: 0 });
 
     const ctx = gsap.context(() => {
@@ -99,9 +125,8 @@ export default function Services() {
       /* Hold intro */
       tl.to({}, { duration: 0.4 });
 
-      /* Intro out + sphere in */
+      /* Intro out */
       tl.to(intro,  { autoAlpha: 0, y: -60, duration: 0.45, ease: "none" });
-      tl.to(sphere, { scale: 1, autoAlpha: 1, duration: 0.5, ease: "none" }, "<0.1");
 
       /* Services */
       panels.forEach((panel, i) => {
@@ -109,17 +134,21 @@ export default function Services() {
         const cardL  = panel.querySelector<HTMLElement>("[data-card-l]")!;
         const cardR  = panel.querySelector<HTMLElement>("[data-card-r]")!;
         const desc   = panel.querySelector<HTMLElement>("[data-desc]")!;
+        const pills  = panel.querySelectorAll<HTMLElement>("[data-pill]");
         const isLast = i === panels.length - 1;
-        const xShift = (i % 2 === 0 ? -1 : 1) * 55;
-
-        /* Sphere nudge */
-        tl.to(sphere, { x: xShift, duration: 0.38, ease: "none" });
+        tl.to({}, { duration: 0.12 });
 
         /* Panel enter */
         tl.set(panel,  { autoAlpha: 1 }, "<");
         tl.fromTo(title, { yPercent: 55, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.42, ease: "none" }, "<0.04");
         tl.fromTo(cardL, { x: -70, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.36, ease: "none" }, "<0.04");
         tl.fromTo(cardR, { x:  70, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.36, ease: "none" }, "<");
+        tl.fromTo(
+          pills,
+          { y: 54, autoAlpha: 0, scale: 0.92 },
+          { y: 0, autoAlpha: 1, scale: 1, stagger: 0.055, duration: 0.36, ease: "none" },
+          "<0.05"
+        );
         tl.fromTo(desc,  { y: 28, autoAlpha: 0 },  { y: 0, autoAlpha: 1, duration: 0.30, ease: "none" }, "<0.08");
 
         /* Hold */
@@ -139,71 +168,12 @@ export default function Services() {
 
   return (
     /* Outer div height = sticky scroll range. CSS sticky keeps inner at top. */
-    <div ref={outerRef} id="services" style={{ minHeight: "750vh", background: "var(--bg)" }}>
+    <div ref={outerRef} id="services" style={{ minHeight: "750vh", background: "transparent" }}>
       <div
         ref={stickyRef}
         className="sticky top-0 h-screen overflow-hidden border-t border-[var(--border)]"
-        style={{ background: "var(--bg)" }}
+        style={{ background: "transparent" }}
       >
-
-        {/* ── Holographic wireframe sphere ── */}
-        <div
-          ref={sphereRef}
-          className="pointer-events-none absolute"
-          style={{
-            top: "50%", left: "50%",
-            transform: "translate(-50%,-50%)",
-            width: 620, height: 620,
-            opacity: 0, visibility: "hidden",
-          }}
-        >
-          {/* Outer glow bloom */}
-          <div className="absolute rounded-full" style={{
-            inset: -40,
-            background: "radial-gradient(circle, rgba(58,191,138,0.07) 0%, transparent 70%)",
-          }} />
-          {/* Outer ring */}
-          <div className="absolute rounded-full" style={{
-            inset: 0,
-            border: "1px solid rgba(58,191,138,0.50)",
-            boxShadow: "0 0 30px rgba(58,191,138,0.15), inset 0 0 30px rgba(58,191,138,0.05)",
-          }} />
-          {/* Latitude ring — equator */}
-          <div className="absolute rounded-full" style={{
-            top: "50%", left: "0", right: "0",
-            height: "18%", transform: "translateY(-50%)",
-            border: "1px solid rgba(58,191,138,0.38)",
-          }} />
-          {/* Latitude ring — upper */}
-          <div className="absolute rounded-full" style={{
-            top: "22%", left: "8%", right: "8%",
-            height: "12%", transform: "translateY(-50%)",
-            border: "1px solid rgba(58,191,138,0.22)",
-          }} />
-          {/* Latitude ring — lower */}
-          <div className="absolute rounded-full" style={{
-            top: "78%", left: "8%", right: "8%",
-            height: "12%", transform: "translateY(-50%)",
-            border: "1px solid rgba(58,191,138,0.22)",
-          }} />
-          {/* Meridian — center vertical */}
-          <div className="absolute rounded-full" style={{
-            top: "0", bottom: "0", left: "50%",
-            width: "18%", transform: "translateX(-50%)",
-            border: "1px solid rgba(58,191,138,0.32)",
-          }} />
-          {/* Meridian — tilted */}
-          <div className="absolute rounded-full" style={{
-            inset: "4%",
-            border: "1px solid rgba(58,191,138,0.18)",
-            transform: "rotate(42deg) scaleX(0.28)",
-          }} />
-          {/* Inner soft glow */}
-          <div className="absolute rounded-full" style={{
-            inset: "18%",
-            background: "radial-gradient(circle at 38% 35%, rgba(58,191,138,0.10) 0%, transparent 65%)",
-          }} />
-        </div>
 
         {/* ── Intro ── */}
         <div
@@ -212,10 +182,9 @@ export default function Services() {
         >
           <p className="eyebrow mb-8">Services</p>
           <h2 className="hed text-[7rem] leading-[0.92]">
-            What we<br />
-            <span className="text-[var(--teal)]">build.</span>
+            What we <span className="text-[var(--teal)]">build.</span>
           </h2>
-          <p className="mx-auto mt-8 max-w-md text-[0.9375rem] leading-[1.85] text-[var(--body)]">
+          <p className="mx-auto mt-8 max-w-xl text-[0.9375rem] leading-[1.85] text-[var(--body)]">
             Web, mobile, e-commerce, SEO, design, CRM —<br />
             full-stack execution from concept to launch.
           </p>
@@ -242,26 +211,48 @@ export default function Services() {
             <div
               data-title
               className="absolute z-20 w-full text-center"
-              style={{ top: "10%", pointerEvents: "none" }}
+              style={{ top: "12%", pointerEvents: "none" }}
             >
-              <h2 className="hed text-[8rem] leading-[0.9] text-[var(--fg)]">
+              <h2 className="hed text-[clamp(3rem,8vw,6.4rem)] leading-[0.88] text-[var(--fg)]">
                 {svc.title}
               </h2>
             </div>
 
-            {/* Description — lower zone, well below title */}
             <div
-              data-desc
-              className="absolute z-20 text-center"
-              style={{ bottom: "8%", left: "50%", transform: "translateX(-50%)", width: 380 }}
+              className="absolute left-1/2 z-20 flex w-[min(980px,92vw)] -translate-x-1/2 flex-col items-center"
+              style={{ top: "31%" }}
             >
-              <span className="mb-3 block font-mono text-[0.5rem] uppercase tracking-[0.42em] text-[var(--teal)]">
-                {svc.num}
-              </span>
-              <p className="text-[0.875rem] leading-[1.85] text-[var(--body)]">{svc.body}</p>
-              <a href="#contact" className="btn btn-primary mt-6 inline-flex py-2.5 px-6 text-[0.62rem]">
-                Start this project →
-              </a>
+              <div className="grid w-full grid-cols-2 justify-items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                {svc.examples.map((example, exampleIndex) => (
+                  <div
+                    key={example}
+                    data-pill
+                    className="flex min-h-[76px] w-full items-center justify-center gap-3 rounded-2xl border border-[rgba(58,191,138,0.28)] bg-[rgba(9,9,9,0.72)] px-3 py-3 text-center shadow-[0_14px_45px_rgba(0,0,0,0.26)] backdrop-blur-md"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[rgba(58,191,138,0.14)] text-[var(--teal)]">
+                      <MiniIcon index={exampleIndex} />
+                    </span>
+                    <span className="font-mono text-[clamp(0.56rem,1.05vw,0.66rem)] font-semibold uppercase tracking-[0.12em] text-[#F8F5EE]">
+                      {example}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Description sits with the boxes instead of drifting away from them. */}
+              <div data-desc className="mt-8 w-[min(680px,86vw)] text-center">
+                <p className="text-[clamp(0.84rem,1.3vw,1rem)] leading-[1.8] text-[var(--fg)]">{svc.body}</p>
+                <a href="#contact" className="btn btn-primary mt-7 inline-flex py-2.5 px-6 text-[0.62rem]">
+                  Start this project →
+                </a>
+              </div>
+            </div>
+
+            <div
+              className="absolute z-20 font-mono text-[0.58rem] uppercase tracking-[0.42em] text-[var(--teal)]"
+              style={{ left: "3%", bottom: "5%" }}
+            >
+              {svc.num}
             </div>
 
             {/* Right card */}

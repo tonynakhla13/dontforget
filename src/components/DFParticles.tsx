@@ -121,6 +121,21 @@ function buildLetterPos(): Float32Array {
   return sampleCanvas(ctx, CW, CH, 6);
 }
 
+function buildNumberPos(text: string): Float32Array {
+  const CW = 1000, CH = 480;
+  const ctx = makeCtx(CW, CH);
+  ctx.fillStyle = "#fff";
+  ctx.font = `900 310px 'Arial Black', Impact, sans-serif`;
+  ctx.textBaseline = "middle";
+  drawTracked(ctx, text, CW / 2, CH / 2, 34);
+  const pos = sampleCanvas(ctx, CW, CH, 6);
+  for (let i = 0; i < COUNT; i++) {
+    pos[i * 3] -= 4.1;      // move service numbers to the left side
+    pos[i * 3 + 1] -= 1.75; // move service numbers toward the bottom
+  }
+  return pos;
+}
+
 // ── scatter ───────────────────────────────────────────────────────────
 function buildScatterPos(): Float32Array {
   const pos = new Float32Array(COUNT * 3);
@@ -156,12 +171,19 @@ const VERT = /* glsl */`
   attribute vec3 aLetters;
   attribute vec3 aScatter;
   attribute vec3 aBlob;
+  attribute vec3 aSvc1;
+  attribute vec3 aSvc2;
+  attribute vec3 aSvc3;
+  attribute vec3 aSvc4;
+  attribute vec3 aSvc5;
+  attribute vec3 aSvc6;
 
   uniform float uScene;
   uniform float uDotOpacity;
   uniform float uShapeA;
   uniform float uShapeB;
   uniform float uShapeBlend;
+  uniform float uNumberBlend;
   uniform vec2  uMouse;
   uniform float uSize;
   uniform float uTime;
@@ -174,6 +196,12 @@ const VERT = /* glsl */`
     if (idx < 2.5) return aApps;
     if (idx < 3.5) return aCRM;
     if (idx < 4.5) return aLetters;
+    if (idx < 5.5) return aSvc1;
+    if (idx < 6.5) return aSvc2;
+    if (idx < 7.5) return aSvc3;
+    if (idx < 8.5) return aSvc4;
+    if (idx < 9.5) return aSvc5;
+    if (idx < 10.5) return aSvc6;
     return aScatter;
   }
 
@@ -181,7 +209,7 @@ const VERT = /* glsl */`
     float t1 = clamp(uScene,       0.0, 1.0);
     float t2 = clamp(uScene - 1.0, 0.0, 1.0);
 
-    vec3 heroPos = mix(getShape(uShapeA), getShape(uShapeB), smoothstep(0.0, 1.0, uShapeBlend));
+    vec3 heroPos = mix(getShape(uShapeA), getShape(uShapeB), smoothstep(0.0, 1.0, max(uShapeBlend, uNumberBlend)));
     vec3 pos     = mix(mix(heroPos, aScatter, t1), aBlob, t2);
 
     // Gentle idle drift (hero only)
@@ -272,12 +300,19 @@ export default function DFParticles() {
     geo.setAttribute("aLetters", new THREE.BufferAttribute(buildLetterPos(),  3));
     geo.setAttribute("aScatter", new THREE.BufferAttribute(buildScatterPos(), 3));
     geo.setAttribute("aBlob",    new THREE.BufferAttribute(buildBlobPos(),    3));
+    geo.setAttribute("aSvc1",    new THREE.BufferAttribute(buildNumberPos("01"), 3));
+    geo.setAttribute("aSvc2",    new THREE.BufferAttribute(buildNumberPos("02"), 3));
+    geo.setAttribute("aSvc3",    new THREE.BufferAttribute(buildNumberPos("03"), 3));
+    geo.setAttribute("aSvc4",    new THREE.BufferAttribute(buildNumberPos("04"), 3));
+    geo.setAttribute("aSvc5",    new THREE.BufferAttribute(buildNumberPos("05"), 3));
+    geo.setAttribute("aSvc6",    new THREE.BufferAttribute(buildNumberPos("06"), 3));
 
     const uniforms = {
       uScene:      { value: 0 },
       uShapeA:     { value: 0 },
       uShapeB:     { value: 1 },
       uShapeBlend: { value: 0 },
+      uNumberBlend:{ value: 0 },
       uMouse:      { value: new THREE.Vector2(9999, 9999) },
       uSize:       { value: window.devicePixelRatio * 1.65 },
       uTime:       { value: 0 },
@@ -315,7 +350,19 @@ export default function DFParticles() {
     aboutShape.rotation.set(0.5, 0.3, 0.12);
     aboutShape.scale.setScalar(1.75);
     scene.add(aboutShape);
-
+    const serviceShapeMaterial = new THREE.MeshBasicMaterial({
+      color: 0x5de7b4,
+      wireframe: true,
+      transparent: true,
+      opacity: 0,
+    });
+    const serviceShape = new THREE.Mesh(
+      new THREE.SphereGeometry(2.3, 28, 28),
+      serviceShapeMaterial
+    );
+    serviceShape.position.set(2.95, -0.95, -1.7);
+    serviceShape.scale.setScalar(1.55);
+    scene.add(serviceShape);
     // ── auto-cycle through 5 shapes ──
     let shapeIdx = 0;
     let cycleTween: gsap.core.Tween | null = null;
@@ -382,6 +429,62 @@ export default function DFParticles() {
       });
     }
 
+    let st3: ReturnType<typeof ScrollTrigger.create> | null = null;
+    const servicesEl = document.querySelector("#services");
+    if (servicesEl) {
+      st3 = ScrollTrigger.create({
+        trigger: servicesEl,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+        onEnter() {
+          cycleTween?.kill();
+          cycleDelay?.kill();
+        },
+        onEnterBack() {
+          cycleTween?.kill();
+          cycleDelay?.kill();
+        },
+        onLeaveBack() {
+          shapeIdx = 0;
+          uniforms.uShapeA.value = 0;
+          uniforms.uShapeB.value = 1;
+          uniforms.uShapeBlend.value = 0;
+          cycleDelay = gsap.delayedCall(3.0, doTransition);
+        },
+        onUpdate(self) {
+          const adjusted = Math.max(0, self.progress - 0.14) / 0.86;
+          const scaled = Math.min(5.999, adjusted * 6);
+          const idx = Math.floor(scaled);
+          const nextIdx = Math.min(5, idx + 1);
+          const local = scaled - idx;
+          uniforms.uShapeA.value = 5 + idx;
+          uniforms.uShapeB.value = 5 + nextIdx;
+          uniforms.uShapeBlend.value = 0;
+          uniforms.uNumberBlend.value = Math.min(Math.max((local - 0.18) / 0.64, 0), 1);
+          uniforms.uScene.value = 0;
+        },
+      });
+    }
+
+    let st4: ReturnType<typeof ScrollTrigger.create> | null = null;
+    const processEl = document.querySelector("#process");
+    if (processEl) {
+      st4 = ScrollTrigger.create({
+        trigger: processEl,
+        start: "top bottom",
+        end: "top top",
+        scrub: 1,
+        onUpdate(self) {
+          uniforms.uShapeA.value = 10;
+          uniforms.uShapeB.value = 11;
+          uniforms.uShapeBlend.value = self.progress;
+          uniforms.uNumberBlend.value = 0;
+          uniforms.uScene.value = 0;
+        },
+      });
+    }
+
     // ── mouse ──
     const vFov = (55 * Math.PI) / 180;
     const hH   = Math.tan(vFov / 2) * 5;
@@ -433,6 +536,25 @@ export default function DFParticles() {
           aboutShape.position.y) *
         0.02;
       aboutShapeMaterial.opacity = aboutAmt;
+      const serviceRect = servicesEl ? (servicesEl as HTMLElement).getBoundingClientRect() : null;
+      const serviceVisibility = serviceRect
+        ? Math.min(
+            Math.max(
+              Math.min(
+                (window.innerHeight - serviceRect.top) / (window.innerHeight * 0.65),
+                serviceRect.bottom / (window.innerHeight * 0.65)
+              ),
+              0
+            ),
+            1
+          )
+        : 0;
+      serviceShape.position.x += (0 - serviceShape.position.x) * 0.03;
+      serviceShape.position.y += (0 - serviceShape.position.y) * 0.03;
+      serviceShape.rotation.x += 0.0007;
+      serviceShape.rotation.y += 0.001;
+      aboutShapeMaterial.opacity *= 1 - serviceVisibility;
+      serviceShapeMaterial.opacity = serviceVisibility * 0.08;
 
       renderer.render(scene, camera);
     };
@@ -444,12 +566,16 @@ export default function DFParticles() {
       cycleDelay?.kill();
       st1.scrollTrigger?.kill();
       st2?.kill();
+      st3?.kill();
+      st4?.kill();
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("resize", onResize);
       renderer.dispose(); geo.dispose(); mat.dispose();
       aboutShape.geometry.dispose();
       aboutShapeMaterial.dispose();
+      serviceShape.geometry.dispose();
+      serviceShapeMaterial.dispose();
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
   }, []);

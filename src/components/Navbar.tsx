@@ -12,7 +12,7 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ inner = false }: { inner?: boolean }) {
   const primaryRef = useRef<HTMLElement>(null);
   const floatRef   = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);

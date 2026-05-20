@@ -101,16 +101,16 @@ export default function About() {
 
         <h2
           ref={headingRef}
-          className="hed mx-auto max-w-2xl text-[4.2rem] leading-[1.15] [perspective:900px]"
+          className="hed mx-auto max-w-5xl text-[clamp(2.4rem,4.6vw,4.2rem)] leading-[1.15] [perspective:900px]"
         >
-          <span data-line className="block overflow-hidden">
+          <span data-line className="block overflow-hidden md:whitespace-nowrap">
             We design systems
           </span>
-          <span data-line className="block overflow-hidden">
+          <span data-line className="block overflow-hidden md:whitespace-nowrap">
             with enough{" "}
             <span className="script text-[1.05em]">personality</span>
           </span>
-          <span data-line className="block overflow-hidden">
+          <span data-line className="block overflow-hidden md:whitespace-nowrap">
             to survive the{" "}
             <span className="text-[var(--teal)]">scroll.</span>
           </span>
