@@ -6,13 +6,13 @@ import { gsap } from "@/lib/gsap";
 const NAV_H = 86;
 
 const navLinks = [
-  { label: "Work",    href: "#work"    },
-  { label: "Process", href: "#process" },
-  { label: "About",   href: "/about"   },
-  { label: "Contact", href: "#contact" },
+  { label: "Work",    href: "#work",    innerHref: "/#work"    },
+  { label: "Process", href: "#process", innerHref: "/#process" },
+  { label: "About",   href: "/about",   innerHref: "/about"    },
+  { label: "Contact", href: "#contact", innerHref: "/#contact" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ inner = false }: { inner?: boolean }) {
   const primaryRef = useRef<HTMLElement>(null);
   const floatRef   = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -91,7 +91,7 @@ export default function Navbar() {
         {/* Top bar inside overlay */}
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <a href="#" onClick={() => setMenuOpen(false)}>
+          <a href={inner ? "/" : "#"} onClick={() => setMenuOpen(false)}>
             <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
           </a>
           <button
@@ -108,10 +108,10 @@ export default function Navbar() {
 
         {/* Giant nav links */}
         <div ref={linksRef} className="flex flex-1 flex-col items-center justify-center gap-0">
-          {navLinks.map(({ label, href }) => (
+          {navLinks.map(({ label, href, innerHref }) => (
             <a
               key={label}
-              href={href}
+              href={inner ? innerHref : href}
               onClick={() => setMenuOpen(false)}
               className="hed text-[6.5rem] leading-[1.05] text-[var(--fg)] transition-colors duration-200 hover:text-[var(--teal)]"
             >
@@ -139,15 +139,15 @@ export default function Navbar() {
       >
         <div className="wrap flex w-full items-center justify-between">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <a href="#">
+          <a href={inner ? "/" : "#"}>
             <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
           </a>
 
           <ul className="hidden items-center gap-8 md:flex">
-            {navLinks.slice(0, 3).map(({ label, href }) => (
+            {navLinks.slice(0, 3).map(({ label, href, innerHref }) => (
               <li key={label}>
                 <a
-                  href={href}
+                  href={inner ? innerHref : href}
                   className="relative font-mono text-[0.63rem] uppercase tracking-[0.26em] text-[var(--body)] transition-colors duration-200 hover:text-[var(--fg)] group"
                 >
                   {label}
@@ -157,7 +157,7 @@ export default function Navbar() {
             ))}
           </ul>
 
-          <a href="#contact" className="btn btn-primary py-2.5 px-5 text-[0.62rem]">
+          <a href={inner ? "/#contact" : "#contact"} className="btn btn-primary py-2.5 px-5 text-[0.62rem]">
             Let&apos;s talk
           </a>
         </div>
@@ -174,7 +174,7 @@ export default function Navbar() {
             <div className="wrap flex w-full items-center justify-between">
 
               {/* Logo */}
-              <a href="#" className="flex shrink-0 items-center">
+              <a href={inner ? "/" : "#"} className="flex shrink-0 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
               </a>
@@ -197,7 +197,7 @@ export default function Navbar() {
 
               {/* LET'S TALK pill */}
               <a
-                href="#contact"
+                href={inner ? "/#contact" : "#contact"}
                 className="flex h-[54px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
               >
                 Let&apos;s talk

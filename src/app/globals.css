@@ -397,6 +397,34 @@
 }
 
 /* ─────────────────────────────────────────
+   SCROLLBAR UTILITIES
+───────────────────────────────────────── */
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─────────────────────────────────────────
+   WORK GRID — RESPONSIVE
+   On mobile, all editorial cards go full width.
+   On md+, inline gridColumn takes over.
+───────────────────────────────────────── */
+
+[data-card] {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  [data-card] {
+    grid-column: span var(--col-span, 12);
+  }
+}
+
+/* ─────────────────────────────────────────
    REDUCED MOTION
 ───────────────────────────────────────── */
 

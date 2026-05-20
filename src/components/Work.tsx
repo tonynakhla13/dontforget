@@ -5,6 +5,7 @@ import { useRevealUp, useStaggerChildren } from "@/hooks/useScrollAnimation";
 
 interface Project {
   id: string;
+  slug?: string | null;
   title: string;
   category: string | null;
   year: string | null;
@@ -55,9 +56,7 @@ const FALLBACK: Project[] = [
 function Card({ p, large = false }: { p: Project; large?: boolean }) {
   return (
     <a
-      href={p.liveUrl ?? "#work"}
-      target={p.liveUrl ? "_blank" : undefined}
-      rel="noopener noreferrer"
+      href={`/work/${p.slug ?? p.id}`}
       className="group block overflow-hidden rounded-[var(--radius)] bg-[var(--surface)]"
     >
       <div className={`relative overflow-hidden ${large ? "aspect-[16/8]" : "aspect-[4/3]"}`}>
@@ -84,7 +83,7 @@ function Card({ p, large = false }: { p: Project; large?: boolean }) {
             </h3>
           </div>
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 font-mono text-sm text-white opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:border-[var(--teal)] group-hover:text-[var(--teal)]">
-            ↗
+            →
           </span>
         </div>
       </div>
