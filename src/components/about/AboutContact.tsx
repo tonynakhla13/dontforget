@@ -28,7 +28,7 @@ export default function AboutContact() {
     "block font-mono text-[0.58rem] uppercase tracking-[0.32em] text-[var(--body)] mb-2.5";
 
   return (
-    <section id="contact" className="relative section-py border-t border-[var(--border)] bg-[var(--bg)]">
+    <section id="contact" className="relative section-py border-t border-[var(--border)]" style={{ background: "rgba(9,9,9,0.82)", backdropFilter: "blur(6px)" }}>
       <div className="wrap grid gap-20 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-24">
 
         {/* Left */}

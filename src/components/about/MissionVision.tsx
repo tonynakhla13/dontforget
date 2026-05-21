@@ -5,22 +5,22 @@ import { gsap } from "@/lib/gsap";
 
 const PILLARS = [
   {
-    label: "Mission",
     num: "01",
-    heading: "Build things\npeople remember.",
+    label: "Mission",
+    heading: "Build things people remember.",
     body: "We exist to create digital experiences that leave a mark — websites, apps, and systems that are fast, beautiful, and built to last. Not just functional. Genuinely unforgettable.",
   },
   {
-    label: "Vision",
     num: "02",
-    heading: "World-class craft\nfor every brand.",
-    body: "A world where every business, regardless of size or budget, has access to the kind of digital craftsmanship that used to belong only to the biggest companies in the world.",
+    label: "Vision",
+    heading: "World-class craft for every brand.",
+    body: "A world where every business, regardless of size, has access to the kind of digital craftsmanship that used to belong only to the biggest companies in the world.",
   },
   {
-    label: "Why",
     num: "03",
-    heading: "Because forgettable\nis a waste.",
-    body: "Most digital work gets scrolled past in under a second. We started DON'T FORGET because we believe that's a failure — of execution, of intent, and of respect for the people on the other side of the screen.",
+    label: "Why",
+    heading: "Because forgettable is a waste.",
+    body: "Most digital work gets scrolled past in under a second. We started DON'T FORGET because we believe that's a failure — of execution, of intent, and of respect for the audience.",
   },
 ];
 
@@ -37,78 +37,89 @@ export default function MissionVision() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const pillars = sectionRef.current?.querySelectorAll("[data-pillar]") ?? [];
-    const values  = sectionRef.current?.querySelectorAll("[data-value]")  ?? [];
+    const ctx = gsap.context(() => {
+      const rows = sectionRef.current?.querySelectorAll("[data-row]") ?? [];
+      rows.forEach((row) => {
+        gsap.fromTo(row,
+          { autoAlpha: 0, y: 28 },
+          {
+            autoAlpha: 1, y: 0, duration: 0.85, ease: "power3.out",
+            scrollTrigger: { trigger: row, start: "top 85%", toggleActions: "play none none none" },
+          }
+        );
+      });
 
-    gsap.fromTo(pillars,
-      { autoAlpha: 0, y: 40 },
-      {
-        autoAlpha: 1, y: 0, stagger: 0.14, duration: 0.9, ease: "power3.out",
-        scrollTrigger: { trigger: sectionRef.current, start: "top 75%", toggleActions: "play none none none" },
-      }
-    );
-    gsap.fromTo(values,
-      { autoAlpha: 0, y: 28 },
-      {
-        autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.7, ease: "power3.out",
-        scrollTrigger: { trigger: "[data-values-grid]", start: "top 80%", toggleActions: "play none none none" },
-      }
-    );
+      const vals = sectionRef.current?.querySelectorAll("[data-val]") ?? [];
+      vals.forEach((v, i) => {
+        gsap.fromTo(v,
+          { autoAlpha: 0, y: 20 },
+          {
+            autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out",
+            delay: i * 0.06,
+            scrollTrigger: { trigger: "[data-values]", start: "top 85%", toggleActions: "play none none none" },
+          }
+        );
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative section-py border-t border-[var(--border)] bg-[var(--bg)]">
-      <div className="wrap">
+    <section
+      ref={sectionRef}
+      className="relative border-t border-[var(--border)] section-py"
+      style={{ background: "rgba(9,9,9,0.88)", backdropFilter: "blur(6px)" }}
+    >
+      {/* Top glow line */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(58,191,138,0.25), transparent)" }} />
 
-        {/* ── Mission / Vision / Why ── */}
-        <div className="mb-4">
-          <p className="eyebrow mb-8">What drives us</p>
-          <div className="grid gap-6 md:grid-cols-3">
-            {PILLARS.map((p) => (
-              <div
-                key={p.num}
-                data-pillar
-                className="group relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-10 transition-colors duration-300 hover:border-[var(--teal-mid)] hover:bg-[var(--teal-faint)]"
-                style={{ visibility: "hidden" }}
-              >
-                <div className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-[var(--teal)] transition-transform duration-500 group-hover:scale-x-100" />
-                <div className="mb-8 flex items-center justify-between">
-                  <span className="eyebrow">{p.label}</span>
-                  <span className="font-mono text-[0.5rem] uppercase tracking-[0.4em] text-[var(--teal)] opacity-50">{p.num}</span>
-                </div>
-                <h3 className="hed text-[1.8rem] leading-[1.1] text-[var(--fg)]">
-                  {p.heading.split("\n").map((line, i) => (
-                    <span key={i} className="block">{line}</span>
-                  ))}
-                </h3>
-                <p className="mt-6 text-[0.875rem] leading-[1.9] text-[var(--body)]">{p.body}</p>
+      <div className="wrap">
+        <p className="eyebrow mb-16">What drives us</p>
+
+        {/* ── Pillars ── */}
+        <div className="divide-y divide-[var(--border)]">
+          {PILLARS.map((p) => (
+            <div
+              key={p.num}
+              data-row
+              className="grid gap-8 py-14 lg:grid-cols-[180px_1fr]"
+              style={{ visibility: "hidden" }}
+            >
+              {/* Left label */}
+              <div className="flex flex-col gap-1 pt-1">
+                <span className="eyebrow">{p.label}</span>
+                <span className="font-mono text-[0.46rem] uppercase tracking-[0.44em] text-[var(--body)] opacity-45 mt-1">{p.num}</span>
               </div>
-            ))}
-          </div>
+
+              {/* Right content */}
+              <div>
+                <h3 className="hed text-[clamp(1.9rem,3.2vw,3rem)] leading-[1.06] text-[var(--fg)]">
+                  {p.heading}
+                </h3>
+                <p className="mt-6 max-w-2xl text-[0.9375rem] leading-[1.9] text-[var(--body)]">
+                  {p.body}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* ── Values ── */}
-        <div className="mt-24">
-          <p className="eyebrow mb-8">How we work</p>
-          <div data-values-grid className="grid gap-px border border-[var(--border)] rounded-[var(--radius)] overflow-hidden md:grid-cols-3">
+        <div className="mt-20 pt-14 border-t border-[var(--border)]">
+          <p className="eyebrow mb-12">How we work</p>
+          <div data-values className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {VALUES.map((v, i) => (
-              <div
-                key={i}
-                data-value
-                className="group relative bg-[var(--surface)] px-8 py-9 transition-colors duration-300 hover:bg-[var(--teal-faint)]"
-                style={{ visibility: "hidden" }}
-              >
-                <div className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-[var(--teal)] transition-transform duration-500 group-hover:scale-x-100" />
-                <span className="mb-4 block font-mono text-[0.48rem] uppercase tracking-[0.44em] text-[var(--teal)] opacity-55">
+              <div key={i} data-val style={{ visibility: "hidden" }}>
+                <span className="block font-mono text-[0.46rem] uppercase tracking-[0.48em] text-[var(--teal)] mb-3">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <h4 className="hed text-[1.1rem] text-[var(--fg)]">{v.title}</h4>
-                <p className="mt-3 text-[0.84rem] leading-[1.8] text-[var(--body)]">{v.body}</p>
+                <h4 className="hed text-[1.05rem] text-[var(--fg)] mb-2">{v.title}</h4>
+                <p className="text-[0.84rem] leading-[1.8] text-[var(--body)]">{v.body}</p>
               </div>
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );
