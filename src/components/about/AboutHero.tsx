@@ -134,6 +134,43 @@ function OrbitSVG() {
       {/* Faint axis lines */}
       <line x1="0" y1={CY} x2={VIEWSIZE} y2={CY} stroke="rgba(58,191,138,0.04)" strokeWidth="1" />
       <line x1={CX} y1="0" x2={CX} y2={VIEWSIZE} stroke="rgba(58,191,138,0.04)" strokeWidth="1" />
+
+      {/* ── Compass hands ── centered via translate so GSAP rotates around pivot */}
+
+      {/* Long hand — reaches near outer orbit */}
+      <g data-hand-1 transform={`translate(${CX}, ${CY})`}>
+        {/* needle body: tip up at (0,-295), tail below at (0,22) */}
+        <polygon
+          points="0,-295 4,-8 0,22 -4,-8"
+          fill="rgba(58,191,138,0.62)"
+          style={{ filter: "drop-shadow(0 0 7px rgba(58,191,138,0.50))" }}
+        />
+        {/* slim tip accent */}
+        <polygon
+          points="0,-295 1.2,-260 0,-225 -1.2,-260"
+          fill="rgba(255,255,255,0.55)"
+        />
+      </g>
+
+      {/* Short hand — reaches near inner orbit */}
+      <g data-hand-2 transform={`translate(${CX}, ${CY})`}>
+        <polygon
+          points="0,-215 5.5,-6 0,28 -5.5,-6"
+          fill="rgba(58,191,138,0.40)"
+          style={{ filter: "drop-shadow(0 0 5px rgba(58,191,138,0.35))" }}
+        />
+        {/* counter-tail */}
+        <polygon
+          points="0,28 3,52 0,60 -3,52"
+          fill="rgba(58,191,138,0.28)"
+        />
+      </g>
+
+      {/* Center pivot */}
+      <circle cx={CX} cy={CY} r="8"  fill="rgba(58,191,138,0.75)"
+              style={{ filter: "drop-shadow(0 0 10px rgba(58,191,138,0.80))" }} />
+      <circle cx={CX} cy={CY} r="14" stroke="rgba(58,191,138,0.30)" strokeWidth="1" fill="none" />
+      <circle cx={CX} cy={CY} r="3"  fill="rgba(9,9,9,0.90)" />
     </svg>
   );
 }
@@ -241,6 +278,22 @@ export default function AboutHero() {
         repeat: -1,
         ease: "none",
         transformOrigin: `${CX}px ${CY}px`,
+      });
+
+      /* Compass hands — rotate around their translate pivot (0% 0% = the translate point) */
+      gsap.set("[data-hand-1]", { rotation: -40, transformOrigin: "0% 0%" });
+      gsap.to("[data-hand-1]", {
+        rotation: 320,         // -40 + 360
+        duration: 44,
+        repeat: -1,
+        ease: "none",
+      });
+      gsap.set("[data-hand-2]", { rotation: 130, transformOrigin: "0% 0%" });
+      gsap.to("[data-hand-2]", {
+        rotation: 490,         // 130 + 360
+        duration: 78,
+        repeat: -1,
+        ease: "none",
       });
     }, sectionRef);
 
