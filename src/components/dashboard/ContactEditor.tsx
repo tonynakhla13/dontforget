@@ -45,7 +45,7 @@ export default function ContactEditor({
   }
 
   const inputClass =
-    "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-indigo-500 transition-colors text-sm";
+    "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-[#2ea876] transition-colors text-sm";
   const labelClass =
     "block text-xs text-white/50 uppercase tracking-widest mb-2";
 
@@ -143,7 +143,7 @@ export default function ContactEditor({
       <button
         type="submit"
         disabled={saving}
-        className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+        className="bg-[#3ABF8A] hover:bg-[#2ea876] disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
       >
         {saving ? "Saving…" : saved ? "Saved ✓" : "Save Changes"}
       </button>

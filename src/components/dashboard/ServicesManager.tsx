@@ -64,7 +64,7 @@ export default function ServicesManager({ initial }: { initial: Service[] }) {
   }
 
   const inputClass =
-    "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-indigo-500 transition-colors text-sm";
+    "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-[#2ea876] transition-colors text-sm";
   const labelClass =
     "block text-xs text-white/50 uppercase tracking-widest mb-2";
 
@@ -73,7 +73,7 @@ export default function ServicesManager({ initial }: { initial: Service[] }) {
       <div className="flex justify-end">
         <button
           onClick={openNew}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+          className="bg-[#3ABF8A] hover:bg-[#2ea876] text-white text-sm px-4 py-2 rounded-lg transition-colors"
         >
           + Add Service
         </button>
@@ -130,7 +130,7 @@ export default function ServicesManager({ initial }: { initial: Service[] }) {
                 type="checkbox"
                 checked={form.active}
                 onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
-                className="accent-indigo-500"
+                className="accent-[#2ea876]"
               />
               <span className="text-sm text-white/60">Active</span>
             </label>
@@ -140,7 +140,7 @@ export default function ServicesManager({ initial }: { initial: Service[] }) {
             <button
               onClick={save}
               disabled={saving}
-              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm px-6 py-2.5 rounded-lg transition-colors"
+              className="bg-[#3ABF8A] hover:bg-[#2ea876] disabled:opacity-50 text-white text-sm px-6 py-2.5 rounded-lg transition-colors"
             >
               {saving ? "Saving…" : "Save"}
             </button>

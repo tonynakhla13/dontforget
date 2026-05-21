@@ -15,7 +15,7 @@ export default async function ProjectsPage() {
         <h1 className="text-2xl font-semibold text-white">Projects</h1>
         <Link
           href="/dashboard/projects/new"
-          className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+          className="bg-[#3ABF8A] hover:bg-[#2ea876] text-white text-sm px-4 py-2 rounded-lg transition-colors"
         >
           + New Project
         </Link>
@@ -26,7 +26,7 @@ export default async function ProjectsPage() {
           <p className="text-white/40 mb-4">No projects yet</p>
           <Link
             href="/dashboard/projects/new"
-            className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors"
+            className="text-[#3ABF8A] hover:text-[#4dd9a0] text-sm transition-colors"
           >
             Create your first project →
           </Link>

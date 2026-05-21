@@ -18,6 +18,11 @@ enum InquiryStatus {
   ARCHIVED
 }
 
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
 model Project {
   id            String        @id @default(cuid())
   slug          String        @unique
@@ -84,6 +89,21 @@ model Admin {
   passwordHash String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Post {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  title       String
+  excerpt     String?    @db.Text
+  content     String     @default("") @db.Text
+  coverImage  String?
+  tags        String[]
+  status      PostStatus @default(DRAFT)
+  publishedAt DateTime?
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Inquiry {

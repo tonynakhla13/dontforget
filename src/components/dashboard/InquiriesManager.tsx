@@ -11,7 +11,7 @@ const STATUS_LABELS: Record<InquiryStatus, string> = {
 };
 
 const STATUS_COLORS: Record<InquiryStatus, string> = {
-  NEW: "bg-indigo-600/20 text-indigo-400",
+  NEW: "bg-[#3ABF8A]/12 text-[#3ABF8A]",
   READ: "bg-white/5 text-white/50",
   REPLIED: "bg-emerald-600/20 text-emerald-400",
   ARCHIVED: "bg-white/5 text-white/20",
@@ -79,7 +79,7 @@ export default function InquiriesManager({
             onClick={() => openInquiry(inquiry)}
             className={`w-full text-left p-4 rounded-xl border transition-colors ${
               selected?.id === inquiry.id
-                ? "bg-indigo-600/10 border-indigo-500/30"
+                ? "bg-[#3ABF8A]/10 border-[#2ea876]/30"
                 : "bg-zinc-900 border-white/5 hover:border-white/10"
             }`}
           >
@@ -112,7 +112,7 @@ export default function InquiriesManager({
               <h2 className="text-lg font-semibold text-white">{selected.name}</h2>
               <a
                 href={`mailto:${selected.email}`}
-                className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                className="text-sm text-[#3ABF8A] hover:text-[#4dd9a0] transition-colors"
               >
                 {selected.email}
               </a>
@@ -123,7 +123,7 @@ export default function InquiriesManager({
                 onChange={(e) =>
                   updateStatus(selected.id, e.target.value as InquiryStatus)
                 }
-                className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white/70 text-sm focus:outline-none focus:border-indigo-500"
+                className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white/70 text-sm focus:outline-none focus:border-[#2ea876]"
               >
                 {Object.entries(STATUS_LABELS).map(([val, label]) => (
                   <option key={val} value={val}>
@@ -165,13 +165,13 @@ export default function InquiriesManager({
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="mt-2 w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-indigo-500 h-28 resize-none"
+              className="mt-2 w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-[#2ea876] h-28 resize-none"
               placeholder="Add private notes…"
             />
             <button
               onClick={saveNotes}
               disabled={saving}
-              className="mt-2 text-xs text-indigo-400 hover:text-indigo-300 disabled:opacity-50 transition-colors"
+              className="mt-2 text-xs text-[#3ABF8A] hover:text-[#4dd9a0] disabled:opacity-50 transition-colors"
             >
               {saving ? "Saving…" : "Save notes"}
             </button>

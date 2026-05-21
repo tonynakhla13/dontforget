@@ -485,6 +485,8 @@ export default function DFParticles() {
       });
     }
 
+    const principlesEl = document.querySelector("#principles");
+
     // ── mouse ──
     const vFov = (55 * Math.PI) / 180;
     const hH   = Math.tan(vFov / 2) * 5;
@@ -549,12 +551,26 @@ export default function DFParticles() {
             1
           )
         : 0;
+      const principlesRect = principlesEl ? (principlesEl as HTMLElement).getBoundingClientRect() : null;
+      const principlesVisibility = principlesRect
+        ? Math.min(
+            Math.max(
+              Math.min(
+                (window.innerHeight - principlesRect.top) / (window.innerHeight * 0.45),
+                principlesRect.bottom / (window.innerHeight * 0.45)
+              ),
+              0
+            ),
+            1
+          )
+        : 0;
       serviceShape.position.x += (0 - serviceShape.position.x) * 0.03;
       serviceShape.position.y += (0 - serviceShape.position.y) * 0.03;
       serviceShape.rotation.x += 0.0007;
       serviceShape.rotation.y += 0.001;
       aboutShapeMaterial.opacity *= 1 - serviceVisibility;
-      serviceShapeMaterial.opacity = serviceVisibility * 0.08;
+      aboutShapeMaterial.opacity *= 1 - principlesVisibility;
+      serviceShapeMaterial.opacity = serviceVisibility * 0.08 * (1 - principlesVisibility);
 
       renderer.render(scene, camera);
     };

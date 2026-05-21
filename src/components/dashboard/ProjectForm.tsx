@@ -118,7 +118,7 @@ export default function ProjectForm({ initial }: { initial?: ProjectData }) {
   }
 
   const inputClass =
-    "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-indigo-500 transition-colors text-sm";
+    "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-[#2ea876] transition-colors text-sm";
   const labelClass = "block text-xs text-white/50 uppercase tracking-widest mb-2";
 
   return (
@@ -359,7 +359,7 @@ export default function ProjectForm({ initial }: { initial?: ProjectData }) {
               type="checkbox"
               checked={form.featured}
               onChange={(e) => set("featured", e.target.checked)}
-              className="w-4 h-4 accent-indigo-500"
+              className="w-4 h-4 accent-[#2ea876]"
             />
             <span className="text-sm text-white/60">Featured project</span>
           </label>
@@ -372,7 +372,7 @@ export default function ProjectForm({ initial }: { initial?: ProjectData }) {
         <button
           type="submit"
           disabled={saving}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+          className="bg-[#3ABF8A] hover:bg-[#2ea876] disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
         >
           {saving ? "Saving…" : editing ? "Save Changes" : "Create Project"}
         </button>
