@@ -425,6 +425,28 @@
 }
 
 /* ─────────────────────────────────────────
+   ABOUT PAGE — SHAPE KEYFRAMES
+───────────────────────────────────────── */
+
+@keyframes arm-spin {
+  from { transform: rotateY(0deg) rotateX(12deg) rotateZ(3deg); }
+  to   { transform: rotateY(360deg) rotateX(12deg) rotateZ(3deg); }
+}
+@keyframes arm-wobble {
+  0%,100% { transform: rotateX(0deg) rotateZ(0deg); }
+  33%     { transform: rotateX(5deg) rotateZ(2deg); }
+  66%     { transform: rotateX(-4deg) rotateZ(-1.5deg); }
+}
+@keyframes torus-spin {
+  from { transform: rotateX(65deg) rotateZ(0deg); }
+  to   { transform: rotateX(65deg) rotateZ(360deg); }
+}
+@keyframes dodeca-spin {
+  from { transform: rotateY(0deg) rotateX(22deg); }
+  to   { transform: rotateY(360deg) rotateX(22deg); }
+}
+
+/* ─────────────────────────────────────────
    REDUCED MOTION
 ───────────────────────────────────────── */
 
