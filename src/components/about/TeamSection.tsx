@@ -70,7 +70,7 @@ export default function TeamSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative section-py border-t border-[var(--border)] bg-[var(--bg)]">
+    <section ref={sectionRef} className="relative section-py border-t border-[var(--border)]" style={{ background: "rgba(9,9,9,0.72)", backdropFilter: "blur(4px)" }}>
       <div className="wrap">
         <div className="mb-16 grid gap-8 md:grid-cols-2 md:items-end">
           <div>
