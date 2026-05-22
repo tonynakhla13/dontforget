@@ -1,55 +1,5 @@
-import About from "@/components/About";
-import Availability from "@/components/Availability";
-import AmbientGlow from "@/components/AmbientGlow";
-import Contact from "@/components/Contact";
-import Hero from "@/components/Hero";
-import Loader from "@/components/Loader";
-import Marquee from "@/components/Marquee";
-import Navbar from "@/components/Navbar";
-import Principles from "@/components/Principles";
-import Process from "@/components/Process";
-import Services from "@/components/Services";
-import SmoothScroll from "@/components/SmoothScroll";
-import Work from "@/components/Work";
-import ParticleLayer from "@/components/ParticleLayer";
-import { prisma } from "@/lib/prisma";
+import HomeThemeClient from "@/components/home/HomeThemeClient";
 
-export const dynamic = "force-dynamic";
-
-export default async function Home() {
-  const [projects, services] = process.env.DATABASE_URL
-    ? await Promise.all([
-        prisma.project.findMany({
-          where: { status: "PUBLISHED" },
-          orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-        }),
-        prisma.service.findMany({
-          where: { active: true },
-          orderBy: { order: "asc" },
-        }),
-      ])
-    : [[], []];
-
-  return (
-    <>
-      <Loader />
-      <SmoothScroll />
-      {/* ParticleLayer must live OUTSIDE <main> to avoid stacking context trapping z-index:-1 */}
-      <ParticleLayer />
-      <main className="relative z-[1] overflow-x-clip">
-      <div className="noise" />
-      <AmbientGlow />
-      <Navbar />
-      <Hero />
-      <About />
-      <Marquee />
-      <Services />
-      <Process />
-      <Work projects={projects} />
-      <Principles />
-      <Availability />
-      <Contact />
-    </main>
-    </>
-  );
+export default function Page() {
+  return <HomeThemeClient />;
 }

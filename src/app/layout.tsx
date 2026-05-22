@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Caveat, Space_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import { ThemeProvider } from "@/lib/themeContext";
+import ThemeOnboarding from "@/components/ui/ThemeOnboarding";
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 import "./globals.css";
 
 const inter = Inter({
@@ -54,8 +57,21 @@ export default function RootLayout({
       className={`${inter.variable} ${csRobust.variable} ${caveat.variable} ${spaceMono.variable}`}
     >
       <body className="antialiased" suppressHydrationWarning>
-        {children}
+        <ThemeProvider>
+          {/* Theme Switcher will be added as a client component */}
+          <ThemeUIWrapper />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
+  );
+}
+
+function ThemeUIWrapper() {
+  return (
+    <>
+      <ThemeOnboarding />
+      <ThemeSwitcher />
+    </>
   );
 }

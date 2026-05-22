@@ -32,16 +32,19 @@ const rules = [
 
 function RuleShape({ index, active }: { index: number; active: number }) {
   const visible = index === active;
+  const tubeRings = Array.from({ length: 16 }, (_, i) => i);
+  const ribs = Array.from({ length: 13 }, (_, i) => i);
+  const floaters = Array.from({ length: 9 }, (_, i) => i);
 
   return (
     <svg
-      viewBox="0 0 620 520"
-      className="pointer-events-none absolute left-[5vw] top-[8vh] h-[min(42vh,460px)] w-[min(54vw,1040px)] transition-all duration-700 ease-out max-lg:left-[-8vw] max-lg:w-[86vw]"
+      viewBox="0 0 880 620"
+      className="pointer-events-none absolute left-[-3vw] top-[-5vh] h-[min(68vh,780px)] w-[min(68vw,1340px)] transition-all duration-700 ease-out max-lg:left-[-30vw] max-lg:w-[128vw]"
       style={{
-        opacity: visible ? 0.84 : 0,
+        opacity: visible ? 1 : 0,
         transform: visible
-          ? "perspective(1000px) rotateX(58deg) rotateY(0deg) rotateZ(-5deg) scale(1.12)"
-          : "perspective(1000px) rotateX(66deg) rotateY(-18deg) rotateZ(-12deg) scale(.92)",
+          ? `perspective(1100px) rotateX(${56 + index * 2}deg) rotateY(${-24 + index * 7}deg) rotateZ(${-17 + index * 5}deg) scale(1.18)`
+          : `perspective(1100px) rotateX(${72 + index * 2}deg) rotateY(${-44 + index * 7}deg) rotateZ(${-25 + index * 5}deg) scale(.88)`,
         transformOrigin: "48% 52%",
       }}
       fill="none"
@@ -62,60 +65,117 @@ function RuleShape({ index, active }: { index: number; active: number }) {
         </linearGradient>
       </defs>
 
-      {index === 0 && (
-        <g stroke={`url(#rule-shape-grad-${index})`} strokeWidth="1.8" filter={`url(#rule-shape-glow-${index})`}>
-          <path d="M76 156h360l118 82v196H194L76 350z" />
-          <path d="M436 156v196l118 82M194 434V238L76 156M194 238h360" />
-          <path d="M124 204h330M112 285h398M150 370h324" opacity=".5" />
-          <path d="M124 204 474 370M454 204 150 370" opacity=".32" />
-          <path d="M74 434c110-72 210-94 350-74 72 10 117 34 164 74" opacity=".3" />
-          <path d="M60 104c190-58 390-46 530 34" opacity=".18" />
-          <circle cx="322" cy="296" r="116" opacity=".22" />
-          <circle cx="322" cy="296" r="176" opacity=".13" />
-        </g>
-      )}
+      <g stroke={`url(#rule-shape-grad-${index})`} strokeWidth="1.55" filter={`url(#rule-shape-glow-${index})`}>
+        {/* main hero-like cylindrical tube */}
+        <g opacity=".9">
+          <path d="M120 292 C198 150 430 120 650 212" />
+          <path d="M128 390 C230 520 482 494 712 344" />
+          <path d="M120 292 C90 326 96 366 128 390" />
+          <path d="M650 212 C742 238 776 296 712 344" />
+          <ellipse cx="126" cy="340" rx="38" ry="56" transform="rotate(-14 126 340)" opacity=".82" />
+          <ellipse cx="686" cy="278" rx="66" ry="96" transform="rotate(72 686 278)" opacity=".82" />
 
-      {index === 1 && (
-        <g stroke={`url(#rule-shape-grad-${index})`} strokeWidth="1.85" filter={`url(#rule-shape-glow-${index})`}>
-          <path d="M70 342 C154 80, 328 448, 470 210 S612 190, 574 382" />
-          <path d="M448 188h92v92h-92z" opacity=".52" />
-          <path d="M86 312h74v74H86z" opacity=".5" />
-          <path d="m428 164 64 54-64 58" />
-          <path d="M112 458c136 48 320 38 452-24" opacity=".28" />
-          <path d="M90 128c124-38 300-28 452 30" opacity=".18" />
-          <circle cx="332" cy="292" r="178" opacity=".12" />
-        </g>
-      )}
+          {tubeRings.map((ring) => {
+            const t = ring / (tubeRings.length - 1);
+            const x = 132 + t * 548 + Math.sin(t * Math.PI + index) * 18;
+            const y = 342 - Math.sin(t * Math.PI) * 80 + Math.cos(t * Math.PI * 1.6 + index) * 20;
+            const rx = 40 + Math.sin(t * Math.PI) * 30;
+            const ry = 62 + Math.sin(t * Math.PI) * 18;
+            return (
+              <ellipse
+                key={`ring-${ring}`}
+                cx={x}
+                cy={y}
+                rx={rx}
+                ry={ry}
+                transform={`rotate(${64 - t * 72 + index * 9} ${x} ${y})`}
+                opacity={0.18 + Math.sin(t * Math.PI) * 0.36}
+              />
+            );
+          })}
 
-      {index === 2 && (
-        <g stroke={`url(#rule-shape-grad-${index})`} strokeWidth="1.65" filter={`url(#rule-shape-glow-${index})`}>
-          {[116, 256, 396, 536].map((x, i) => (
-            <g key={x}>
-              <rect x={x - 58} y={i % 2 ? 316 : 196} width="116" height="86" rx="16" />
-              <path d={`M${x - 34} ${i % 2 ? 348 : 228}h68M${x - 34} ${i % 2 ? 378 : 258}h42`} />
+          {ribs.map((rib) => {
+            const offset = (rib - 6) * 10;
+            return (
+              <path
+                key={`rib-${rib}`}
+                d={`M${128 + rib * 8} ${318 + offset} C${260 + rib * 6} ${210 + offset * 0.25}, ${478 - rib * 4} ${198 - offset * 0.2}, ${700 - rib * 5} ${286 - offset}`}
+                opacity={0.13 + (rib % 5) * 0.06}
+              />
+            );
+          })}
+        </g>
+
+        {/* second crossing cylinder */}
+        <g opacity=".55">
+          <path d="M214 168 C310 94 498 104 626 178" />
+          <path d="M184 246 C308 342 514 330 676 230" />
+          <path d="M214 168 C158 188 146 224 184 246" />
+          <path d="M626 178 C692 184 716 210 676 230" />
+          <ellipse cx="198" cy="207" rx="34" ry="58" transform="rotate(68 198 207)" />
+          <ellipse cx="650" cy="204" rx="42" ry="72" transform="rotate(76 650 204)" />
+          {Array.from({ length: 9 }, (_, i) => {
+            const t = i / 8;
+            const x = 198 + t * 452;
+            const y = 206 - Math.sin(t * Math.PI) * 50;
+            return (
+              <ellipse
+                key={`cross-${i}`}
+                cx={x}
+                cy={y}
+                rx={28 + Math.sin(t * Math.PI) * 18}
+                ry={58}
+                transform={`rotate(${70 - t * 34} ${x} ${y})`}
+                opacity={0.22 + Math.sin(t * Math.PI) * 0.18}
+              />
+            );
+          })}
+        </g>
+
+        {/* floating cylindrical fragments */}
+        {floaters.map((floater) => {
+          const x = 112 + ((floater * 83 + index * 37) % 560);
+          const y = 98 + ((floater * 61 + index * 43) % 390);
+          const rot = -38 + ((floater * 29 + index * 17) % 80);
+          const scale = 0.72 + (floater % 4) * 0.14;
+          return (
+            <g key={`floater-${floater}`} transform={`translate(${x} ${y}) rotate(${rot}) scale(${scale})`} opacity={0.16 + (floater % 4) * 0.08}>
+              <path d="M0 0 C42-22 116-18 158 8" />
+              <path d="M-8 48 C46 82 122 74 174 28" />
+              <ellipse cx="0" cy="24" rx="18" ry="28" />
+              <ellipse cx="166" cy="18" rx="20" ry="34" />
+              <path d="M34 14 C76 0 110 2 146 18" opacity=".55" />
+              <path d="M28 48 C74 58 116 52 152 30" opacity=".45" />
             </g>
-          ))}
-          <path d="M174 238 C220 200, 232 330, 256 346" />
-          <path d="M314 346 C360 390, 372 240, 396 238" />
-          <path d="M454 238 C500 200, 512 330, 536 346" />
-          <circle cx="326" cy="294" r="205" opacity=".2" />
-          <circle cx="326" cy="294" r="282" opacity=".12" />
-          <path d="M66 454c160-48 348-51 504-8" opacity=".22" />
-        </g>
-      )}
+          );
+        })}
 
-      {index === 3 && (
-        <g stroke={`url(#rule-shape-grad-${index})`} strokeWidth="1.75" filter={`url(#rule-shape-glow-${index})`}>
-          <path d="M76 198h332v166H76z" />
-          <path d="M126 250h214M126 300h142" />
-          <path d="m408 266 136-72v186l-136-76z" />
-          <path d="M568 222c44 42 44 122 0 166" opacity=".36" />
-          <path d="M608 172c72 78 72 236 0 314" opacity=".23" />
-          <path d="M72 438h488" opacity=".34" />
-          <circle cx="304" cy="290" r="214" opacity=".13" />
-          <path d="M96 140c138-40 336-30 472 34" opacity=".18" />
-        </g>
-      )}
+        {index === 0 && (
+          <>
+            <path d="M242 306h260M250 356h168" opacity=".46" />
+            <path d="m522 282 54 40-54 42" opacity=".5" />
+          </>
+        )}
+        {index === 1 && (
+          <>
+            <path d="M144 370 C232 132, 382 430, 530 218" opacity=".62" />
+            <path d="M500 202h82v82h-82z" opacity=".38" />
+          </>
+        )}
+        {index === 2 && (
+          <>
+            {[220, 380, 540].map((x) => (
+              <rect key={x} x={x - 54} y={x === 380 ? 322 : 214} width="108" height="78" rx="14" opacity=".42" />
+            ))}
+          </>
+        )}
+        {index === 3 && (
+          <>
+            <path d="M210 230h260v134H210z" opacity=".46" />
+            <path d="m470 272 116-62v164l-116-68z" opacity=".45" />
+          </>
+        )}
+      </g>
     </svg>
   );
 }
@@ -124,6 +184,7 @@ export default function Principles() {
   const sectionRef = useRef<HTMLElement>(null);
   const slideRefs = useRef<Array<HTMLElement | null>>([]);
   const [active, setActive] = useState(-1);
+  const [typedLine, setTypedLine] = useState("");
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -131,7 +192,15 @@ export default function Principles() {
     if (!section || slides.length === 0) return;
 
     const ctx = gsap.context(() => {
-      gsap.set(slides, { autoAlpha: 0, yPercent: 18, scale: 0.96, filter: "blur(12px)" });
+      gsap.set(slides, {
+        autoAlpha: 0,
+        yPercent: 22,
+        xPercent: 5,
+        scale: 0.94,
+        rotateZ: -1.4,
+        filter: "blur(16px)",
+        transformOrigin: "30% 70%",
+      });
       gsap.set(slides[0], { autoAlpha: 1, yPercent: 0, scale: 1, filter: "blur(0px)" });
 
       const tl = gsap.timeline({
@@ -155,19 +224,19 @@ export default function Principles() {
         if (index > 0) {
           tl.fromTo(
             slide,
-            { autoAlpha: 0, yPercent: 18, xPercent: 3, scale: 0.96, filter: "blur(14px)" },
-            { autoAlpha: 1, yPercent: 0, xPercent: 0, scale: 1, filter: "blur(0px)", duration: 0.42 },
+            { autoAlpha: 0, yPercent: 24, xPercent: 7, scale: 0.92, rotateZ: -1.8, filter: "blur(18px)" },
+            { autoAlpha: 1, yPercent: 0, xPercent: 0, scale: 1, rotateZ: 0, filter: "blur(0px)", duration: 0.5 },
             index
           );
         }
 
-        tl.to(slide, { autoAlpha: 1, yPercent: 0, scale: 1, filter: "blur(0px)", duration: 0.24 }, index + 0.42);
+        tl.to(slide, { autoAlpha: 1, yPercent: 0, scale: 1, rotateZ: 0, filter: "blur(0px)", duration: 0.2 }, index + 0.5);
 
         if (index < slides.length - 1) {
           tl.to(
             slide,
-            { autoAlpha: 0, yPercent: -18, xPercent: -3, scale: 1.035, filter: "blur(12px)", duration: 0.36 },
-            index + 0.72
+            { autoAlpha: 0, yPercent: -24, xPercent: -7, scale: 1.045, rotateZ: 1.5, filter: "blur(16px)", duration: 0.42 },
+            index + 0.76
           );
         }
       });
@@ -175,6 +244,25 @@ export default function Principles() {
 
     return () => ctx.revert();
   }, []);
+
+  useEffect(() => {
+    if (active < 0 || active >= rules.length) {
+      setTypedLine("");
+      return;
+    }
+
+    const line = rules[active].line;
+    let index = 0;
+    setTypedLine("");
+
+    const timer = window.setInterval(() => {
+      index = Math.min(line.length, index + 7);
+      setTypedLine(line.slice(0, index));
+      if (index >= line.length) window.clearInterval(timer);
+    }, 14);
+
+    return () => window.clearInterval(timer);
+  }, [active]);
 
   return (
     <section
@@ -210,30 +298,29 @@ export default function Principles() {
             ref={(node) => {
               slideRefs.current[index + 1] = node;
             }}
-            className="absolute inset-0 flex items-end px-[var(--gutter)] pb-[13vh]"
+            className="absolute inset-0 flex items-end px-[var(--gutter)] pb-[14vh]"
           >
             <div className="relative w-full max-w-[min(1120px,72vw)] max-lg:max-w-[92vw]">
-              <div className="pointer-events-none fixed right-[var(--gutter)] top-[18vh] z-20 text-right max-md:top-[14vh]">
+              <div className="pointer-events-none fixed right-[var(--gutter)] top-[14vh] z-20 text-right max-md:top-[14vh]">
                 <div className="relative inline-block">
-                  <div className="hed text-[clamp(3.8rem,8vw,10.5rem)] leading-[0.72] tracking-[-0.055em] text-[var(--teal)] drop-shadow-[0_0_28px_rgba(58,191,138,0.28)]">
+                  <div
+                    className="hed -skew-x-6 text-[clamp(6.8rem,13vw,18rem)] italic leading-[0.64] tracking-[-0.085em] drop-shadow-[0_0_42px_rgba(58,191,138,0.55)]"
+                    style={{ color: "var(--teal)", fontStyle: "italic" }}
+                  >
                     RULE #{rule.n}
                   </div>
                 </div>
               </div>
 
-              <div className="mb-6 flex items-center gap-5">
-                <span className="h-px w-24 bg-[var(--teal)]/55" />
-                <span className="font-mono text-[0.68rem] uppercase tracking-[0.28em] text-white/48">
-                  {rule.name}
-                </span>
-              </div>
-
-              <h3 className="hed max-w-[68vw] text-[clamp(2.05rem,4vw,5.4rem)] leading-[0.92] text-[var(--fg)] drop-shadow-[0_14px_0_rgba(255,255,255,0.075)] max-lg:max-w-[86vw] max-md:max-w-[92vw] max-md:text-[clamp(2rem,9vw,4.2rem)]">
-                {rule.line}
+              <h3 className="hed text-[clamp(5.2rem,12vw,15.5rem)] leading-[0.68] tracking-[-0.055em] text-[#F8F5EE] drop-shadow-[0_18px_0_rgba(255,255,255,0.07)]">
+                {rule.name}
               </h3>
 
-              <p className="mt-7 max-w-2xl text-[clamp(1rem,1.45vw,1.22rem)] leading-[1.75] text-white/72">
-                {rule.note}
+              <p className="mt-8 max-w-[64vw] font-mono text-[clamp(1rem,2vw,2rem)] font-bold uppercase leading-[1.35] tracking-[0.035em] text-white/80 max-md:max-w-[92vw]">
+                {active === index ? typedLine : rule.line}
+                {active === index && typedLine.length < rule.line.length ? (
+                  <span className="ml-2 inline-block h-[0.78em] w-[0.08em] translate-y-[0.08em] bg-[var(--teal)] shadow-[0_0_18px_rgba(58,191,138,0.8)]" />
+                ) : null}
               </p>
             </div>
           </article>

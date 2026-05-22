@@ -32,9 +32,10 @@ export default function Loader() {
     })
     .to(tagRef.current, { yPercent: -110, duration: 0.6, ease: "power3.in" }, "-=0.1")
     .to(rootRef.current, { yPercent: -100, duration: 0.85, ease: "power3.inOut" }, "-=0.15")
-    .from("main > *:not(.noise):not(script)", {
-      autoAlpha: 0, y: 18, stagger: 0.055, duration: 0.6, ease: "power3.out",
-    }, "-=0.45");
+    .fromTo("main > *:not(.noise):not(script)",
+      { autoAlpha: 0, y: 18 },
+      { autoAlpha: 1, y: 0, stagger: 0.055, duration: 0.6, ease: "power3.out" },
+      "-=0.45");
 
     return () => { tl.kill(); document.body.style.overflow = ""; };
   }, []);
