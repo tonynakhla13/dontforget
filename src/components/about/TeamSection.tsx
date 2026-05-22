@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { gsap } from "@/lib/gsap";
+import { motion } from "framer-motion";
 
 const TEAM = [
   {
@@ -55,43 +54,59 @@ function Avatar({ initials, accent }: { initials: string; accent: string }) {
   );
 }
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 export default function TeamSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const cards = sectionRef.current?.querySelectorAll("[data-team-card]") ?? [];
-    gsap.fromTo(cards,
-      { autoAlpha: 0, y: 36 },
-      {
-        autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.85, ease: "power3.out",
-        scrollTrigger: { trigger: sectionRef.current, start: "top 78%", toggleActions: "play none none none" },
-      }
-    );
-  }, []);
-
   return (
-    <section ref={sectionRef} className="relative section-py border-t border-[var(--border)]" style={{ background: "rgba(9,9,9,0.72)", backdropFilter: "blur(4px)" }}>
+    <section className="relative section-py border-t border-[var(--border)]" style={{ background: "rgba(9,9,9,0.72)", backdropFilter: "blur(4px)" }}>
       <div className="wrap">
         <div className="mb-16 grid gap-8 md:grid-cols-2 md:items-end">
           <div>
-            <p className="eyebrow mb-8">The team</p>
-            <h2 className="hed text-[3rem]">
+            <motion.p
+              className="eyebrow mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE }}
+              viewport={{ once: true, margin: "-80px" }}
+            >
+              The team
+            </motion.p>
+            <motion.h2
+              className="hed text-[3rem]"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
+              viewport={{ once: true, margin: "-80px" }}
+            >
               Small team.<br />
               <span className="text-[var(--teal)]">Big output.</span>
-            </h2>
+            </motion.h2>
           </div>
-          <p className="self-end text-[0.9375rem] leading-[1.85] text-[var(--body)] md:mb-2 md:max-w-xs">
+          <motion.p
+            className="self-end text-[0.9375rem] leading-[1.85] text-[var(--body)] md:mb-2 md:max-w-xs"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
+            viewport={{ once: true, margin: "-80px" }}
+          >
             We stay lean on purpose. Every project gets senior-level attention from start to ship.
-          </p>
+          </motion.p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {TEAM.map((member, i) => (
-            <div
+            <motion.div
               key={i}
               data-team-card
               className="group flex flex-col gap-5 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-5 transition-colors duration-300 hover:border-[var(--teal-mid)]"
-              style={{ visibility: "hidden" }}
+              initial={{ opacity: 0, y: 36 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.85,
+                delay: i * 0.1,
+                ease: "easeOut",
+              }}
+              viewport={{ once: true, margin: "-80px" }}
             >
               <Avatar initials={member.initials} accent={member.accent} />
               <div>
@@ -101,12 +116,18 @@ export default function TeamSection() {
                 </span>
                 <p className="mt-4 text-[0.8rem] leading-[1.8] text-[var(--body)]">{member.bio}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Hiring CTA */}
-        <div className="mt-16 flex items-center justify-between rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-8 py-7">
+        <motion.div
+          className="mt-16 flex items-center justify-between rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-8 py-7"
+          initial={{ opacity: 0, y: 36 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.85, delay: 0.4, ease: "easeOut" }}
+          viewport={{ once: true, margin: "-80px" }}
+        >
           <div>
             <p className="hed text-[1.2rem] text-[var(--fg)]">Think you belong here?</p>
             <p className="mt-1 text-[0.875rem] text-[var(--body)]">We&apos;re always open to people who are unreasonably good at what they do.</p>
@@ -114,7 +135,7 @@ export default function TeamSection() {
           <a href="mailto:hello@dontforget.studio" className="btn btn-primary shrink-0 ml-8">
             Get in touch →
           </a>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

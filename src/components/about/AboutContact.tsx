@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function AboutContact() {
   const [form, setForm]     = useState({ name: "", email: "", projectType: "", message: "" });
@@ -33,18 +36,44 @@ export default function AboutContact() {
 
         {/* Left */}
         <div>
-          <p className="eyebrow mb-8">Work with us</p>
-          <h2 className="hed text-[3rem]">
+          <motion.p
+            className="eyebrow mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: EASE }}
+            viewport={{ once: true, margin: "-80px" }}
+          >
+            Work with us
+          </motion.p>
+          <motion.h2
+            className="hed text-[3rem]"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
+            viewport={{ once: true, margin: "-80px" }}
+          >
             Got a project<br />
             worth<br />
             remembering?
-          </h2>
-          <p className="mt-8 max-w-sm text-[0.9375rem] leading-[1.85] text-[var(--body)]">
+          </motion.h2>
+          <motion.p
+            className="mt-8 max-w-sm text-[0.9375rem] leading-[1.85] text-[var(--body)]"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
+            viewport={{ once: true, margin: "-80px" }}
+          >
             Tell us what you&apos;re building. We&apos;ll tell you how to make it
             unforgettable — or at least not embarrassing.
-          </p>
+          </motion.p>
 
-          <div className="mt-12 border-t border-[var(--border)]">
+          <motion.div
+            className="mt-12 border-t border-[var(--border)]"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
+            viewport={{ once: true, margin: "-80px" }}
+          >
             {[
               { k: "Email",        v: "hello@dontforget.studio" },
               { k: "Response",     v: "Within 24 hours" },
@@ -55,19 +84,30 @@ export default function AboutContact() {
                 <span className="text-sm text-[var(--fg)]">{row.v}</span>
               </div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* Form */}
-        <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-8 md:p-12">
+        <motion.div
+          className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-8 md:p-12"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
+          viewport={{ once: true, margin: "-80px" }}
+        >
           {status === "sent" ? (
-            <div className="flex min-h-[420px] flex-col justify-center">
+            <motion.div
+              className="flex min-h-[420px] flex-col justify-center"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: EASE }}
+            >
               <p className="eyebrow mb-6">Message sent</p>
               <h3 className="hed text-[3.8rem] text-[var(--fg)]">We&apos;ll be in touch.</h3>
               <p className="mt-5 text-[0.9375rem] leading-[1.85] text-[var(--body)]">
                 Check your inbox within 24 hours. Yes, a real person will reply.
               </p>
-            </div>
+            </motion.div>
           ) : (
             <form onSubmit={submit} className="space-y-6">
               <div className="grid gap-5 md:grid-cols-2">
@@ -102,11 +142,17 @@ export default function AboutContact() {
               </button>
             </form>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {/* Footer */}
-      <div className="wrap mt-24 flex flex-col gap-5 border-t border-[var(--border)] pt-8 md:flex-row md:items-center md:justify-between">
+      <motion.div
+        className="wrap mt-24 flex flex-col gap-5 border-t border-[var(--border)] pt-8 md:flex-row md:items-center md:justify-between"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: EASE }}
+        viewport={{ once: true, margin: "-80px" }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <a href="/" className="flex shrink-0 items-center">
           <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 28, width: "auto" }} />
@@ -115,7 +161,7 @@ export default function AboutContact() {
           <span>Web Development Agency</span>
           <span>© {new Date().getFullYear()}</span>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
