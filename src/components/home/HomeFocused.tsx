@@ -68,25 +68,25 @@ const MARQUEE_ITEMS = [
 
 /* ── project data ───────────────────────────────────────────────── */
 const PROJECTS = [
-  { tag: "Branding",       title: "Corporate Branding" },
-  { tag: "Developing",     title: "Interior Design Ideas" },
-  { tag: "Mobile",         title: "The Coding Awards" },
-  { tag: "Developing",     title: "No-Bull Bootcamp" },
+  { slug: "elia-clinic",  tag: "Healthcare",    title: "Elia Clinic" },
+  { slug: "montgab",      tag: "E-Commerce",    title: "Montgab" },
+  { slug: "180-degrees",  tag: "Agency / Brand", title: "180 Degrees" },
+  { slug: "launchpad",    tag: "SaaS Platform", title: "Launchpad" },
 ];
 
 /* ── services data ──────────────────────────────────────────────── */
 const SERVICES = [
   {
-    title: "Design & Development",
-    body:  "We craft pixel-perfect interfaces backed by clean, scalable code — built to perform at every breakpoint.",
+    title: "Brand Systems",
+    body:  "Names, identities, rules, and visual logic that keep every touchpoint coherent across every surface.",
   },
   {
-    title: "Branding & Content",
-    body:  "From visual identity to tone of voice, we build brands that feel distinct, coherent, and impossible to forget.",
+    title: "Digital Products",
+    body:  "Interfaces and flows built to feel fast, clear, and unmistakably yours — from wireframe to launch.",
   },
   {
-    title: "Marketing Performance",
-    body:  "Data-driven campaigns, SEO architecture, and conversion strategy that turns attention into lasting growth.",
+    title: "Immersive Web",
+    body:  "Three.js, GSAP, and tactile interactions that make the browser feel spatial and alive.",
   },
 ];
 
@@ -106,9 +106,9 @@ const TESTIMONIALS = [
 
 /* ── blog data ──────────────────────────────────────────────────── */
 const BLOG = [
-  { tag: "Strategy", title: "Dirty little secrets about the business" },
-  { tag: "Web",      title: "Skills that you can learn from business" },
-  { tag: "Design",   title: "Bad habits that people in the industry" },
+  { tag: "Strategy", title: "Why your brand needs a digital system, not just a website" },
+  { tag: "Dev",      title: "How we use GSAP to make interfaces feel alive" },
+  { tag: "Branding", title: "5 branding mistakes that are costing you clients" },
 ];
 
 /* ── pill button ────────────────────────────────────────────────── */
@@ -335,12 +335,12 @@ export default function HomeFocused() {
           gap:            "0.5rem",
         }}>
           {[
-            { label: "Home",     href: "/" },
-            { label: "About",    href: "/about" },
-            { label: "Projects", href: "/work" },
-            { label: "Services", href: "/services" },
-            { label: "Blog",     href: "/blog" },
-            { label: "Contact",  href: "/contact" },
+            { label: "Home",     href: "/focused" },
+            { label: "About",    href: "/focused/about" },
+            { label: "Projects", href: "/focused/work" },
+            { label: "Services", href: "/focused/services" },
+            { label: "Blog",     href: "/focused/blog" },
+            { label: "Contact",  href: "/focused/contact" },
           ].map(({ label, href }) => (
             <Link
               key={label}
@@ -515,7 +515,7 @@ export default function HomeFocused() {
 
           {/* CTA card */}
           <Link
-            href="/work"
+            href="/focused/work"
             className="kbm-hero-card"
             style={{
               backgroundColor: C.green,
@@ -561,7 +561,7 @@ export default function HomeFocused() {
           {PROJECTS.map((p, i) => (
             <a
               key={i}
-              href="#"
+              href={`/focused/work/${p.slug}`}
               className="kbm-proj-card"
               style={{
                 display:        "flex",
@@ -613,7 +613,7 @@ export default function HomeFocused() {
 
         {/* View All bar */}
         <Link
-          href="/work"
+          href="/focused/work"
           style={{
             display:         "flex",
             alignItems:      "center",
@@ -909,13 +909,13 @@ export default function HomeFocused() {
                 color:      C.white,
                 lineHeight: 1.4,
               }}>hello@dontforget.studio</a>
-              <a href="tel:+12125550100" style={{
+              <a href="tel:+13125550173" style={{
                 display:    "block",
                 fontFamily: MONO,
                 fontSize:   "clamp(0.9rem, 1.5vw, 1.6rem)",
                 color:      C.white,
                 lineHeight: 1.4,
-              }}>+1 (212) 555-0100</a>
+              }}>+1 (312) 555-0173</a>
             </div>
           </div>
 
@@ -929,12 +929,12 @@ export default function HomeFocused() {
             }}
           >
             {[
-              { label: "Home",     href: "/" },
-              { label: "About",    href: "/about" },
-              { label: "Projects", href: "/work" },
-              { label: "Services", href: "/services" },
-              { label: "Blog",     href: "/blog" },
-              { label: "Contact",  href: "/contact" },
+              { label: "Home",     href: "/focused" },
+              { label: "About",    href: "/focused/about" },
+              { label: "Projects", href: "/focused/work" },
+              { label: "Services", href: "/focused/services" },
+              { label: "Blog",     href: "/focused/blog" },
+              { label: "Contact",  href: "/focused/contact" },
             ].map(({ label, href }) => (
               <Link key={label} href={href} style={{
                 display:       "block",

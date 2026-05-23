@@ -212,7 +212,7 @@ export default function FocusedLayout({ title, activeNav, children, animationCla
         display: "flex", alignItems: "center", justifyContent: "space-between",
         gap: "1rem",
       }}>
-        <Link href="/" className="kbm-topbar-brand" style={{
+        <Link href="/focused" className="kbm-topbar-brand" style={{
           fontFamily: TEKO, fontWeight: 700,
           fontSize: "clamp(1.5rem, 2.5vw, 2.5rem)",
           color: C.green, letterSpacing: "0.02em",

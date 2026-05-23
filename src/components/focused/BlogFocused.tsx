@@ -43,7 +43,7 @@ export default function BlogFocused({ posts = FALLBACK }: { posts?: FocusedPost[
         gap: "clamp(2rem, 4vw, 4rem) clamp(1rem, 2vw, 2rem)",
       }}>
         {posts.map((post, i) => (
-          <a key={post.id} href={`/blog/${post.slug}`} style={{
+          <a key={post.id} href={`/focused/blog/${post.slug}`} style={{
             display: "flex", flexDirection: "column", gap: 14,
             textDecoration: "none", cursor: "pointer",
           }}>
