@@ -1,16 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { gsap } from "@/lib/gsap";
 
 const NAV_H = 86;
-
-const navLinks = [
-  { label: "Work",    href: "#work"    },
-  { label: "Process", href: "#process" },
-  { label: "About",   href: "/about"   },
-  { label: "Contact", href: "#contact" },
-];
 
 export default function Navbar({ inner = false }: { inner?: boolean }) {
   const primaryRef = useRef<HTMLElement>(null);
@@ -18,8 +13,30 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const linksRef   = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
 
-  /* Full-screen overlay animation */
+  /* ── Resolve nav links based on current path ── */
+  const mode = pathname.startsWith("/focused")   ? "focused"
+             : pathname.startsWith("/creative")  ? "creative"
+             : pathname.startsWith("/immersive") ? "immersive"
+             : null;
+
+  const navLinks = mode
+    ? [
+        { label: "Work",    href: `/${mode}/work`    },
+        { label: "About",   href: `/about`           },
+        { label: "Contact", href: `/${mode}/contact` },
+      ]
+    : [
+        { label: "Work",    href: "#work"    },
+        { label: "Process", href: "#process" },
+        { label: "About",   href: "/about"   },
+        { label: "Contact", href: "#contact" },
+      ];
+
+  const ctaHref = mode ? `/${mode}/contact` : "#contact";
+
+  /* ── Full-screen overlay animation ── */
   useEffect(() => {
     const overlay = overlayRef.current;
     const linkEls = linksRef.current?.querySelectorAll("a");
@@ -41,11 +58,16 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
     }
   }, [menuOpen]);
 
-  /* Scroll-swap primary ↔ floating */
+  /* ── Entrance + scroll-swap ── */
   useEffect(() => {
+    // Only delay entrance on home pages to sync with Loader.
+    // On inner pages (or if Loader already ran), show immediately.
+    const isFirstLoad = !sessionStorage.getItem("df_loader_shown");
+    const delay = (!inner && isFirstLoad) ? 2.2 : 0;
+
     gsap.fromTo(primaryRef.current,
       { autoAlpha: 0, y: -16 },
-      { autoAlpha: 1, y: 0, duration: 1, ease: "power3.out", delay: 2.2 }
+      { autoAlpha: 1, y: 0, duration: 1, ease: "power3.out", delay }
     );
 
     let lastY   = 0;
@@ -78,7 +100,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [inner]);
 
   return (
     <>
@@ -88,10 +110,9 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         className="fixed inset-0 z-[998] hidden flex-col"
         style={{ background: "var(--bg)", visibility: "hidden" }}
       >
-        {/* Top bar inside overlay */}
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <a href="#" onClick={() => setMenuOpen(false)}>
+          <a href={mode ? `/${mode}` : "#"} onClick={() => setMenuOpen(false)}>
             <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
           </a>
           <button
@@ -100,7 +121,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
           >
             <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">Close</span>
             <span className="flex flex-col gap-[5px]" aria-hidden="true">
-              <span className="block h-px w-[18px] origin-center rotate-45 bg-[var(--fg)]" style={{ transform: "rotate(45deg) translate(4px, 3px)" }} />
+              <span className="block h-px w-[18px] origin-center bg-[var(--fg)]" style={{ transform: "rotate(45deg) translate(4px, 3px)" }} />
               <span className="block h-px w-[18px] origin-center bg-[var(--fg)]" style={{ transform: "rotate(-45deg) translate(4px, -3px)" }} />
             </span>
           </button>
@@ -109,18 +130,17 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         {/* Giant nav links */}
         <div ref={linksRef} className="flex flex-1 flex-col items-center justify-center gap-0">
           {navLinks.map(({ label, href }) => (
-            <a
+            <Link
               key={label}
               href={href}
               onClick={() => setMenuOpen(false)}
               className="hed text-[6.5rem] leading-[1.05] text-[var(--fg)] transition-colors duration-200 hover:text-[var(--teal)]"
             >
               {label}
-            </a>
+            </Link>
           ))}
         </div>
 
-        {/* Footer row */}
         <div className="wrap flex items-center justify-between border-t border-[var(--border)] py-6">
           <span className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[var(--body)]">
             © {new Date().getFullYear()} Don&apos;t Forget
@@ -131,7 +151,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         </div>
       </div>
 
-      {/* ── Header A: Primary — absolute, inline links ── */}
+      {/* ── Header A: Primary ── */}
       <header
         ref={primaryRef}
         className="absolute left-0 right-0 top-0 z-[1000] flex items-center"
@@ -139,31 +159,31 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
       >
         <div className="wrap flex w-full items-center justify-between">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <a href="#">
+          <a href={mode ? `/${mode}` : "#"}>
             <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
           </a>
 
           <ul className="hidden items-center gap-8 md:flex">
-            {navLinks.slice(0, 3).map(({ label, href }) => (
+            {navLinks.slice(0, navLinks.length - 1).map(({ label, href }) => (
               <li key={label}>
-                <a
+                <Link
                   href={href}
                   className="relative font-mono text-[0.63rem] uppercase tracking-[0.26em] text-[var(--body)] transition-colors duration-200 hover:text-[var(--fg)] group"
                 >
                   {label}
                   <span className="absolute -bottom-1 left-0 h-px w-0 bg-[var(--teal)] transition-all duration-300 group-hover:w-full" />
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
 
-          <a href="#contact" className="btn btn-primary py-2.5 px-5 text-[0.62rem]">
+          <Link href={ctaHref} className="btn btn-primary py-2.5 px-5 text-[0.62rem]">
             Let&apos;s talk
-          </a>
+          </Link>
         </div>
       </header>
 
-      {/* ── Header B: Floating — three pills ── */}
+      {/* ── Header B: Floating ── */}
       <aside className="pointer-events-none fixed inset-x-0 top-0 z-[999]">
         <div
           ref={floatRef}
@@ -172,14 +192,11 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         >
           <div className="py-[18px]">
             <div className="wrap flex w-full items-center justify-between">
-
-              {/* Logo */}
-              <a href="#" className="flex shrink-0 items-center">
+              <Link href={mode ? `/${mode}` : "#"} className="flex shrink-0 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
-              </a>
+              </Link>
 
-              {/* MENU pill */}
               <button
                 onClick={() => setMenuOpen(o => !o)}
                 className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
@@ -195,14 +212,12 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
                 </span>
               </button>
 
-              {/* LET'S TALK pill */}
-              <a
-                href="#contact"
+              <Link
+                href={ctaHref}
                 className="flex h-[54px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
               >
                 Let&apos;s talk
-              </a>
-
+              </Link>
             </div>
           </div>
         </div>
