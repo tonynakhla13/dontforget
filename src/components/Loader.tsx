@@ -4,29 +4,39 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 
 export default function Loader() {
-  const rootRef  = useRef<HTMLDivElement>(null);
-  const barRef   = useRef<HTMLDivElement>(null);
-  const numRef   = useRef<HTMLSpanElement>(null);
-  const tagRef   = useRef<HTMLDivElement>(null);
-  const [done, setDone] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const barRef  = useRef<HTMLDivElement>(null);
+  const numRef  = useRef<HTMLSpanElement>(null);
+  const tagRef  = useRef<HTMLDivElement>(null);
 
+  // "check"   — waiting for mount to read sessionStorage (renders nothing)
+  // "animate" — first-ever visit, run the animation
+  // "done"    — finished or already seen, renders nothing
+  const [phase, setPhase] = useState<"check" | "animate" | "done">("check");
+
+  // Step 1: on mount, decide whether to show
   useEffect(() => {
-    if (!rootRef.current) return;
-
-    // Only animate on the very first page load per browser session
     if (sessionStorage.getItem("df_loader_shown")) {
-      setDone(true);
-      return;
+      setPhase("done");
+    } else {
+      sessionStorage.setItem("df_loader_shown", "1");
+      setPhase("animate");
     }
-    sessionStorage.setItem("df_loader_shown", "1");
+  }, []);
+
+  // Step 2: run GSAP only when phase === "animate"
+  useEffect(() => {
+    if (phase !== "animate" || !rootRef.current) return;
 
     document.body.style.overflow = "hidden";
 
-    const tl = gsap.timeline({
-      onComplete: () => { document.body.style.overflow = ""; setDone(true); },
-    });
-
     const counter = { v: 0 };
+    const tl = gsap.timeline({
+      onComplete: () => {
+        document.body.style.overflow = "";
+        setPhase("done");
+      },
+    });
 
     tl.to(counter, {
       v: 100,
@@ -34,21 +44,24 @@ export default function Loader() {
       ease: "power2.inOut",
       onUpdate() {
         const n = Math.round(counter.v);
-        if (numRef.current)  numRef.current.textContent  = String(n).padStart(3, "0");
-        if (barRef.current)  barRef.current.style.transform = `scaleX(${n / 100})`;
+        if (numRef.current) numRef.current.textContent = String(n).padStart(3, "0");
+        if (barRef.current) barRef.current.style.transform = `scaleX(${n / 100})`;
       },
     })
-    .to(tagRef.current, { yPercent: -110, duration: 0.6, ease: "power3.in" }, "-=0.1")
+    .to(tagRef.current,  { yPercent: -110, duration: 0.6, ease: "power3.in" }, "-=0.1")
     .to(rootRef.current, { yPercent: -100, duration: 0.85, ease: "power3.inOut" }, "-=0.15")
-    .fromTo("main > *:not(.noise):not(script)",
+    .fromTo(
+      "main > *:not(.noise):not(script)",
       { autoAlpha: 0, y: 18 },
       { autoAlpha: 1, y: 0, stagger: 0.055, duration: 0.6, ease: "power3.out" },
-      "-=0.45");
+      "-=0.45"
+    );
 
     return () => { tl.kill(); document.body.style.overflow = ""; };
-  }, []);
+  }, [phase]);
 
-  if (done) return null;
+  // Render nothing while checking sessionStorage or after animation is done
+  if (phase !== "animate") return null;
 
   return (
     <div
@@ -71,10 +84,17 @@ export default function Loader() {
       </div>
 
       <div className="mt-14 h-px w-48 overflow-hidden bg-white/[0.07]">
-        <div ref={barRef} className="h-full w-full origin-left bg-[var(--teal)]" style={{ transform: "scaleX(0)" }} />
+        <div
+          ref={barRef}
+          className="h-full w-full origin-left bg-[var(--teal)]"
+          style={{ transform: "scaleX(0)" }}
+        />
       </div>
 
-      <span ref={numRef} className="mt-4 font-mono text-[0.58rem] tabular-nums tracking-[0.42em] text-[var(--body)]">
+      <span
+        ref={numRef}
+        className="mt-4 font-mono text-[0.58rem] tabular-nums tracking-[0.42em] text-[var(--body)]"
+      >
         000
       </span>
     </div>
