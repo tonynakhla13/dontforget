@@ -1,249 +1,188 @@
 "use client";
 
-/**
- * ContactHub
- *
- * Two-panel contact experience:
- *   LEFT  — open-ended form: big textarea + voice recording + name/email
- *   RIGHT — tall vertical pill button that opens the multistep RequestForm
- *           in a full-screen modal overlay
- */
-
 import { useEffect, useRef, useState } from "react";
+import { useGSAP } from "@gsap/react";
 import { gsap } from "@/lib/gsap";
 import RequestForm from "@/components/RequestForm";
 
-/* ─── tiny helpers ─────────────────────────────────────────────────────── */
-function fmtTime(s: number) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-}
+/* ─────────────────────────────────────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────────────────────────────────────── */
+const fmt = (s: number) =>
+  `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-/* ─── Mic waveform bars (animated while recording) ─────────────────────── */
-function Waveform({ active }: { active: boolean }) {
-  return (
-    <div className="flex items-end gap-[3px]" style={{ height: 22 }}>
-      {[4, 7, 12, 9, 16, 10, 7, 13, 6, 9, 14, 8, 5].map((h, i) => (
-        <div
-          key={i}
-          style={{
-            width: 3,
-            borderRadius: 99,
-            background: "var(--teal)",
-            height: active ? undefined : h,
-            minHeight: 3,
-            animation: active ? `waveBar ${0.55 + (i % 4) * 0.12}s ease-in-out infinite alternate` : "none",
-            animationDelay: `${i * 0.07}s`,
-            ...(active ? { height: h } : {}),
-          }}
-        />
-      ))}
-      <style>{`
-        @keyframes waveBar {
-          from { transform: scaleY(0.25); }
-          to   { transform: scaleY(1.6); }
-        }
-      `}</style>
-    </div>
-  );
-}
+/* ─────────────────────────────────────────────────────────────────────────
+   VOICE RECORDER
+───────────────────────────────────────────────────────────────────────── */
+function VoiceRecorder({ onRecorded }: { onRecorded: (b: Blob | null) => void }) {
+  const [state, setState] = useState<"idle" | "rec" | "done">("idle");
+  const [secs, setSecs]   = useState(0);
+  const [url, setUrl]     = useState<string | null>(null);
+  const [err, setErr]     = useState(false);
 
-/* ─── Mic icon ─────────────────────────────────────────────────────────── */
-function MicIcon({ size = 20 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="2" width="6" height="12" rx="3" />
-      <path d="M5 10a7 7 0 0 0 14 0" />
-      <line x1="12" y1="19" x2="12" y2="22" />
-      <line x1="9" y1="22" x2="15" y2="22" />
-    </svg>
-  );
-}
+  const mr   = useRef<MediaRecorder | null>(null);
+  const buf  = useRef<Blob[]>([]);
+  const tick = useRef<ReturnType<typeof setInterval> | null>(null);
+  const ring = useRef<HTMLDivElement>(null);
 
-/* ─── Voice Recorder sub-component ─────────────────────────────────────── */
-function VoiceRecorder({
-  onRecorded,
-}: {
-  onRecorded: (blob: Blob | null) => void;
-}) {
-  const [state, setState]   = useState<"idle" | "recording" | "done">("idle");
-  const [secs, setSecs]     = useState(0);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [error, setError]   = useState<string | null>(null);
+  useEffect(() => () => { if (tick.current) clearInterval(tick.current); }, []);
 
-  const recRef    = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const timerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  /* pulsing ring animation while recording */
+  useEffect(() => {
+    if (!ring.current) return;
+    if (state === "rec") {
+      gsap.to(ring.current, { scale: 1.55, opacity: 0, duration: 1.1, repeat: -1, ease: "power2.out" });
+    } else {
+      gsap.killTweensOf(ring.current);
+      gsap.set(ring.current, { scale: 1, opacity: 0.4 });
+    }
+  }, [state]);
 
-  async function startRecording() {
-    setError(null);
+  async function start() {
+    setErr(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      const mr = new MediaRecorder(stream);
-      recRef.current = mr;
-      chunksRef.current = [];
-
-      mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-      mr.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        const url  = URL.createObjectURL(blob);
-        setAudioUrl(url);
+      const rec = new MediaRecorder(stream);
+      mr.current = rec;
+      buf.current = [];
+      rec.ondataavailable = e => { if (e.data.size > 0) buf.current.push(e.data); };
+      rec.onstop = () => {
+        const blob = new Blob(buf.current, { type: "audio/webm" });
+        setUrl(URL.createObjectURL(blob));
         onRecorded(blob);
         stream.getTracks().forEach(t => t.stop());
         setState("done");
       };
-
-      mr.start();
-      setState("recording");
+      rec.start();
+      setState("rec");
       setSecs(0);
-      timerRef.current = setInterval(() => setSecs(s => s + 1), 1000);
-    } catch {
-      setError("Microphone access denied. Please allow microphone access and try again.");
-    }
+      tick.current = setInterval(() => setSecs(s => s + 1), 1000);
+    } catch { setErr(true); }
   }
 
-  function stopRecording() {
-    recRef.current?.stop();
-    if (timerRef.current) clearInterval(timerRef.current);
+  function stop() {
+    mr.current?.stop();
+    if (tick.current) clearInterval(tick.current);
   }
 
   function discard() {
-    setAudioUrl(null);
-    setSecs(0);
-    setState("idle");
-    onRecorded(null);
+    setUrl(null); setSecs(0); setState("idle"); onRecorded(null);
   }
 
-  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+  /* ── idle ── */
+  if (state === "idle") return (
+    <div className="flex flex-col items-center gap-3 py-2">
+      <p style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.44rem", letterSpacing: "0.4em",
+        textTransform: "uppercase", color: "var(--body)", opacity: 0.45 }}>
+        or record a voice message
+      </p>
+      <button type="button" onClick={start}
+        className="group relative flex h-16 w-16 items-center justify-center rounded-full transition-all duration-300 hover:scale-105"
+        style={{ background: "rgba(58,191,138,0.10)", border: "1.5px solid rgba(58,191,138,0.35)" }}>
+        {/* ring */}
+        <div ref={ring} className="absolute inset-0 rounded-full pointer-events-none"
+          style={{ border: "1.5px solid rgba(58,191,138,0.45)", opacity: 0.4 }} />
+        <svg width={22} height={22} viewBox="0 0 24 24" fill="none"
+          stroke="var(--teal)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3" />
+          <path d="M5 10a7 7 0 0 0 14 0" />
+          <line x1="12" y1="19" x2="12" y2="22" />
+          <line x1="9" y1="22" x2="15" y2="22" />
+        </svg>
+      </button>
+      {err && <p style={{ fontSize: "0.75rem", color: "#f87171" }}>Microphone access denied</p>}
+    </div>
+  );
 
-  return (
-    <div>
-      {/* Hint */}
-      <div className="mb-3 flex items-center gap-2">
-        <div style={{
-          width: 6, height: 6, borderRadius: "50%",
-          background: "var(--teal)",
-          boxShadow: "0 0 8px rgba(58,191,138,0.6)",
-          animation: state === "recording" ? "pulse 1s ease-in-out infinite" : "none",
-        }} />
-        <span style={{
-          fontFamily: "var(--font-mono-next)", fontSize: "0.48rem",
-          letterSpacing: "0.36em", textTransform: "uppercase",
-          color: state === "recording" ? "var(--teal)" : "var(--body)", opacity: state === "idle" ? 0.55 : 1,
-        }}>
-          {state === "idle" && "Voice message available"}
-          {state === "recording" && `Recording — ${fmtTime(secs)}`}
-          {state === "done" && "Voice message attached"}
-        </span>
+  /* ── recording ── */
+  if (state === "rec") return (
+    <div className="flex flex-col items-center gap-4 py-2">
+      <p style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.44rem", letterSpacing: "0.4em",
+        textTransform: "uppercase", color: "var(--teal)" }}>
+        Recording — {fmt(secs)}
+      </p>
+      {/* Waveform bars */}
+      <div className="flex items-end gap-[3px]" style={{ height: 28 }}>
+        {[5,9,14,10,18,12,8,15,7,10,16,9,6,12,8].map((h, i) => (
+          <div key={i} style={{ width: 3, borderRadius: 99, background: "var(--teal)",
+            height: h, transformOrigin: "bottom",
+            animation: `wvBar ${0.5 + (i % 5) * 0.1}s ease-in-out infinite alternate`,
+            animationDelay: `${i * 0.06}s` }} />
+        ))}
       </div>
+      <style>{`@keyframes wvBar{from{transform:scaleY(0.2)}to{transform:scaleY(1)}}`}</style>
+      <button type="button" onClick={stop}
+        className="flex items-center gap-2 rounded-full px-5 py-2.5 transition-all duration-200 hover:scale-105"
+        style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", color: "#f87171" }}>
+        <div style={{ width: 9, height: 9, borderRadius: 2, background: "#f87171" }} />
+        <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.46rem", letterSpacing: "0.3em", textTransform: "uppercase" }}>
+          Stop
+        </span>
+      </button>
+    </div>
+  );
 
-      <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
-
-      {state === "idle" && (
-        <button
-          type="button"
-          onClick={startRecording}
-          className="flex items-center gap-3 rounded-full px-5 py-3 transition-all duration-200 hover:scale-[1.03]"
-          style={{
-            border: "1px solid rgba(58,191,138,0.35)",
-            background: "rgba(58,191,138,0.07)",
-            color: "var(--teal)",
-          }}
-        >
-          <MicIcon size={17} />
-          <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.52rem", letterSpacing: "0.28em", textTransform: "uppercase" }}>
-            Tap to record
-          </span>
-        </button>
-      )}
-
-      {state === "recording" && (
-        <div className="flex items-center gap-4">
-          <Waveform active />
-          <button
-            type="button"
-            onClick={stopRecording}
-            className="flex items-center gap-2.5 rounded-full px-5 py-3 transition-all duration-200"
-            style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.40)", color: "#f87171" }}
-          >
-            <div style={{ width: 10, height: 10, borderRadius: 2, background: "#f87171" }} />
-            <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.50rem", letterSpacing: "0.28em", textTransform: "uppercase" }}>
-              Stop
-            </span>
-          </button>
-        </div>
-      )}
-
-      {state === "done" && audioUrl && (
-        <div className="flex flex-wrap items-center gap-3">
-          <audio src={audioUrl} controls
-            style={{ height: 36, borderRadius: 99, outline: "none", accentColor: "var(--teal)", flex: 1, minWidth: 180 }} />
-          <button
-            type="button"
-            onClick={discard}
-            style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.48rem", letterSpacing: "0.28em",
-              textTransform: "uppercase", color: "var(--body)", opacity: 0.5 }}
-            className="hover:opacity-80 transition-opacity"
-          >
-            × Discard
-          </button>
-        </div>
-      )}
-
-      {error && (
-        <p style={{ fontSize: "0.78rem", color: "#f87171", marginTop: "0.5rem" }}>{error}</p>
-      )}
+  /* ── done ── */
+  return (
+    <div className="flex flex-col items-center gap-3 py-2">
+      <div className="flex items-center gap-2">
+        <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--teal)",
+          boxShadow: "0 0 8px rgba(58,191,138,0.6)" }} />
+        <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.44rem", letterSpacing: "0.36em",
+          textTransform: "uppercase", color: "var(--teal)" }}>Voice attached</span>
+      </div>
+      {url && <audio src={url} controls style={{ height: 34, width: "100%", maxWidth: 280, accentColor: "var(--teal)" }} />}
+      <button type="button" onClick={discard}
+        style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.44rem", letterSpacing: "0.28em",
+          textTransform: "uppercase", color: "var(--body)", opacity: 0.45 }}
+        className="hover:opacity-70 transition-opacity">
+        × discard
+      </button>
     </div>
   );
 }
 
-/* ─── Multistep modal overlay ──────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   MULTISTEP MODAL
+───────────────────────────────────────────────────────────────────────── */
 function MultistepModal({ onClose }: { onClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef   = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Animate in
-    gsap.fromTo(overlayRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, ease: "none" });
-    gsap.fromTo(panelRef.current, { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.35, ease: "power3.out" });
-    // Prevent body scroll
+    gsap.fromTo(overlayRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 });
+    gsap.fromTo(panelRef.current,   { y: 48, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.38, ease: "power3.out" });
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  function handleClose() {
-    gsap.to(overlayRef.current, { autoAlpha: 0, duration: 0.22, ease: "none", onComplete: onClose });
+  function close() {
+    gsap.to(overlayRef.current, { autoAlpha: 0, duration: 0.2, onComplete: onClose });
   }
 
   return (
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-[200] flex flex-col"
-      style={{ background: "rgba(0,0,0,0.88)", backdropFilter: "blur(12px)" }}
-    >
-      {/* Close bar */}
-      <div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-4 shrink-0"
-        style={{ background: "rgba(9,9,9,0.95)" }}>
-        <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.48rem", letterSpacing: "0.44em",
-          textTransform: "uppercase", color: "var(--teal)" }}>
-          Multi-step form
-        </span>
-        <button
-          onClick={handleClose}
-          className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-white/10"
-          style={{ color: "var(--body)" }}
-        >
-          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+    <div ref={overlayRef} className="fixed inset-0 z-[200] flex flex-col"
+      style={{ background: "rgba(0,0,0,0.90)", backdropFilter: "blur(14px)" }}>
+      {/* Top bar */}
+      <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-8 py-5"
+        style={{ background: "rgba(9,9,9,0.97)" }}>
+        <div className="flex items-center gap-3">
+          <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--teal)",
+            boxShadow: "0 0 10px rgba(58,191,138,0.55)" }} />
+          <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.46rem",
+            letterSpacing: "0.46em", textTransform: "uppercase", color: "var(--teal)" }}>
+            Step-by-step form
+          </span>
+        </div>
+        <button onClick={close}
+          className="flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200 hover:bg-white/[0.08]"
+          style={{ color: "var(--body)", border: "1px solid var(--border)" }}>
+          <svg width={13} height={13} viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
       </div>
-
-      {/* Scrollable RequestForm */}
       <div ref={panelRef} className="flex-1 overflow-y-auto">
         <RequestForm />
       </div>
@@ -251,282 +190,295 @@ function MultistepModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ─── Tall side button ─────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   TALL SIDE BUTTON
+───────────────────────────────────────────────────────────────────────── */
 function TallButton({ onClick }: { onClick: () => void }) {
-  const btnRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const el = btnRef.current;
-    if (!el) return;
+  const ref = useRef<HTMLButtonElement>(null);
+  useGSAP(() => {
+    const el = ref.current; if (!el) return;
     el.addEventListener("mouseenter", () =>
-      gsap.to(el, { scaleY: 1.03, duration: 0.22, ease: "power2.out" }));
+      gsap.to(el, { borderColor: "rgba(58,191,138,0.65)", boxShadow: "0 0 28px rgba(58,191,138,0.12)", duration: 0.25 }));
     el.addEventListener("mouseleave", () =>
-      gsap.to(el, { scaleY: 1, duration: 0.22, ease: "power2.in" }));
+      gsap.to(el, { borderColor: "rgba(58,191,138,0.22)", boxShadow: "0 0 0px rgba(58,191,138,0)", duration: 0.25 }));
   }, []);
 
   return (
-    <button
-      ref={btnRef}
-      onClick={onClick}
-      className="relative flex flex-col items-center justify-between overflow-hidden rounded-[1.5rem] px-4 py-8 transition-colors duration-200"
-      style={{
-        width: 72,
-        minHeight: "100%",
-        border: "1px solid rgba(58,191,138,0.35)",
-        background: "linear-gradient(180deg,rgba(58,191,138,0.10) 0%,rgba(58,191,138,0.04) 100%)",
-        cursor: "pointer",
-        writingMode: "vertical-rl",
-      }}
-    >
-      {/* Top glow */}
+    <button ref={ref} onClick={onClick}
+      className="relative flex flex-col items-center justify-between overflow-hidden rounded-[1.25rem] py-8 px-[18px]"
+      style={{ width: 64, minHeight: "100%", flexShrink: 0, cursor: "pointer",
+        border: "1px solid rgba(58,191,138,0.22)",
+        background: "linear-gradient(180deg,rgba(58,191,138,0.07) 0%,rgba(58,191,138,0.02) 100%)",
+        transition: "border-color 0.25s, box-shadow 0.25s" }}>
+
+      {/* Top accent line */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{ background: "linear-gradient(90deg,transparent,rgba(58,191,138,0.70),transparent)" }} />
+        style={{ background: "linear-gradient(90deg,transparent,rgba(58,191,138,0.6),transparent)" }} />
 
-      {/* Pulsing dot */}
-      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--teal)",
-        boxShadow: "0 0 10px rgba(58,191,138,0.6)",
-        animation: "pulse 2.5s ease-in-out infinite", marginBottom: 8 }} />
+      {/* Dot */}
+      <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--teal)",
+        flexShrink: 0, boxShadow: "0 0 8px rgba(58,191,138,0.5)",
+        animation: "dotPulse 2.8s ease-in-out infinite" }} />
+      <style>{`@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
 
-      <style>{`@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.85)} }`}</style>
+      {/* Vertical label */}
+      <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.42rem",
+        letterSpacing: "0.38em", textTransform: "uppercase", color: "var(--teal)",
+        writingMode: "vertical-rl", transform: "rotate(180deg)", flex: 1,
+        display: "flex", alignItems: "center", paddingBlock: "1.5rem", lineHeight: 1 }}>
+        Try step-by-step
+      </span>
 
-      {/* Vertical text */}
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{
-          fontFamily: "var(--font-mono-next)", fontSize: "0.46rem",
-          letterSpacing: "0.44em", textTransform: "uppercase",
-          color: "var(--teal)", writingMode: "vertical-rl",
-          textOrientation: "mixed", transform: "rotate(180deg)",
-          lineHeight: 1.2,
-        }}>
-          Try our multistep form
-        </span>
-      </div>
-
-      {/* Arrow at bottom */}
-      <svg width={14} height={14} viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"
-        style={{ color: "var(--teal)", marginTop: 8, transform: "rotate(90deg)" }}>
+      {/* Arrow */}
+      <svg width={12} height={12} viewBox="0 0 24 24" fill="none"
+        stroke="var(--teal)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
+        style={{ flexShrink: 0, transform: "rotate(90deg)" }}>
         <path d="M5 12h14M12 5l7 7-7 7" />
       </svg>
     </button>
   );
 }
 
-/* ─── Main ContactHub ──────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   FIELD component (avoids inline style repetition)
+───────────────────────────────────────────────────────────────────────── */
+function Field({
+  label, type = "text", placeholder, value, onChange, autoComplete,
+}: {
+  label: string; type?: string; placeholder: string;
+  value: string; onChange: (v: string) => void; autoComplete?: string;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div>
+      <label style={{ display: "block", fontFamily: "var(--font-mono-next)",
+        fontSize: "0.44rem", letterSpacing: "0.4em", textTransform: "uppercase",
+        color: "var(--body)", opacity: 0.5, marginBottom: "0.55rem" }}>
+        {label}
+      </label>
+      <input type={type} placeholder={placeholder} required
+        autoComplete={autoComplete} value={value}
+        onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+        style={{
+          width: "100%", display: "block",
+          padding: "0.85rem 1rem",
+          borderRadius: "0.75rem",
+          border: `1px solid ${focused ? "rgba(58,191,138,0.45)" : "var(--border)"}`,
+          background: focused ? "rgba(58,191,138,0.03)" : "var(--surface)",
+          color: "var(--fg)", outline: "none",
+          fontSize: "0.9rem", fontFamily: "inherit", lineHeight: 1.6,
+          transition: "border-color 0.2s, background 0.2s",
+        }} />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MAIN COMPONENT
+───────────────────────────────────────────────────────────────────────── */
 export default function ContactHub() {
-  const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [voice, setVoice]       = useState<Blob | null>(null);
+  const [form, setForm]         = useState({ name: "", email: "", message: "" });
+  const [submitting, setSubmit] = useState(false);
+  const [done, setDone]         = useState(false);
+  const [err, setErr]           = useState(false);
+  const [modal, setModal]       = useState(false);
+  const [taFocused, setTaFocus] = useState(false);
 
-  const wrapRef  = useRef<HTMLDivElement>(null);
-  const headRef  = useRef<HTMLDivElement>(null);
-  const formRef  = useRef<HTMLFormElement>(null);
-  const btnRef   = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLElement>(null);
 
-  // Entrance animation
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      tl.fromTo(headRef.current, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.8 }, 0)
-        .fromTo(formRef.current, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.7 }, 0.18)
-        .fromTo(btnRef.current,  { autoAlpha: 0, x: 24 }, { autoAlpha: 1, x: 0, duration: 0.6 }, 0.28);
-    }, wrapRef);
-    return () => ctx.revert();
-  }, []);
+  /* entrance */
+  useGSAP(() => {
+    const items = rootRef.current?.querySelectorAll("[data-in]");
+    if (!items?.length) return;
+    gsap.fromTo(items,
+      { autoAlpha: 0, y: 28 },
+      { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.7, ease: "power3.out", delay: 0.1 });
+  }, { scope: rootRef });
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) return;
-    setSubmitting(true);
-    setError(false);
-
-    const note = [
-      form.message,
-      voiceBlob ? "[Voice message attached — see recording]" : "",
-    ].filter(Boolean).join("\n\n");
-
+    if (!form.name || !form.email || !form.message) return;
+    setSubmit(true); setErr(false);
     try {
       const res = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: form.name,
-          email: form.email,
+          name: form.name, email: form.email,
           projectType: "Open inquiry",
-          message: note,
+          message: form.message + (voice ? "\n\n[Voice message attached]" : ""),
         }),
       });
       if (res.ok) setDone(true);
-      else { setError(true); setSubmitting(false); }
-    } catch {
-      setError(true);
-      setSubmitting(false);
-    }
+      else { setErr(true); setSubmit(false); }
+    } catch { setErr(true); setSubmit(false); }
   }
 
-  const field = {
-    width: "100%",
-    borderRadius: "0.875rem",
-    border: "1px solid var(--border)",
-    background: "var(--surface2)",
-    padding: "0.875rem 1.1rem",
-    color: "var(--fg)",
-    outline: "none",
-    fontSize: "0.9rem",
-    fontFamily: "inherit",
-    lineHeight: 1.7,
-    transition: "border-color 0.2s, background 0.2s",
-  } as const;
+  /* ── Success ── */
+  if (done) return (
+    <section className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center gap-8 text-center px-6">
+      <div style={{ width: 72, height: 72, borderRadius: "50%",
+        border: "1.5px solid var(--teal)", display: "flex", alignItems: "center", justifyContent: "center",
+        boxShadow: "0 0 40px rgba(58,191,138,0.15)" }}>
+        <svg width={28} height={28} viewBox="0 0 24 24" fill="none"
+          stroke="var(--teal)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      </div>
+      <div>
+        <p className="eyebrow mb-3">Request received</p>
+        <h1 className="hed" style={{ fontSize: "clamp(2.4rem,5vw,4rem)" }}>
+          We&apos;ll be in touch.
+        </h1>
+        <p style={{ color: "var(--body)", fontSize: "0.9rem", marginTop: "0.75rem", lineHeight: 1.8 }}>
+          A real person will reply within 24 hours.
+        </p>
+      </div>
+      <a href="/" className="btn btn-outline">← Back to home</a>
+    </section>
+  );
 
   return (
-    <div ref={wrapRef} className="relative min-h-[calc(100vh-80px)] flex flex-col justify-center px-5 py-16"
-      style={{ maxWidth: 1100, margin: "0 auto" }}>
+    <section ref={rootRef}
+      className="relative px-5 md:px-10"
+      style={{ minHeight: "calc(100vh - 80px)", display: "flex", alignItems: "center" }}>
 
-      {/* ── Two-column: form left / tall button right ── */}
-      <div className="flex gap-5 items-stretch">
+      {/* Background ambient */}
+      <div className="pointer-events-none absolute inset-0" style={{
+        background: "radial-gradient(ellipse 55% 60% at 30% 50%, rgba(58,191,138,0.04) 0%, transparent 65%)" }} />
 
-        {/* ── LEFT: open form ── */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ width: "100%", maxWidth: 1120, margin: "0 auto", paddingBlock: "5rem" }}>
+        <div className="flex gap-4 items-stretch">
 
-          {/* Header */}
-          <div ref={headRef} style={{ opacity: 0 }} className="mb-10">
-            <p className="eyebrow mb-4">Get in touch</p>
-            <h1 className="hed" style={{ fontSize: "clamp(2.4rem,5.5vw,4.8rem)", lineHeight: 0.92, marginBottom: "1rem" }}>
-              Tell us what<br />
-              <span style={{ color: "var(--teal)" }}>you need.</span>
-            </h1>
-            <p style={{ fontSize: "0.9rem", lineHeight: 1.85, color: "var(--body)", maxWidth: "42ch" }}>
-              Describe your problem, idea, or project — in writing or with a voice message. We read every word.
-            </p>
-          </div>
+          {/* ══════════════ LEFT ══════════════ */}
+          <div style={{ flex: 1, minWidth: 0 }}>
 
-          {done ? (
-            /* ── Success ── */
-            <div className="flex flex-col items-center justify-center text-center py-16 gap-6">
-              <div style={{ width: 68, height: 68, borderRadius: "50%",
-                border: "1.5px solid var(--teal)", display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 0 32px rgba(58,191,138,0.18)" }}>
-                <svg width={28} height={28} viewBox="0 0 24 24" fill="none"
-                  stroke="var(--teal)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="hed" style={{ fontSize: "clamp(1.8rem,3vw,2.8rem)" }}>We got it.</h2>
-                <p style={{ color: "var(--body)", fontSize: "0.9rem", marginTop: "0.5rem" }}>
-                  Expect a reply within 24 hours.
-                </p>
-              </div>
-              <a href="/" className="btn btn-outline text-sm">← Back to home</a>
+            {/* Header */}
+            <div data-in className="mb-10" style={{ opacity: 0 }}>
+              <p className="eyebrow mb-5">Get in touch</p>
+              <h1 className="hed" style={{
+                fontSize: "clamp(2.8rem,6vw,5.5rem)", lineHeight: 0.9,
+                letterSpacing: "-0.02em", marginBottom: "1.25rem" }}>
+                What&apos;s on<br />
+                <span style={{ color: "var(--teal)" }}>your mind?</span>
+              </h1>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.9, color: "var(--body)", maxWidth: "40ch" }}>
+                Write freely or drop a voice note — we read and listen to everything.
+              </p>
             </div>
-          ) : (
-            /* ── Form ── */
-            <form ref={formRef} onSubmit={handleSubmit} style={{ opacity: 0 } as React.CSSProperties} className="flex flex-col gap-5">
 
-              {/* Big message area */}
-              <div>
-                <label style={{ display: "block", fontFamily: "var(--font-mono-next)", fontSize: "0.46rem",
-                  letterSpacing: "0.38em", textTransform: "uppercase", color: "var(--body)",
-                  opacity: 0.6, marginBottom: "0.6rem" }}>
-                  Your message
-                </label>
-                <textarea
-                  rows={8}
-                  placeholder="Describe your project, idea, pain point, or dream. The more you share, the better we can help…"
-                  required
-                  value={form.message}
-                  onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                  style={{ ...field, resize: "vertical" }}
-                  onFocus={e => { e.target.style.borderColor = "rgba(58,191,138,0.55)"; e.target.style.background = "rgba(58,191,138,0.04)"; }}
-                  onBlur={e  => { e.target.style.borderColor = "var(--border)";         e.target.style.background = "var(--surface2)"; }}
-                />
-              </div>
+            <form onSubmit={submit}>
 
-              {/* Voice recording */}
-              <div style={{ paddingTop: "0.25rem" }}>
-                <VoiceRecorder onRecorded={blob => setVoiceBlob(blob)} />
-              </div>
+              {/* ── Main message card ── */}
+              <div data-in style={{ opacity: 0, marginBottom: "1.25rem" }}>
+                <div className="relative overflow-hidden rounded-[1.25rem]"
+                  style={{
+                    border: `1px solid ${taFocused ? "rgba(58,191,138,0.45)" : "rgba(58,191,138,0.15)"}`,
+                    background: "rgba(9,9,9,0.60)",
+                    backdropFilter: "blur(12px)",
+                    transition: "border-color 0.3s",
+                    boxShadow: taFocused ? "0 0 40px rgba(58,191,138,0.06)" : "none",
+                  }}>
 
-              {/* Name + Email row */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label style={{ display: "block", fontFamily: "var(--font-mono-next)", fontSize: "0.46rem",
-                    letterSpacing: "0.38em", textTransform: "uppercase", color: "var(--body)",
-                    opacity: 0.6, marginBottom: "0.6rem" }}>
-                    Your name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Tony Nakhla"
+                  {/* Top gradient line */}
+                  <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+                    style={{ background: "linear-gradient(90deg,transparent,rgba(58,191,138,0.45),transparent)" }} />
+
+                  {/* Textarea */}
+                  <textarea
+                    rows={9}
                     required
-                    autoComplete="name"
-                    value={form.name}
-                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    style={field}
-                    onFocus={e => { e.target.style.borderColor = "rgba(58,191,138,0.55)"; e.target.style.background = "rgba(58,191,138,0.04)"; }}
-                    onBlur={e  => { e.target.style.borderColor = "var(--border)";         e.target.style.background = "var(--surface2)"; }}
+                    placeholder="Describe your project, idea, or problem in as much detail as you want. The more context you give us, the faster we can help…"
+                    value={form.message}
+                    onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                    onFocus={() => setTaFocus(true)}
+                    onBlur={() => setTaFocus(false)}
+                    style={{
+                      width: "100%", display: "block", resize: "none",
+                      background: "transparent", border: "none", outline: "none",
+                      padding: "1.5rem 1.5rem 1rem",
+                      color: "var(--fg)", fontSize: "0.95rem",
+                      fontFamily: "inherit", lineHeight: 1.85,
+                    }}
                   />
-                </div>
-                <div>
-                  <label style={{ display: "block", fontFamily: "var(--font-mono-next)", fontSize: "0.46rem",
-                    letterSpacing: "0.38em", textTransform: "uppercase", color: "var(--body)",
-                    opacity: 0.6, marginBottom: "0.6rem" }}>
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="hello@you.com"
-                    required
-                    autoComplete="email"
-                    value={form.email}
-                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                    style={field}
-                    onFocus={e => { e.target.style.borderColor = "rgba(58,191,138,0.55)"; e.target.style.background = "rgba(58,191,138,0.04)"; }}
-                    onBlur={e  => { e.target.style.borderColor = "var(--border)";         e.target.style.background = "var(--surface2)"; }}
-                  />
+
+                  {/* Divider */}
+                  <div className="flex items-center gap-4 px-6 py-1">
+                    <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+                    <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.40rem",
+                      letterSpacing: "0.44em", textTransform: "uppercase", color: "var(--body)", opacity: 0.35 }}>
+                      or
+                    </span>
+                    <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+                  </div>
+
+                  {/* Voice recorder */}
+                  <div className="px-6 pb-5 pt-2">
+                    <VoiceRecorder onRecorded={b => setVoice(b)} />
+                  </div>
                 </div>
               </div>
 
-              {error && (
-                <p style={{ fontSize: "0.78rem", color: "#f87171" }}>
-                  Something went wrong. Try again or email us at hello@dontforget.studio
+              {/* ── Name + Email ── */}
+              <div data-in className="grid gap-4 sm:grid-cols-2 mb-6" style={{ opacity: 0 }}>
+                <Field label="Your name" placeholder="Tony Nakhla"
+                  value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))}
+                  autoComplete="name" />
+                <Field label="Email address" type="email" placeholder="hello@you.com"
+                  value={form.email} onChange={v => setForm(f => ({ ...f, email: v }))}
+                  autoComplete="email" />
+              </div>
+
+              {err && (
+                <p data-in style={{ fontSize: "0.8rem", color: "#f87171", marginBottom: "1rem", opacity: 0 }}>
+                  Something went wrong — email us at{" "}
+                  <a href="mailto:hello@dontforget.studio" style={{ textDecoration: "underline" }}>
+                    hello@dontforget.studio
+                  </a>
                 </p>
               )}
 
-              {/* Submit */}
-              <div className="flex items-center gap-4 pt-2">
-                <button
-                  type="submit"
-                  disabled={submitting || !form.name || !form.email || !form.message}
+              {/* ── Submit row ── */}
+              <div data-in className="flex items-center gap-5" style={{ opacity: 0 }}>
+                <button type="submit" disabled={submitting || !form.name || !form.email || !form.message}
                   className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ paddingLeft: "2rem", paddingRight: "2rem" }}
-                >
-                  {submitting ? "Sending…" : voiceBlob ? "Send message + voice →" : "Send message →"}
+                  style={{ paddingInline: "2.25rem", paddingBlock: "0.85rem", fontSize: "0.82rem" }}>
+                  {submitting ? "Sending…" : voice ? "Send + voice note →" : "Send message →"}
                 </button>
-                {voiceBlob && (
-                  <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.44rem", letterSpacing: "0.3em",
-                    textTransform: "uppercase", color: "var(--teal)", opacity: 0.7 }}>
-                    🎙 Voice attached
+                {voice && (
+                  <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.42rem",
+                    letterSpacing: "0.32em", textTransform: "uppercase", color: "var(--teal)", opacity: 0.75 }}>
+                    🎙 voice attached
                   </span>
                 )}
               </div>
 
             </form>
-          )}
+          </div>
+
+          {/* ══════════════ RIGHT: tall button ══════════════ */}
+          <div data-in className="hidden md:flex" style={{ opacity: 0, flexShrink: 0 }}>
+            <TallButton onClick={() => setModal(true)} />
+          </div>
+
         </div>
 
-        {/* ── RIGHT: tall button ── */}
-        <div ref={btnRef} style={{ opacity: 0, display: "flex", flexShrink: 0 }}>
-          <TallButton onClick={() => setModalOpen(true)} />
+        {/* Mobile step-by-step link */}
+        <div className="mt-8 flex justify-center md:hidden" data-in style={{ opacity: 0 }}>
+          <button onClick={() => setModal(true)}
+            className="flex items-center gap-2 rounded-full px-6 py-3 transition-all duration-200 hover:scale-[1.02]"
+            style={{ border: "1px solid rgba(58,191,138,0.30)", background: "rgba(58,191,138,0.06)", color: "var(--teal)" }}>
+            <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.46rem", letterSpacing: "0.36em", textTransform: "uppercase" }}>
+              Try step-by-step form →
+            </span>
+          </button>
         </div>
 
       </div>
 
-      {/* ── Multistep modal ── */}
-      {modalOpen && <MultistepModal onClose={() => setModalOpen(false)} />}
-    </div>
+      {modal && <MultistepModal onClose={() => setModal(false)} />}
+    </section>
   );
 }
