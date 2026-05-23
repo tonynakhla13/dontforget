@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "@/lib/themeContext";
 import ThemeOnboarding from "@/components/ui/ThemeOnboarding";
 import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
+import PageTransitionOverlay from "@/components/ui/PageTransitionOverlay";
 import "./globals.css";
 
 const inter = Inter({
@@ -84,6 +85,7 @@ function ThemeUIWrapper() {
     <>
       <ThemeOnboarding />
       <ThemeSwitcher />
+      <PageTransitionOverlay />
     </>
   );
 }
