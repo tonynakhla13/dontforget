@@ -74,14 +74,14 @@ export default function KnotBackground() {
     const imgData = oc.getImageData(0,0,OFF_W,OFF_H).data;
 
     const textPts: V3[] = [];
-    const STRIDE=7;  // denser sampling → clearer mesh
+    const STRIDE=9;
     for (let y=0;y<OFF_H;y+=STRIDE) {
       for (let x=0;x<OFF_W;x+=STRIDE) {
         if (imgData[(y*OFF_W+x)*4+3]>100) {
           textPts.push([
-            (x/OFF_W - 0.5)*1.9,           // x: -0.95 → 0.95  (narrower so it fits on right)
-            (y/OFF_H - 0.5)*0.86,           // y: -0.43 → 0.43
-            (Math.random()-0.5)*0.14,        // z: tiny depth
+            (x/OFF_W - 0.5)*3.4,           // x: -1.7 → 1.7
+            (y/OFF_H - 0.5)*0.82,           // y: -0.41 → 0.41
+            (Math.random()-0.5)*0.18,        // z: tiny depth
           ]);
         }
       }
@@ -110,11 +110,12 @@ export default function KnotBackground() {
       }
     });
 
-    function drawText(W:number,H:number,rotY:number,globalAlpha:number,cx:number,cy:number) {
+    function drawText(W:number,H:number,rotY:number,globalAlpha:number) {
       if(globalAlpha<0.01||!textPts.length) return;
 
-      // Scale so text fits comfortably on right half of viewport
-      const scale=W*0.28;
+      // Scale so text spans ~76% of viewport width
+      const scale=W*0.40;
+      const cx=W/2, cy=H/2;
 
       // Project all points once per frame
       const pp=textPts.map(p=>proj(p,W,H,scale,cx,cy,rotY,0.0));
@@ -125,17 +126,18 @@ export default function KnotBackground() {
         ctx.moveTo(pp[i].sx,pp[i].sy);
         ctx.lineTo(pp[j].sx,pp[j].sy);
       }
-      ctx.strokeStyle=`rgba(58,191,138,${(0.32*globalAlpha).toFixed(3)})`;
-      ctx.lineWidth=0.75;
+      ctx.strokeStyle=`rgba(58,191,138,${(0.13*globalAlpha).toFixed(3)})`;
+      ctx.lineWidth=0.55;
       ctx.stroke();
 
       // Dots — single path
       ctx.beginPath();
       for(const p of pp) {
-        ctx.moveTo(p.sx+1.3,p.sy);
-        ctx.arc(p.sx,p.sy,1.3,0,Math.PI*2);
+        const a=0.12+(p.z*1.2+0.5)*0.28;
+        ctx.moveTo(p.sx+1,p.sy);
+        ctx.arc(p.sx,p.sy,1.1,0,Math.PI*2);
       }
-      ctx.fillStyle=`rgba(58,191,138,${(0.75*globalAlpha).toFixed(3)})`;
+      ctx.fillStyle=`rgba(58,191,138,${(0.40*globalAlpha).toFixed(3)})`;
       ctx.fill();
     }
 
@@ -218,8 +220,8 @@ export default function KnotBackground() {
     /* ────────────────────────────────────────────
        GSAP SCROLL STATES
     ──────────────────────────────────────────── */
-    // Text mesh — anchored right, drifts gently as you scroll
-    const sTxt = { alpha: 0.92, tx: 0.72, ty: 0.42 };
+    // Text mesh
+    const sTxt = { alpha: 0.55 };           // stays at fixed center
 
     // Knot A — trefoil
     const sA = { bX:0.72,bY:0.44,sc:1.00,al:1.00 };
@@ -231,10 +233,9 @@ export default function KnotBackground() {
       defaults:{ease:"none"},
     });
 
-    // Text stays on right, fades & drifts slightly as you scroll
-    tl.to(sTxt,{alpha:0.68,tx:0.70,ty:0.44,duration:0.30},0.00)
-      .to(sTxt,{alpha:0.50,tx:0.72,ty:0.46,duration:0.30},0.30)
-      .to(sTxt,{alpha:0.55,tx:0.68,ty:0.42,duration:0.40},0.60);
+    // Text fades slightly as you scroll (stays legible but not overwhelming)
+    tl.to(sTxt,{alpha:0.35,duration:0.50},0.00)
+      .to(sTxt,{alpha:0.45,duration:0.50},0.50);
 
     // Knot A
     tl.to(sA,{bX:0.18,bY:0.50,sc:1.50,            duration:0.17},0.00)
@@ -260,8 +261,8 @@ export default function KnotBackground() {
       ctx.clearRect(0,0,W,H);
       const base=Math.min(W,H)*0.30;
 
-      /* — Text mesh (right-anchored, very slow Y rotation) — */
-      drawText(W,H, time*0.035, sTxt.alpha, sTxt.tx*W, sTxt.ty*H);
+      /* — Text mesh (always centered, very slow Y rotation) — */
+      drawText(W,H, time*0.04, sTxt.alpha);
 
       /* — Knot A — trefoil */
       const ryA=time*0.64, rxA=0.28+Math.sin(time*0.20)*0.21;
