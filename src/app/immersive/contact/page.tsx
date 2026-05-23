@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
-import ContactHub from "@/components/ContactHub";
+import ImmersiveContact from "@/components/immersive/ImmersiveContact";
 
 export const metadata: Metadata = {
   title: "Contact — DON'T FORGET",
@@ -14,10 +14,10 @@ export default function ImmersiveContactPage() {
     <>
       <SmoothScroll />
       <AmbientGlow />
-      <main className="relative z-[1] overflow-x-clip">
+      <main className="relative z-[1] overflow-x-clip" style={{ position: "relative" }}>
         <div className="noise" />
         <Navbar inner />
-        <ContactHub />
+        <ImmersiveContact />
       </main>
     </>
   );
