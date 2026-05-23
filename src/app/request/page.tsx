@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
-import RequestForm from "@/components/RequestForm";
+import ContactHub from "@/components/ContactHub";
 
 export const metadata: Metadata = {
   title: "Start a Project — DON'T FORGET",
@@ -14,7 +14,7 @@ export default function RequestPage() {
     <>
       <AmbientGlow />
       <Navbar inner />
-      <RequestForm />
+      <ContactHub />
     </>
   );
 }
