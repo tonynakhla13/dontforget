@@ -11,6 +11,7 @@ import TeamSection      from "@/components/about/TeamSection";
 import ClientsMarquee  from "@/components/about/ClientsMarquee";
 import AboutContact    from "@/components/about/AboutContact";
 import AboutBackground from "@/components/about/AboutBackground";
+import KnotBackground  from "@/components/about/KnotBackground";
 
 export const metadata: Metadata = {
   title: "About — DON'T FORGET",
@@ -24,6 +25,7 @@ export default function AboutPage() {
       <Loader />
       <SmoothScroll />
       <AboutBackground />
+      <KnotBackground />
       <main className="relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
