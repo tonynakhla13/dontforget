@@ -1,8 +1,17 @@
 "use client";
 
-import FocusedLayout, { C, TEKO, MONO, PillOutline } from "./FocusedLayout";
+import FocusedLayout, { C, TEKO, MONO } from "./FocusedLayout";
 
-const TEAM = [
+export type FocusedTeamMember = {
+  name: string;
+  role: string;
+  photo?: string | null;
+  linkedinUrl?: string | null;
+  twitterUrl?: string | null;
+  instagramUrl?: string | null;
+};
+
+const TEAM_FALLBACK: FocusedTeamMember[] = [
   { name: "Tony Nakhla",    role: "Founder & Lead Developer" },
   { name: "Sarah Chen",     role: "Creative Director" },
   { name: "Marcus Webb",    role: "UI/UX Designer" },
@@ -18,11 +27,45 @@ function AvatarPlaceholder({ size = 280 }: { size?: number }) {
   );
 }
 
-export default function AboutFocused() {
+/* ── Social icon definitions ────────────────────────────────────── */
+const SOCIAL_DEFS = [
+  {
+    label: "Instagram",
+    getHref: (m: FocusedTeamMember) => m.instagramUrl,
+    render: () => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    label: "Twitter",
+    getHref: (m: FocusedTeamMember) => m.twitterUrl,
+    render: () => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M22 5.8a8.6 8.6 0 0 1-2.4.7 4.2 4.2 0 0 0 1.8-2.3 8.3 8.3 0 0 1-2.6 1 4.2 4.2 0 0 0-7.1 3.8A11.9 11.9 0 0 1 3 4.7a4.2 4.2 0 0 0 1.3 5.6 4.1 4.1 0 0 1-1.9-.5v.1c0 2 1.4 3.7 3.4 4.1a4.3 4.3 0 0 1-1.9.1 4.2 4.2 0 0 0 3.9 2.9 8.4 8.4 0 0 1-6.2 1.7A11.9 11.9 0 0 0 8 20.4c7.7 0 11.9-6.4 11.9-11.9v-.5A8.5 8.5 0 0 0 22 5.8z" />
+      </svg>
+    ),
+  },
+  {
+    label: "LinkedIn",
+    getHref: (m: FocusedTeamMember) => m.linkedinUrl,
+    render: () => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" />
+        <circle cx="4" cy="4" r="2" />
+      </svg>
+    ),
+  },
+];
+
+export default function AboutFocused({ team = TEAM_FALLBACK }: { team?: FocusedTeamMember[] }) {
   return (
     <FocusedLayout title="About Us" activeNav="about" animationClass="kbm-about-content">
 
-      {/* ── Hero image ───────────────────────────────────────── */}
+      {/* ── Hero image ───────────────────────────────────────────── */}
       <div className="kbm-about-content" style={{
         margin: "0 clamp(1.5rem, 4vw, 3.75rem)",
         height: "clamp(260px, 40vw, 640px)",
@@ -38,7 +81,7 @@ export default function AboutFocused() {
         </svg>
       </div>
 
-      {/* ── Byline ───────────────────────────────────────────── */}
+      {/* ── Byline ───────────────────────────────────────────────── */}
       <section style={{
         margin: "clamp(3rem, 6vw, 5rem) clamp(1.5rem, 4vw, 3.75rem) 0",
         display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(2rem, 4vw, 4rem)",
@@ -61,7 +104,7 @@ export default function AboutFocused() {
         </p>
       </section>
 
-      {/* ── Vision / Mission ─────────────────────────────────── */}
+      {/* ── Vision / Mission ─────────────────────────────────────── */}
       <section style={{
         margin: "clamp(3rem, 6vw, 7rem) clamp(1.5rem, 4vw, 3.75rem) 0",
         display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(1rem, 2vw, 2rem)",
@@ -106,7 +149,7 @@ export default function AboutFocused() {
         </div>
       </section>
 
-      {/* ── Team ─────────────────────────────────────────────── */}
+      {/* ── Team ─────────────────────────────────────────────────── */}
       <section style={{
         margin: "clamp(3rem, 6vw, 7rem) clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 8rem)",
       }}>
@@ -121,57 +164,60 @@ export default function AboutFocused() {
           display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
           gap: "clamp(2rem, 4vw, 4rem) clamp(1rem, 2vw, 2rem)",
         }}>
-          {TEAM.map((member, i) => (
-            <div key={i} style={{ display: "flex", flexDirection: "column" }}>
-              {/* photo */}
-              <div style={{
-                height: "clamp(200px, 28vw, 480px)",
-                borderRadius: 40,
-                backgroundColor: C.ph,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                position: "relative", overflow: "hidden",
-              }}>
-                <AvatarPlaceholder />
-
-                {/* social bar */}
+          {team.map((member, i) => {
+            const hasSocials = SOCIAL_DEFS.some(s => s.getHref(member));
+            return (
+              <div key={i} style={{ display: "flex", flexDirection: "column" }}>
+                {/* photo */}
                 <div style={{
-                  position: "absolute", left: 24, bottom: 24,
-                  display: "flex", gap: 10,
+                  height: "clamp(200px, 28vw, 480px)",
+                  borderRadius: 40,
+                  backgroundColor: C.ph,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  position: "relative", overflow: "hidden",
                 }}>
-                  {[
-                    { label: "Instagram", d: null, rect: true },
-                    { label: "Twitter", d: "M22 5.8a8.6 8.6 0 0 1-2.4.7 4.2 4.2 0 0 0 1.8-2.3 8.3 8.3 0 0 1-2.6 1 4.2 4.2 0 0 0-7.1 3.8A11.9 11.9 0 0 1 3 4.7a4.2 4.2 0 0 0 1.3 5.6 4.1 4.1 0 0 1-1.9-.5v.1c0 2 1.4 3.7 3.4 4.1a4.3 4.3 0 0 1-1.9.1 4.2 4.2 0 0 0 3.9 2.9 8.4 8.4 0 0 1-6.2 1.7A11.9 11.9 0 0 0 8 20.4c7.7 0 11.9-6.4 11.9-11.9v-.5A8.5 8.5 0 0 0 22 5.8z", rect: false },
-                    { label: "LinkedIn", d: "M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z", rect: false },
-                  ].map(({ label, d, rect }) => (
-                    <a key={label} href="#" aria-label={label} style={{
-                      width: 40, height: 40, borderRadius: "50%",
-                      backgroundColor: C.yellow, color: C.ink,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "background .2s",
-                    }}
-                      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = C.orange)}
-                      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = C.yellow)}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill={rect ? "none" : "currentColor"} stroke={rect ? "currentColor" : undefined} strokeWidth={rect ? 2 : undefined}>
-                        {rect ? (
-                          <><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" /></>
-                        ) : (
-                          <path d={d!} />
-                        )}
-                      </svg>
-                    </a>
-                  ))}
+                  {member.photo ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={member.photo} alt={member.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    <AvatarPlaceholder />
+                  )}
+
+                  {hasSocials && (
+                    <div style={{ position: "absolute", left: 24, bottom: 24, display: "flex", gap: 10 }}>
+                      {SOCIAL_DEFS.map(({ label, getHref, render }) => {
+                        const href = getHref(member);
+                        if (!href) return null;
+                        return (
+                          <a key={label} href={href} aria-label={label}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{
+                              width: 40, height: 40, borderRadius: "50%",
+                              backgroundColor: C.yellow, color: C.ink,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              transition: "background .2s",
+                            }}
+                            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = C.orange)}
+                            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = C.yellow)}
+                          >
+                            {render()}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ fontFamily: TEKO, fontWeight: 700, fontSize: "clamp(1rem, 1.8vw, 1.5rem)", color: C.ink, marginTop: 20 }}>
+                  {member.name}
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: "clamp(0.8rem, 1.1vw, 1rem)", color: C.ink, marginTop: 6, opacity: 0.75 }}>
+                  {member.role}
                 </div>
               </div>
-
-              <div style={{ fontFamily: TEKO, fontWeight: 700, fontSize: "clamp(1rem, 1.8vw, 1.5rem)", color: C.ink, marginTop: 20 }}>
-                {member.name}
-              </div>
-              <div style={{ fontFamily: MONO, fontSize: "clamp(0.8rem, 1.1vw, 1rem)", color: C.ink, marginTop: 6, opacity: 0.75 }}>
-                {member.role}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

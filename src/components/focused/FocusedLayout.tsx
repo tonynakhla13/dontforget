@@ -23,12 +23,12 @@ export const TEKO = "var(--font-teko), 'Teko', sans-serif";
 export const MONO = "var(--font-source-code-pro), 'Source Code Pro', ui-monospace, monospace";
 
 const NAV_LINKS = [
-  { label: "Home",     href: "/" },
-  { label: "About",    href: "/about" },
-  { label: "Projects", href: "/work" },
-  { label: "Services", href: "/services" },
-  { label: "Blog",     href: "/blog" },
-  { label: "Contact",  href: "/contact" },
+  { label: "Home",     href: "/focused" },
+  { label: "About",    href: "/focused/about" },
+  { label: "Projects", href: "/focused/work" },
+  { label: "Services", href: "/focused/services" },
+  { label: "Blog",     href: "/focused/blog" },
+  { label: "Contact",  href: "/focused/contact" },
 ];
 
 /* ── reusable pill button ──────────────────────────────────────── */
@@ -221,7 +221,7 @@ export default function FocusedLayout({ title, activeNav, children, animationCla
 
         <nav className="kbm-topbar-nav" style={{ display: "flex", gap: "clamp(1rem, 3vw, 3.5rem)", flexWrap: "wrap", justifyContent: "center" }}>
           {NAV_LINKS.map(({ label, href }) => {
-            const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
+            const isActive = pathname === href || (href !== "/focused" && pathname.startsWith(href));
             return (
               <Link key={label} href={href} style={{
                 fontFamily: TEKO, fontWeight: 500,
@@ -239,7 +239,7 @@ export default function FocusedLayout({ title, activeNav, children, animationCla
           })}
         </nav>
 
-        <Link href="/contact" className="kbm-topbar-cta" style={{
+        <Link href="/focused/contact" className="kbm-topbar-cta" style={{
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           height: "clamp(36px, 3.5vw, 48px)", padding: "0 clamp(14px, 2vw, 28px)",
           border: `2px solid ${C.ink}`, borderRadius: 40,

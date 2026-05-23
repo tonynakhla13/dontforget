@@ -3,8 +3,16 @@
 import { useState } from "react";
 import FocusedLayout, { C, TEKO, MONO } from "./FocusedLayout";
 
-const SOCIAL_ICONS = [
+export type ContactInfo = {
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  socialLinks?: Record<string, string> | null;
+};
+
+const SOCIAL_ICONS: { key: string; label: string; svg: React.ReactNode }[] = [
   {
+    key: "instagram",
     label: "Instagram",
     svg: (
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -15,6 +23,7 @@ const SOCIAL_ICONS = [
     ),
   },
   {
+    key: "twitter",
     label: "Twitter",
     svg: (
       <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
@@ -23,6 +32,7 @@ const SOCIAL_ICONS = [
     ),
   },
   {
+    key: "linkedin",
     label: "LinkedIn",
     svg: (
       <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
@@ -32,6 +42,7 @@ const SOCIAL_ICONS = [
     ),
   },
   {
+    key: "pinterest",
     label: "Pinterest",
     svg: (
       <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
@@ -41,8 +52,14 @@ const SOCIAL_ICONS = [
   },
 ];
 
-export default function ContactFocused() {
+export default function ContactFocused({ contactInfo }: { contactInfo?: ContactInfo }) {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const email   = contactInfo?.email   ?? "hello@dontforget.studio";
+  const phone   = contactInfo?.phone   ?? "+1 (312) 555-0173";
+  const socials = contactInfo?.socialLinks ?? {};
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -56,6 +73,30 @@ export default function ContactFocused() {
     color: C.ink,
     outline: "none",
   };
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const fd = new FormData(e.currentTarget);
+    try {
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name:    fd.get("name"),
+          email:   fd.get("email"),
+          message: fd.get("message"),
+        }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <FocusedLayout title="Contact Us" activeNav="contact" animationClass="kbm-contact-content">
@@ -79,12 +120,12 @@ export default function ContactFocused() {
             <span style={{ fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.ink }}>
               Email:
             </span>
-            <a href="mailto:hello@dontforget.studio" style={{
+            <a href={`mailto:${email}`} style={{
               fontFamily: MONO, fontWeight: 500,
               fontSize: "clamp(0.85rem, 1.2vw, 1.2rem)", color: C.ink,
               textDecoration: "none", wordBreak: "break-all",
             }}>
-              hello@dontforget.studio
+              {email}
             </a>
           </div>
 
@@ -97,12 +138,12 @@ export default function ContactFocused() {
             <span style={{ fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.white }}>
               Phone:
             </span>
-            <a href="tel:+13125550173" style={{
+            <a href={`tel:${phone.replace(/\s|\(|\)|-/g, "")}`} style={{
               fontFamily: MONO, fontWeight: 500,
               fontSize: "clamp(0.85rem, 1.2vw, 1.2rem)", color: C.white,
               textDecoration: "none",
             }}>
-              +1 (312) 555-0173
+              {phone}
             </a>
           </div>
 
@@ -112,8 +153,13 @@ export default function ContactFocused() {
             padding: "clamp(1.2rem, 2vw, 2rem) clamp(1.5rem, 2.5vw, 2.5rem)",
             display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center",
           }}>
-            {SOCIAL_ICONS.map(({ label, svg }) => (
-              <a key={label} href="#" aria-label={label} style={{ color: C.white, transition: "color .2s" }}
+            {SOCIAL_ICONS.map(({ key, label, svg }) => (
+              <a key={label}
+                href={socials[key] ?? "#"}
+                aria-label={label}
+                target={socials[key] ? "_blank" : undefined}
+                rel="noopener noreferrer"
+                style={{ color: C.white, transition: "color .2s" }}
                 onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = C.yellow)}
                 onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = C.white)}
               >{svg}</a>
@@ -123,7 +169,7 @@ export default function ContactFocused() {
 
         {/* ── Middle: contact form ──────────────────────────── */}
         {submitted ? (
-          <div style={{
+          <div role="alert" style={{
             display: "flex", flexDirection: "column", alignItems: "center",
             justifyContent: "center", gap: 24, minHeight: 400,
             backgroundColor: C.green, borderRadius: 40,
@@ -138,45 +184,58 @@ export default function ContactFocused() {
             </p>
           </div>
         ) : (
-          <form style={{ display: "flex", flexDirection: "column", gap: "clamp(1rem, 2vw, 1.5rem)" }}
-            onSubmit={e => { e.preventDefault(); setSubmitted(true); }}
+          <form
+            style={{ display: "flex", flexDirection: "column", gap: "clamp(1rem, 2vw, 1.5rem)" }}
+            onSubmit={handleSubmit}
           >
             <label style={{ display: "flex", flexDirection: "column", gap: 8, fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.ink }}>
               Name
-              <input type="text" placeholder="Your full name" required style={inputStyle}
+              <input name="name" type="text" placeholder="Your full name" required style={inputStyle}
                 onFocus={e => (e.currentTarget.style.borderColor = C.orange)}
                 onBlur={e => (e.currentTarget.style.borderColor = C.ink)}
               />
             </label>
             <label style={{ display: "flex", flexDirection: "column", gap: 8, fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.ink }}>
               Email
-              <input type="email" placeholder="you@example.com" required style={inputStyle}
+              <input name="email" type="email" placeholder="you@example.com" required style={inputStyle}
                 onFocus={e => (e.currentTarget.style.borderColor = C.orange)}
                 onBlur={e => (e.currentTarget.style.borderColor = C.ink)}
               />
             </label>
             <label style={{ display: "flex", flexDirection: "column", gap: 8, fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.ink }}>
               Message
-              <textarea placeholder="Tell us about your project…" required rows={6} style={{ ...inputStyle, borderRadius: 28, resize: "vertical" }}
+              <textarea name="message" placeholder="Tell us about your project…" required rows={6}
+                style={{ ...inputStyle, borderRadius: 28, resize: "vertical" }}
                 onFocus={e => (e.currentTarget.style.borderColor = C.orange)}
                 onBlur={e => (e.currentTarget.style.borderColor = C.ink)}
               />
             </label>
-            <button type="submit" style={{
+
+            {error && (
+              <p style={{ fontFamily: MONO, fontSize: "clamp(0.78rem, 1vw, 0.95rem)", color: C.orange, margin: 0 }}>
+                {error}
+              </p>
+            )}
+
+            <button type="submit" disabled={loading} style={{
               alignSelf: "flex-start",
               padding: "clamp(12px, 1.5vw, 18px) clamp(28px, 4vw, 48px)",
               border: `2px solid ${C.ink}`, background: "transparent",
               borderRadius: 40, fontFamily: TEKO, fontWeight: 700,
-              fontSize: "clamp(1rem, 1.5vw, 1.5rem)", color: C.ink, cursor: "pointer",
+              fontSize: "clamp(1rem, 1.5vw, 1.5rem)", color: C.ink,
+              cursor: loading ? "wait" : "pointer",
               transition: "background .2s, color .2s",
+              opacity: loading ? 0.6 : 1,
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = C.ink; e.currentTarget.style.color = C.yellow; }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = C.ink; e.currentTarget.style.color = C.yellow; } }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.ink; }}
-            >Submit</button>
+            >
+              {loading ? "Sending…" : "Submit"}
+            </button>
           </form>
         )}
 
-        {/* ── Right: map placeholder ────────────────────────── */}
+        {/* ── Right: map ────────────────────────────────────── */}
         <div style={{
           height: "clamp(300px, 40vw, 600px)",
           backgroundColor: C.ph, borderRadius: 40,

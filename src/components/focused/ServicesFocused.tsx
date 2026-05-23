@@ -2,26 +2,27 @@
 
 import FocusedLayout, { C, TEKO, MONO } from "./FocusedLayout";
 
-const SERVICES = [
+export type FocusedService = {
+  title: string;
+  body: string;
+};
+
+const SERVICES_FALLBACK: FocusedService[] = [
   {
-    title: "Web Design & Development",
-    body:  "We craft pixel-perfect interfaces backed by clean, scalable code — from marketing sites to full-stack web apps. Built to load fast, rank well, and convert reliably at every breakpoint.",
+    title: "Brand Systems",
+    body: "Names, identities, rules, and visual logic that keep every touchpoint coherent across every surface. We build the complete language of a brand — mark, type, colour, motion — so it holds together at any scale.",
   },
   {
-    title: "Brand Identity & Systems",
-    body:  "From mark to motion, we design visual identities that feel distinct, coherent, and impossible to erase from memory. Logos, type systems, color palettes, and usage guidelines — all of it.",
+    title: "Digital Products",
+    body: "Interfaces and flows built to feel fast, clear, and unmistakably yours — from wireframe to launch. We design and engineer web apps, dashboards, and consumer products that people actually want to use.",
   },
   {
-    title: "SEO & Content Strategy",
-    body:  "Technical SEO architecture and content systems that compound over time. We turn organic search into your most reliable, lowest-cost growth channel through structure, authority, and relevance.",
+    title: "Immersive Web",
+    body: "Three.js, GSAP, and tactile interactions that make the browser feel spatial and alive. We create scroll-driven narratives, particle systems, and 3D environments that turn a website into an experience.",
   },
   {
-    title: "Conversion Optimization",
-    body:  "Landing pages, A/B frameworks, and funnel design backed by behavioral data. We audit the full user journey and rebuild it around a single goal: turning more of your traffic into revenue.",
-  },
-  {
-    title: "Strategy & Consulting",
-    body:  "Discovery sessions, digital roadmaps, and competitive audits that give your team clarity and momentum. We find the gaps, rank the opportunities, and map the fastest path to measurable growth.",
+    title: "Motion Identities",
+    body: "Systems that move with intent — from logo behaviour to full campaign launch films. Motion is the final layer of a brand; we make sure it speaks the same language as the visual identity.",
   },
 ];
 
@@ -69,16 +70,16 @@ function ImgPlaceholder() {
   );
 }
 
-export default function ServicesFocused() {
+export default function ServicesFocused({ services = SERVICES_FALLBACK }: { services?: FocusedService[] }) {
   return (
     <FocusedLayout title="Our Services" activeNav="services" animationClass="kbm-svc-content">
 
-      {/* ── Service rows ────────────────────────────────────── */}
+      {/* ── Service rows ────────────────────────────────────────── */}
       <section className="kbm-svc-content" style={{
         margin: "0 clamp(1.5rem, 4vw, 3.75rem)",
         display: "flex", flexDirection: "column", gap: "clamp(1rem, 2vw, 2rem)",
       }}>
-        {SERVICES.map((svc, i) => (
+        {services.map((svc, i) => (
           <div key={i} style={{
             backgroundColor: C.green, borderRadius: 40,
             padding: "clamp(1.5rem, 3vw, 3rem)",
@@ -108,12 +109,12 @@ export default function ServicesFocused() {
               <p style={{ fontFamily: MONO, fontSize: "clamp(0.78rem, 1.05vw, 1rem)", lineHeight: 1.6, color: C.cream }}>
                 {svc.body}
               </p>
-              <a href="/contact" style={{
+              <a href="/focused/contact" style={{
                 display: "inline-flex", alignItems: "center", gap: 12,
                 fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.8rem, 1vw, 1rem)",
                 color: C.white, textDecoration: "none",
               }}>
-                Explore Now{" "}
+                Get in Touch{" "}
                 <span style={{
                   width: 32, height: 32, borderRadius: "50%",
                   backgroundColor: C.white, color: C.green,
@@ -126,7 +127,7 @@ export default function ServicesFocused() {
         ))}
       </section>
 
-      {/* ── Pricing ─────────────────────────────────────────── */}
+      {/* ── Pricing ─────────────────────────────────────────────── */}
       <div style={{
         textAlign: "center",
         padding: "clamp(4rem, 8vw, 8rem) clamp(1.5rem, 4vw, 3.75rem) clamp(2rem, 4vw, 3rem)",
@@ -165,7 +166,7 @@ export default function ServicesFocused() {
                 </li>
               ))}
             </ul>
-            <a href="/contact" style={{
+            <a href="/focused/contact" style={{
               display: "inline-flex", alignItems: "center", gap: 12, marginTop: "auto",
               fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.8rem, 1vw, 1rem)",
               color: plan.textColor, textDecoration: "none",
