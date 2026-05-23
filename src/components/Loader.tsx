@@ -12,6 +12,14 @@ export default function Loader() {
 
   useEffect(() => {
     if (!rootRef.current) return;
+
+    // Only animate on the very first page load per browser session
+    if (sessionStorage.getItem("df_loader_shown")) {
+      setDone(true);
+      return;
+    }
+    sessionStorage.setItem("df_loader_shown", "1");
+
     document.body.style.overflow = "hidden";
 
     const tl = gsap.timeline({
