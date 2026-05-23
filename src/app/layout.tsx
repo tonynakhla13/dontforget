@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Caveat, Space_Mono } from "next/font/google";
+import { Inter, Caveat, Space_Mono, Teko, Source_Code_Pro } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/lib/themeContext";
 import ThemeOnboarding from "@/components/ui/ThemeOnboarding";
@@ -32,6 +32,18 @@ const spaceMono = Space_Mono({
   variable: "--font-mono-next",
 });
 
+const teko = Teko({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-teko",
+});
+
+const sourceCodePro = Source_Code_Pro({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-source-code-pro",
+});
+
 export const metadata: Metadata = {
   title: "DON'T FORGET — Web Development Agency",
   description:
@@ -54,7 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${csRobust.variable} ${caveat.variable} ${spaceMono.variable}`}
+      className={`${inter.variable} ${csRobust.variable} ${caveat.variable} ${spaceMono.variable} ${teko.variable} ${sourceCodePro.variable}`}
     >
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>

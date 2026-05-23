@@ -71,18 +71,118 @@ function MiniIcon({ index }: { index: number }) {
   return icons[index % icons.length];
 }
 
+function ServiceSketch({ index }: { index: number }) {
+  const sketches = [
+    [
+      "M74 68h302c24 0 42 18 42 42v126c0 24-18 42-42 42H74c-24 0-42-18-42-42V110c0-24 18-42 42-42Z",
+      "M33 118h384",
+      "M92 166l-34 30 34 30",
+      "M354 166l34 30-34 30",
+      "M244 156l-42 82",
+      "M132 162h76M132 194h38M276 238h76",
+    ],
+    [
+      "M56 58h176v184H56V58Z",
+      "M276 58h208v74H276V58Z",
+      "M276 166h88v76h-88v-76Z",
+      "M396 166h88v76h-88v-76Z",
+      "M82 92h118M82 124h86M82 174h118M82 206h72",
+      "M306 94h146M306 202h34M424 202h34",
+    ],
+    [
+      "M82 72h256c22 0 38 16 38 38v124c0 22-16 38-38 38H82c-22 0-38-16-38-38V110c0-22 16-38 38-38Z",
+      "M396 108h96v128h-96V108Z",
+      "M88 124h104v92H88v-92Z",
+      "M220 128h96M220 166h70M220 205h118",
+      "M422 144h44M422 174h38M422 204h28",
+      "M125 250h190M408 250h74",
+    ],
+    [
+      "M180 44h164c24 0 42 18 42 42v178c0 24-18 42-42 42H180c-24 0-42-18-42-42V86c0-24 18-42 42-42Z",
+      "M166 92h192M166 248h192",
+      "M202 128h120M202 160h72M202 194h94",
+      "M250 276h24",
+      "M88 134c30-46 82-70 154-70",
+      "M430 212c-30 46-82 70-154 70",
+    ],
+    [
+      "M94 216c48-76 98-108 152-92 34 10 58 2 82-36 25-40 62-54 112-28",
+      "M88 236h368",
+      "M110 92h148",
+      "M110 124h92",
+      "M360 76a54 54 0 1 0 0 108 54 54 0 0 0 0-108Z",
+      "M398 152l62 62",
+    ],
+    [
+      "M74 84h112v78H74V84Z",
+      "M236 84h112v78H236V84Z",
+      "M398 84h112v78H398V84Z",
+      "M130 162v58h324v-58",
+      "M292 162v98",
+      "M154 260h276",
+      "M112 112h36M274 112h36M436 112h36",
+    ],
+  ];
+
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-full w-full overflow-visible"
+      viewBox="0 0 540 330"
+      fill="none"
+    >
+      <defs>
+        <filter id={`service-sketch-glow-${index}`} x="-20%" y="-30%" width="140%" height="160%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feColorMatrix
+            in="blur"
+            type="matrix"
+            values="0 0 0 0 0.227 0 0 0 0 0.749 0 0 0 0 0.541 0 0 0 0.72 0"
+          />
+          <feMerge>
+            <feMergeNode />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <path
+        data-sketch-line
+        d="M40 286C134 314 246 315 358 286C430 267 484 231 508 178"
+        stroke="rgba(58,191,138,0.18)"
+        strokeWidth="1.4"
+        vectorEffect="non-scaling-stroke"
+      />
+      {sketches[index % sketches.length].map((path, pathIndex) => (
+        <path
+          key={path}
+          data-sketch-line
+          d={path}
+          stroke={pathIndex % 2 ? "rgba(248,245,238,0.42)" : "rgba(58,191,138,0.74)"}
+          strokeWidth={pathIndex % 2 ? 1.25 : 1.55}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+          filter={pathIndex < 3 ? `url(#service-sketch-glow-${index})` : undefined}
+        />
+      ))}
+    </svg>
+  );
+}
+
 function Card({ num, title, tall }: { num: string; title: string; tall?: boolean }) {
   return (
     <div
-      className="relative overflow-hidden rounded-[1.4rem] border border-[rgba(58,191,138,0.13)]"
+      className="relative overflow-hidden rounded-[1.1rem] border border-[rgba(58,191,138,0.18)]"
       style={{
         width:  tall ? 220 : 260,
         height: tall ? 300 : 190,
         background:
-          "linear-gradient(145deg,rgba(10,26,19,1) 0%,rgba(13,34,23,1) 55%,rgba(7,14,10,1) 100%)",
+          "linear-gradient(145deg,rgba(10,27,21,0.9) 0%,rgba(12,38,27,0.72) 52%,rgba(7,12,10,0.88) 100%)",
+        boxShadow: "0 22px 80px rgba(0,0,0,0.34), inset 0 0 38px rgba(58,191,138,0.05)",
       }}
     >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--teal)] to-transparent opacity-25" />
+      <div className="absolute inset-4 rounded-[0.8rem] border border-[rgba(248,245,238,0.05)]" />
       <div className="absolute bottom-5 left-5 right-5">
         <span className="block font-mono text-[0.46rem] uppercase tracking-[0.42em] text-[var(--teal)] opacity-55">
           {num}
@@ -111,6 +211,14 @@ export default function Services() {
 
     /* Initial states */
     gsap.set(panels, { autoAlpha: 0 });
+    panels.forEach(panel => {
+      const sketchLines = panel.querySelectorAll<SVGPathElement>("[data-sketch-line]");
+      sketchLines.forEach(line => {
+        const length = line.getTotalLength();
+        gsap.set(line, { strokeDasharray: length, strokeDashoffset: length });
+      });
+      gsap.set(panel.querySelector("[data-sketch-shell]"), { autoAlpha: 0, scale: 0.94, y: 16 });
+    });
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
@@ -135,12 +243,16 @@ export default function Services() {
         const cardR  = panel.querySelector<HTMLElement>("[data-card-r]")!;
         const desc   = panel.querySelector<HTMLElement>("[data-desc]")!;
         const pills  = panel.querySelectorAll<HTMLElement>("[data-pill]");
+        const sketchShell = panel.querySelector<HTMLElement>("[data-sketch-shell]")!;
+        const sketchLines = panel.querySelectorAll<SVGPathElement>("[data-sketch-line]");
         const isLast = i === panels.length - 1;
         tl.to({}, { duration: 0.12 });
 
         /* Panel enter */
         tl.set(panel,  { autoAlpha: 1 }, "<");
         tl.fromTo(title, { yPercent: 55, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.42, ease: "none" }, "<0.04");
+        tl.fromTo(sketchShell, { autoAlpha: 0, scale: 0.94, y: 18 }, { autoAlpha: 1, scale: 1, y: 0, duration: 0.34, ease: "none" }, "<0.04");
+        tl.to(sketchLines, { strokeDashoffset: 0, stagger: 0.035, duration: 0.5, ease: "none" }, "<0.04");
         tl.fromTo(cardL, { x: -70, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.36, ease: "none" }, "<0.04");
         tl.fromTo(cardR, { x:  70, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.36, ease: "none" }, "<");
         tl.fromTo(
@@ -157,7 +269,7 @@ export default function Services() {
         /* Panel exit */
         if (!isLast) {
           tl.to(title,           { yPercent: -70, autoAlpha: 0, duration: 0.38, ease: "none" });
-          tl.to([cardL, cardR, desc], { autoAlpha: 0, duration: 0.28, ease: "none" }, "<");
+          tl.to([cardL, cardR, desc, sketchShell], { autoAlpha: 0, duration: 0.28, ease: "none" }, "<");
           tl.set(panel, { autoAlpha: 0 });
         }
       });
@@ -180,13 +292,12 @@ export default function Services() {
           ref={introRef}
           className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center"
         >
-          <p className="eyebrow mb-8">Services</p>
-          <h2 className="hed text-[7rem] leading-[0.92]">
-            What we <span className="text-[var(--teal)]">build.</span>
+          <p className="eyebrow mb-8">Service stack</p>
+          <h2 className="hed text-[clamp(4.3rem,10vw,8rem)] leading-[0.9]">
+            Scroll the <span className="text-[var(--teal)]">blueprint.</span>
           </h2>
           <p className="mx-auto mt-8 max-w-xl text-[0.9375rem] leading-[1.85] text-[var(--body)]">
-            Web, mobile, e-commerce, SEO, design, CRM —<br />
-            full-stack execution from concept to launch.
+            Each service draws itself into view as the particles rebuild the system around it.
           </p>
         </div>
 
@@ -205,6 +316,14 @@ export default function Services() {
               style={{ left: "4%", top: "10%" }}
             >
               <Card num={svc.num} title={svc.title} tall />
+            </div>
+
+            <div
+              data-sketch-shell
+              className="absolute left-1/2 z-10 h-[min(42vh,360px)] w-[min(780px,88vw)] -translate-x-1/2"
+              style={{ top: "19%" }}
+            >
+              <ServiceSketch index={i} />
             </div>
 
             {/* Giant title — upper zone */}

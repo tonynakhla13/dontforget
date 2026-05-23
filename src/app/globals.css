@@ -93,6 +93,45 @@
 }
 
 /* ─────────────────────────────────────────
+   SERVICES PAGE HOLOGRAPHY
+───────────────────────────────────────── */
+
+.service-holo-stage {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  perspective: 920px;
+  transform-style: preserve-3d;
+}
+
+.service-holo-stage::before,
+.service-holo-stage::after {
+  content: "";
+  position: absolute;
+  inset: 12% 8%;
+  border: 1px solid rgba(58, 191, 138, 0.14);
+  transform: rotateX(68deg) rotateZ(-8deg) translateZ(-38px);
+  box-shadow: 0 0 70px rgba(58, 191, 138, 0.08);
+}
+
+.service-holo-stage::after {
+  inset: 22% 18%;
+  transform: rotateX(68deg) rotateZ(8deg) translateZ(-78px);
+  opacity: 0.5;
+}
+
+.service-holo-svg {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  width: 100%;
+  overflow: visible;
+  transform: rotateX(9deg) rotateY(-16deg) rotateZ(1deg);
+  transform-origin: center;
+  filter: drop-shadow(0 0 20px rgba(58, 191, 138, 0.12));
+}
+
+/* ─────────────────────────────────────────
    TYPOGRAPHY COMPONENTS
 ───────────────────────────────────────── */
 

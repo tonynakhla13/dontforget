@@ -1,13 +1,36 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 
 import Loader         from "@/components/Loader";
 import SmoothScroll   from "@/components/SmoothScroll";
-import AltParticleLayer from "@/components/AltParticleLayer";
 import Navbar         from "@/components/Navbar";
 import AmbientGlow    from "@/components/AmbientGlow";
 import ServiceContent from "./ServiceContent";
+import ServiceDetailParticles from "./ServiceDetailParticles";
+import ServiceHeroHologram from "./ServiceHeroHologram";
+
+function ServiceBackground() {
+  return (
+    <div className="pointer-events-none fixed inset-0 z-0">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 72% 54% at 72% 42%, rgba(58,191,138,0.07), transparent 58%), linear-gradient(180deg, rgba(9,9,9,0.96) 0%, rgba(9,9,9,1) 50%, rgba(9,9,9,0.96) 100%)",
+        }}
+      />
+      <div
+        className="absolute inset-0 opacity-[0.16]"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0 96%, rgba(58,191,138,0.14) 96% 96.2%, transparent 96.2%), linear-gradient(180deg, transparent 0 96%, rgba(58,191,138,0.1) 96% 96.2%, transparent 96.2%)",
+          backgroundSize: "64px 64px",
+          maskImage: "radial-gradient(ellipse 70% 58% at 70% 44%, black, transparent 72%)",
+        }}
+      />
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────
 // Static service data (matches Services.tsx ids)
@@ -150,8 +173,10 @@ export default async function ServicePage({
     <>
       <Loader />
       <SmoothScroll />
-      <AltParticleLayer mode="helix" />
       <main className="relative z-[1] overflow-x-clip">
+        <ServiceBackground />
+        <ServiceDetailParticles />
+        <ServiceHeroHologram serviceId={svc.id} />
         <div className="noise" />
         <AmbientGlow />
         <Navbar inner />

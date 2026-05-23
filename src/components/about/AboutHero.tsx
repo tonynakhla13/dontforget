@@ -1,290 +1,225 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { gsap } from "@/lib/gsap";
 
-/* ── Fluid iridescent blob art (teal-dominant, on-brand) ──────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   CANVAS PARTICLES — flowing teal stream
+───────────────────────────────────────────────────────────────────────── */
+function ParticleStream() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize();
+    window.addEventListener("resize", resize);
+    const ctx = canvas.getContext("2d")!;
+    type P = { x: number; y: number; vx: number; vy: number; size: number; alpha: number; phase: number };
+    const W = () => canvas.width, H = () => canvas.height;
+    const particles: P[] = Array.from({ length: 180 }, () => ({
+      x: Math.random() * W(), y: Math.random() * H(),
+      vx: 0.22 + Math.random() * 0.42, vy: (Math.random() - 0.5) * 0.1,
+      size: 0.7 + Math.random() * 1.3, alpha: 0.06 + Math.random() * 0.18,
+      phase: Math.random() * Math.PI * 2,
+    }));
+    let t = 0, raf: number;
+    const tick = () => {
+      raf = requestAnimationFrame(tick); t += 0.006;
+      ctx.clearRect(0, 0, W(), H());
+      for (const p of particles) {
+        p.x += p.vx; p.y += Math.sin(t + p.phase) * 0.16 + p.vy;
+        if (p.x > W() + 4) { p.x = -4; p.y = Math.random() * H(); }
+        if (p.y < 0) p.y = H(); if (p.y > H()) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(58,191,138,${p.alpha})`; ctx.fill();
+      }
+    };
+    tick();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={canvasRef} aria-hidden className="pointer-events-none absolute inset-0" style={{ zIndex: 2, opacity: 0.7 }} />;
+}
 
-function BlobField() {
+/* ─────────────────────────────────────────────────────────────────────────
+   IRIDESCENT BLOB — multi-layer colorful shape like the reference image
+───────────────────────────────────────────────────────────────────────── */
+function IridescentBlob() {
+  const blobRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!blobRef.current) return;
+    // Subtle organic morphing
+    gsap.to(blobRef.current.querySelector(".blob-main"), {
+      borderRadius: "42% 58% 52% 48% / 55% 42% 58% 45%",
+      duration: 8, ease: "sine.inOut", repeat: -1, yoyo: true,
+    });
+    gsap.to(blobRef.current.querySelector(".blob-cool"), {
+      borderRadius: "60% 40% 44% 56% / 40% 60% 40% 60%",
+      duration: 10, ease: "sine.inOut", repeat: -1, yoyo: true, delay: 1.5,
+    });
+  }, []);
+
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      {/* Core teal mass — top center, drifting */}
-      <motion.div
-        className="absolute"
-        style={{
-          top: "4%",
-          left: "32%",
-          width: "46vw",
-          height: "46vw",
-          borderRadius: "47% 53% 44% 56% / 53% 46% 54% 47%",
-          background:
-            "radial-gradient(40% 40% at 38% 32%, rgba(58,191,138,0.55) 0%, rgba(58,191,138,0.12) 45%, transparent 72%)",
-          filter: "blur(50px)",
-          mixBlendMode: "screen",
-        }}
-        animate={{ x: [0, 40, -20, 0], y: [0, 30, 10, 0], scale: [1, 1.08, 0.96, 1] }}
-        transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-      />
-      {/* Cyan sheen — overlaps for iridescence */}
-      <motion.div
-        className="absolute"
-        style={{
-          top: "14%",
-          left: "44%",
-          width: "34vw",
-          height: "34vw",
-          borderRadius: "60% 40% 55% 45% / 45% 55% 45% 55%",
-          background:
-            "radial-gradient(45% 45% at 50% 50%, rgba(45,212,191,0.42) 0%, rgba(34,211,238,0.10) 50%, transparent 74%)",
-          filter: "blur(60px)",
-          mixBlendMode: "screen",
-        }}
-        animate={{ x: [0, -50, 25, 0], y: [0, 25, -15, 0], scale: [1, 1.12, 0.94, 1] }}
-        transition={{ duration: 32, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-      />
-      {/* Warm accent — small iridescent kiss (orange→pink) */}
-      <motion.div
-        className="absolute"
-        style={{
-          top: "26%",
-          left: "30%",
-          width: "22vw",
-          height: "22vw",
-          borderRadius: "50%",
-          background:
-            "radial-gradient(45% 45% at 50% 50%, rgba(251,146,60,0.30) 0%, rgba(236,72,153,0.10) 55%, transparent 75%)",
-          filter: "blur(55px)",
-          mixBlendMode: "screen",
-        }}
-        animate={{ x: [0, 30, -25, 0], y: [0, -20, 20, 0], scale: [1, 1.15, 0.9, 1] }}
-        transition={{ duration: 28, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
-      />
-      {/* Deep emerald base — anchors lower mass */}
-      <motion.div
-        className="absolute"
-        style={{
-          top: "40%",
-          left: "38%",
-          width: "40vw",
-          height: "40vw",
-          borderRadius: "55% 45% 48% 52% / 50% 52% 48% 50%",
-          background:
-            "radial-gradient(45% 45% at 50% 50%, rgba(16,185,129,0.40) 0%, rgba(58,191,138,0.10) 50%, transparent 73%)",
-          filter: "blur(65px)",
-          mixBlendMode: "screen",
-        }}
-        animate={{ x: [0, -30, 35, 0], y: [0, 35, -10, 0], scale: [1, 1.06, 0.97, 1] }}
-        transition={{ duration: 34, repeat: Infinity, ease: "easeInOut", delay: 2.2 }}
-      />
-      {/* Far-right faint orb */}
-      <motion.div
-        className="absolute"
-        style={{
-          top: "8%",
-          right: "-6%",
-          width: "18vw",
-          height: "18vw",
-          borderRadius: "50%",
-          background:
-            "radial-gradient(45% 45% at 50% 50%, rgba(58,191,138,0.30) 0%, transparent 70%)",
-          filter: "blur(45px)",
-          mixBlendMode: "screen",
-        }}
-        animate={{ x: [0, -25, 0], y: [0, 20, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
-      />
+    <div ref={blobRef} className="pointer-events-none absolute overflow-hidden" aria-hidden
+      style={{ inset: 0, zIndex: 3 }}>
+
+      {/* Warm core — orange/pink/magenta */}
+      <div className="blob-main absolute" style={{
+        top: "-5%", left: "22%", width: "62vw", height: "90vh",
+        borderRadius: "55% 45% 60% 40% / 48% 55% 45% 52%",
+        background: [
+          "radial-gradient(circle at 38% 28%, rgba(255,110,40,0.85) 0%, transparent 42%)",
+          "radial-gradient(circle at 62% 22%, rgba(230,50,130,0.70) 0%, transparent 38%)",
+          "radial-gradient(circle at 28% 60%, rgba(180,50,230,0.55) 0%, transparent 38%)",
+          "radial-gradient(circle at 68% 65%, rgba(58,191,138,0.60) 0%, transparent 40%)",
+        ].join(","),
+        filter: "blur(14px)",
+        mixBlendMode: "screen",
+        opacity: 0.90,
+      }} />
+
+      {/* Cool overlay — teal/cyan/purple */}
+      <div className="blob-cool absolute" style={{
+        top: "8%", left: "32%", width: "50vw", height: "72vh",
+        borderRadius: "50% 50% 44% 56% / 44% 52% 48% 56%",
+        background: [
+          "radial-gradient(circle at 55% 35%, rgba(45,215,195,0.60) 0%, transparent 45%)",
+          "radial-gradient(circle at 30% 45%, rgba(100,80,240,0.50) 0%, transparent 40%)",
+          "radial-gradient(circle at 72% 58%, rgba(58,191,138,0.45) 0%, transparent 38%)",
+        ].join(","),
+        filter: "blur(18px)",
+        mixBlendMode: "screen",
+        opacity: 0.85,
+      }} />
+
+      {/* Specular shine — white gloss highlight */}
+      <div className="absolute" style={{
+        top: "4%", left: "38%", width: "30vw", height: "38vh",
+        borderRadius: "48% 52% 55% 45% / 52% 46% 54% 48%",
+        background: "radial-gradient(circle at 42% 22%, rgba(255,255,255,0.18) 0%, transparent 50%)",
+        filter: "blur(8px)",
+        mixBlendMode: "screen",
+        opacity: 0.95,
+      }} />
+
+      {/* Edge softener — dark vignette so blob doesn't bleed to edges */}
+      <div className="absolute inset-0" style={{
+        background: [
+          "radial-gradient(ellipse 85% 90% at 50% 50%, transparent 50%, rgba(9,9,9,0.55) 100%)",
+          "linear-gradient(to right, rgba(9,9,9,0.90) 0%, transparent 18%, transparent 82%, rgba(9,9,9,0.90) 100%)",
+          "linear-gradient(to bottom, rgba(9,9,9,0.60) 0%, transparent 20%, transparent 80%, rgba(9,9,9,0.85) 100%)",
+        ].join(","),
+      }} />
     </div>
   );
 }
 
-/* ── Scattered stat callout ───────────────────────────────────────────── */
-
-function Stat({
-  value,
-  label,
-  style,
-  delay,
-}: {
-  value: string;
-  label: string;
-  style: React.CSSProperties;
-  delay: number;
-}) {
-  return (
-    <motion.div
-      className="absolute z-20"
-      style={style}
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <p className="hed leading-none text-[var(--fg)]" style={{ fontSize: "clamp(1.8rem,3vw,2.8rem)" }}>
-        {value}
-      </p>
-      <p
-        className="mt-1 font-mono uppercase text-[var(--body)]"
-        style={{ fontSize: "0.55rem", letterSpacing: "0.28em" }}
-      >
-        {label}
-      </p>
-    </motion.div>
-  );
-}
-
-/* ── Component ────────────────────────────────────────────────────────── */
-
-const EASE = [0.22, 1, 0.36, 1] as const;
-
+/* ─────────────────────────────────────────────────────────────────────────
+   HERO
+───────────────────────────────────────────────────────────────────────── */
 export default function AboutHero() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const line1Ref   = useRef<HTMLDivElement>(null);
+  const line2Ref   = useRef<HTMLDivElement>(null);
+  const line3Ref   = useRef<HTMLDivElement>(null);
+  const subRef     = useRef<HTMLDivElement>(null);
+  const statsRef   = useRef<HTMLDivElement>(null);
+
+  /* Entrance animation — plays on mount (no scroll needed for hero) */
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+      tl.fromTo(line1Ref.current, { autoAlpha: 0, xPercent: -6 }, { autoAlpha: 1, xPercent: 0, duration: 1.1 }, 0)
+        .fromTo(line2Ref.current, { autoAlpha: 0, xPercent:  6 }, { autoAlpha: 1, xPercent: 0, duration: 1.1 }, 0.08)
+        .fromTo(line3Ref.current, { autoAlpha: 0, y: 40       }, { autoAlpha: 1, y: 0,         duration: 1.0 }, 0.2)
+        .fromTo(subRef.current,   { autoAlpha: 0, y: 24       }, { autoAlpha: 1, y: 0,         duration: 0.8 }, 0.4)
+        .fromTo(statsRef.current?.children ?? [],
+          { autoAlpha: 0, y: 20 },
+          { autoAlpha: 1, y: 0, stagger: 0.12, duration: 0.7 }, 0.55);
+    }, sectionRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="relative overflow-hidden" style={{ background: "transparent" }}>
-      <BlobField />
+    <section ref={sectionRef} className="relative overflow-hidden" style={{ background: "transparent", minHeight: "100dvh" }}>
+      <IridescentBlob />
+      <ParticleStream />
 
-      {/* Vignette to keep edges legible */}
-      <div
-        className="pointer-events-none absolute inset-0 z-[1]"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 70% at 50% 40%, transparent 0%, rgba(9,9,9,0.35) 70%, rgba(9,9,9,0.85) 100%)",
-        }}
-      />
+      {/* Hard bottom fade — clean transition to next section */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[4]"
+        style={{ height: "22vh", background: "linear-gradient(to bottom, transparent, rgba(9,9,9,0.95))" }} />
 
-      {/* ── Band 1: overlapping headline + scattered stats ── */}
-      <div className="wrap relative z-10" style={{ paddingTop: "clamp(9rem,18vh,15rem)", paddingBottom: "4rem" }}>
-        <div className="relative" style={{ minHeight: "min(58vw, 640px)" }}>
-          {/* WE */}
-          <motion.h1
-            className="hed"
-            style={{
-              position: "relative",
-              fontSize: "clamp(4.5rem,17vw,18rem)",
-              lineHeight: 0.8,
-              letterSpacing: "-0.02em",
-              color: "var(--fg)",
-              zIndex: 12,
-            }}
-            initial={{ opacity: 0, x: -60 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, ease: EASE }}
-          >
+      {/* ── Heading block — fills the viewport ── */}
+      <div className="wrap relative" style={{ zIndex: 10, paddingTop: "clamp(7rem,14vh,11rem)" }}>
+
+        {/* "WE BUILD" — line 1, left */}
+        <div ref={line1Ref} style={{ lineHeight: 0.88, overflow: "hidden" }}>
+          <h1 className="hed" style={{
+            fontSize: "clamp(4rem, 20vw, 22rem)",
+            letterSpacing: "-0.02em",
+            color: "var(--fg)",
+          }}>
             we build
-          </motion.h1>
-
-          {/* THINGS — offset right, overlapping */}
-          <motion.h1
-            className="hed"
-            style={{
-              position: "relative",
-              marginTop: "-0.06em",
-              textAlign: "right",
-              fontSize: "clamp(4.5rem,17vw,18rem)",
-              lineHeight: 0.8,
-              letterSpacing: "-0.02em",
-              color: "transparent",
-              WebkitTextStroke: "1.5px rgba(240,236,227,0.55)",
-              zIndex: 11,
-            }}
-            initial={{ opacity: 0, x: 60 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, ease: EASE, delay: 0.1 }}
-          >
-            things
-          </motion.h1>
-
-          {/* UNFORGETTABLE — lower, teal-tinted */}
-          <motion.h1
-            className="hed script"
-            style={{
-              position: "relative",
-              marginTop: "-0.04em",
-              fontSize: "clamp(3rem,11vw,12rem)",
-              lineHeight: 0.85,
-              letterSpacing: "-0.01em",
-              color: "var(--teal)",
-              fontStyle: "italic",
-              zIndex: 12,
-            }}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: EASE, delay: 0.2 }}
-          >
-            unforgettable.
-          </motion.h1>
-
-          {/* Scattered stats */}
-          <Stat
-            value="14+"
-            label="projects shipped"
-            delay={0.7}
-            style={{ top: "2%", right: "2%" }}
-          />
-          <Stat
-            value="6"
-            label="countries served"
-            delay={0.85}
-            style={{ top: "42%", left: "1%" }}
-          />
-          <Stat
-            value="3 yrs"
-            label="building since 2022"
-            delay={1}
-            style={{ bottom: "0%", right: "8%" }}
-          />
+          </h1>
         </div>
-      </div>
 
-      {/* ── Band 2: eyebrow + CTA pill ── */}
-      <div className="wrap relative z-10 flex flex-col items-center gap-8 pb-6 text-center">
-        <motion.p
-          className="eyebrow"
-          style={{ letterSpacing: "0.36em" }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 1.05 }}
-        >
-          Est. 2022 — Digital Studio
-        </motion.p>
+        {/* "THINGS" — line 2, right, sits in front of blob */}
+        <div ref={line2Ref} style={{ lineHeight: 0.88, overflow: "hidden", textAlign: "right", marginTop: "-0.04em", position: "relative", zIndex: 12 }}>
+          <h1 className="hed" style={{
+            fontSize: "clamp(4rem, 20vw, 22rem)",
+            letterSpacing: "-0.02em",
+            color: "transparent",
+            WebkitTextStroke: "2px rgba(240,236,227,0.65)",
+          }}>
+            things
+          </h1>
+        </div>
 
-        <motion.div
-          className="flex items-center gap-2 rounded-full border border-[var(--border)] p-1.5 pl-6"
-          style={{ background: "rgba(17,17,17,0.6)", backdropFilter: "blur(12px)" }}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 1.15, ease: EASE }}
-        >
-          <span className="text-sm text-[var(--body)]">Got something worth remembering?</span>
-          <a
-            href="#contact"
-            className="rounded-full px-6 py-3 text-sm font-medium transition-colors"
-            style={{ background: "var(--teal)", color: "var(--bg)" }}
-          >
-            Let&apos;s talk
-          </a>
-        </motion.div>
-      </div>
+        {/* "unforgettable." — line 3, italic teal */}
+        <div ref={line3Ref} style={{ overflow: "hidden", marginTop: "-0.02em" }}>
+          <h1 className="hed script" style={{
+            fontSize: "clamp(2.8rem, 11.5vw, 13rem)",
+            letterSpacing: "-0.01em",
+            color: "var(--teal)",
+            fontStyle: "italic",
+          }}>
+            unforgettable.
+          </h1>
+        </div>
 
-      {/* ── Band 3: mid paragraph (right-aligned like reference) ── */}
-      <div className="wrap relative z-10 grid gap-8 pb-20 pt-10 md:grid-cols-2">
-        <motion.p
-          className="self-end text-[var(--teal)]"
-          style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase" }}
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease: EASE }}
-        >
-          For brands worth remembering
-        </motion.p>
-        <motion.p
-          className="max-w-md justify-self-end text-[0.95rem] leading-[1.9] text-[var(--body)]"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
-        >
-          A small studio obsessed with craft, speed, and digital work that makes people stop
-          scrolling. We build fast, beautiful, memorable websites, apps, and systems — not a
-          factory, not a freelancer, something better than both.
-        </motion.p>
+        {/* ── Scattered stats ── */}
+        <div ref={statsRef} className="relative mt-8 flex items-end justify-between">
+          {[
+            { value: "14+", label: "projects shipped" },
+            { value: "6",   label: "countries served" },
+            { value: "3yr", label: "building since '22" },
+          ].map(s => (
+            <div key={s.label}>
+              <p className="hed" style={{ fontSize: "clamp(1.6rem,3vw,2.8rem)", lineHeight: 1, color: "var(--fg)" }}>{s.value}</p>
+              <p style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.52rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--body)", marginTop: "0.3rem" }}>{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Sub copy + CTA ── */}
+        <div ref={subRef} className="mt-10 flex flex-col items-center gap-7 pb-10 text-center">
+          <p className="eyebrow" style={{ letterSpacing: "0.36em" }}>Est. 2022 — Digital Studio</p>
+
+          <div className="flex items-center gap-2 rounded-full border border-[var(--border)] p-1.5 pl-6"
+            style={{ background: "rgba(17,17,17,0.65)", backdropFilter: "blur(14px)" }}>
+            <span className="text-sm" style={{ color: "var(--body)" }}>Got something worth remembering?</span>
+            <a href="#contact" className="rounded-full px-6 py-3 text-sm font-medium transition-colors"
+              style={{ background: "var(--teal)", color: "var(--bg)" }}>
+              Let&apos;s talk
+            </a>
+          </div>
+
+          <p className="max-w-md text-[0.9rem] leading-[1.9]" style={{ color: "var(--body)" }}>
+            A small studio obsessed with craft, speed, and digital work that makes people stop scrolling.
+            Not a factory. Not a freelancer. Something better than both.
+          </p>
+        </div>
+
       </div>
     </section>
   );

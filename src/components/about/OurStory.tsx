@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { TorusShape } from "./shapes";
 
 const EVENTS = [
@@ -16,237 +17,137 @@ const EVENTS = [
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-function TimelineCard({
-  event,
-  index,
-  isLeft,
-}: {
-  event: (typeof EVENTS)[0];
-  index: number;
-  isLeft: boolean;
-}) {
+function Card({ event, isLeft }: { event: (typeof EVENTS)[0]; isLeft: boolean }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, amount: 0.15 });
   return (
-    <div
-      className="relative grid gap-12 items-center"
-      style={{ gridTemplateColumns: isLeft ? "1fr 60px 1fr" : "1fr 60px 1fr" }}
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, x: isLeft ? -40 : 40 }}
+      animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: isLeft ? -40 : 40 }}
+      transition={{ duration: 0.7, ease: EASE }}
     >
-      {/* Left card or spacer */}
-      {isLeft ? (
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, ease: EASE }}
-          viewport={{ once: true, margin: "-80px" }}
-          className="text-right"
-        >
-          <div
-            className="relative rounded-[1.25rem] overflow-hidden"
-            style={{
-              border: "1px solid rgba(58,191,138,0.30)",
-              padding: "2.5rem 2.75rem",
-              background: "rgba(9,9,9,0.92)",
-              backdropFilter: "blur(20px)",
-            }}
-          >
-            <div
-              className="absolute inset-x-0 top-0 rounded-t-[1.25rem]"
-              style={{
-                height: 1,
-                background: "linear-gradient(90deg, transparent, rgba(58,191,138,0.60) 50%, transparent)",
-              }}
-            />
-            <span
-              style={{
-                display: "block",
-                fontFamily: "var(--font-mono-next)",
-                fontSize: "0.46rem",
-                letterSpacing: "0.44em",
-                textTransform: "uppercase",
-                color: "var(--teal)",
-                marginBottom: "1rem",
-              }}
-            >
-              {event.num}
-            </span>
-            <h3
-              className="hed"
-              style={{
-                fontSize: "clamp(1.6rem,2.4vw,2.2rem)",
-                lineHeight: 1.08,
-                color: "var(--fg)",
-                marginBottom: "1.25rem",
-              }}
-            >
-              {event.title}
-            </h3>
-            <p style={{ fontSize: "0.875rem", lineHeight: 1.85, color: "var(--body)" }}>
-              {event.body}
-            </p>
-            <p
-              style={{
-                marginTop: "1.5rem",
-                fontFamily: "var(--font-mono-next)",
-                fontSize: "0.52rem",
-                letterSpacing: "0.36em",
-                textTransform: "uppercase",
-                color: "var(--teal)",
-              }}
-            >
-              {event.year}
-            </p>
-          </div>
-        </motion.div>
-      ) : (
-        <div />
-      )}
-
-      {/* Center timeline dot */}
-      <div className="flex flex-col items-center h-full">
-        <motion.div
-          initial={{ scale: 0 }}
-          whileInView={{ scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          viewport={{ once: true, margin: "-80px" }}
-          className="relative flex items-center justify-center"
+      <div
+        className="relative rounded-[1.25rem] overflow-hidden"
+        style={{
+          border: "1px solid rgba(58,191,138,0.28)",
+          padding: "2rem 2.25rem",
+          background: "rgba(9,9,9,0.90)",
+          backdropFilter: "blur(18px)",
+        }}
+      >
+        {/* Top highlight */}
+        <div
+          className="absolute inset-x-0 top-0"
           style={{
-            width: 20,
-            height: 20,
-            background: "var(--teal)",
-            borderRadius: "50%",
-            border: "2px solid rgba(9,9,9,1)",
-            boxShadow: "0 0 0 4px rgba(9,9,9,1), 0 0 0 7px rgba(58,191,138,0.92), 0 0 20px rgba(58,191,138,0.68)",
-            zIndex: 10,
-            flexShrink: 0,
+            height: 1,
+            background: "linear-gradient(90deg, transparent, rgba(58,191,138,0.55) 50%, transparent)",
           }}
         />
-        {index < EVENTS.length - 1 && (
-          <motion.div
-            initial={{ scaleY: 0 }}
-            whileInView={{ scaleY: 1 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-            viewport={{ once: true, margin: "-80px" }}
-            style={{
-              width: 1,
-              flex: 1,
-              background: "linear-gradient(to bottom, rgba(58,191,138,0.5) 0%, rgba(58,191,138,0.1) 100%)",
-              transformOrigin: "top",
-              minHeight: "80px",
-            }}
-          />
-        )}
-      </div>
 
-      {/* Right card or spacer */}
-      {!isLeft ? (
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, ease: EASE }}
-          viewport={{ once: true, margin: "-80px" }}
-          className="text-left"
-        >
-          <div
-            className="relative rounded-[1.25rem] overflow-hidden"
+        {/* Year + num row */}
+        <div className="flex items-center justify-between mb-4">
+          <span
             style={{
-              border: "1px solid rgba(58,191,138,0.30)",
-              padding: "2.5rem 2.75rem",
-              background: "rgba(9,9,9,0.92)",
-              backdropFilter: "blur(20px)",
+              fontFamily: "var(--font-mono-next)",
+              fontSize: "0.52rem",
+              letterSpacing: "0.38em",
+              textTransform: "uppercase",
+              color: "var(--teal)",
             }}
           >
-            <div
-              className="absolute inset-x-0 top-0 rounded-t-[1.25rem]"
-              style={{
-                height: 1,
-                background: "linear-gradient(90deg, transparent, rgba(58,191,138,0.60) 50%, transparent)",
-              }}
-            />
-            <span
-              style={{
-                display: "block",
-                fontFamily: "var(--font-mono-next)",
-                fontSize: "0.46rem",
-                letterSpacing: "0.44em",
-                textTransform: "uppercase",
-                color: "var(--teal)",
-                marginBottom: "1rem",
-              }}
-            >
-              {event.num}
-            </span>
-            <h3
-              className="hed"
-              style={{
-                fontSize: "clamp(1.6rem,2.4vw,2.2rem)",
-                lineHeight: 1.08,
-                color: "var(--fg)",
-                marginBottom: "1.25rem",
-              }}
-            >
-              {event.title}
-            </h3>
-            <p style={{ fontSize: "0.875rem", lineHeight: 1.85, color: "var(--body)" }}>
-              {event.body}
-            </p>
-            <p
-              style={{
-                marginTop: "1.5rem",
-                fontFamily: "var(--font-mono-next)",
-                fontSize: "0.52rem",
-                letterSpacing: "0.36em",
-                textTransform: "uppercase",
-                color: "var(--teal)",
-              }}
-            >
-              {event.year}
-            </p>
-          </div>
-        </motion.div>
-      ) : (
-        <div />
-      )}
-    </div>
+            {event.year}
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-mono-next)",
+              fontSize: "0.44rem",
+              letterSpacing: "0.44em",
+              textTransform: "uppercase",
+              color: "var(--body)",
+              opacity: 0.5,
+            }}
+          >
+            {event.num}
+          </span>
+        </div>
+
+        <h3
+          className="hed"
+          style={{
+            fontSize: "clamp(1.4rem,2vw,1.9rem)",
+            lineHeight: 1.1,
+            color: "var(--fg)",
+            marginBottom: "1rem",
+          }}
+        >
+          {event.title}
+        </h3>
+        <p style={{ fontSize: "0.85rem", lineHeight: 1.85, color: "var(--body)" }}>
+          {event.body}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function Dot({ index }: { index: number }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, amount: 0.5 });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ scale: 0, opacity: 0 }}
+      animate={inView ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      className="relative z-10 flex items-center justify-center"
+      style={{
+        width: 20,
+        height: 20,
+        borderRadius: "50%",
+        background: "var(--teal)",
+        border: "2px solid rgba(9,9,9,1)",
+        boxShadow: "0 0 0 4px rgba(9,9,9,1), 0 0 0 7px rgba(58,191,138,0.88), 0 0 22px rgba(58,191,138,0.60)",
+        flexShrink: 0,
+      }}
+    >
+      {/* Pulse ring — Framer Motion loop */}
+      <motion.div
+        style={{
+          position: "absolute",
+          inset: -8,
+          borderRadius: "50%",
+          border: "1px solid rgba(58,191,138,0.55)",
+        }}
+        animate={{ scale: [1, 1.8], opacity: [0.55, 0] }}
+        transition={{
+          duration: 2.2,
+          delay: index * 0.28,
+          repeat: Infinity,
+          ease: "easeOut",
+        }}
+      />
+    </motion.div>
   );
 }
 
 export default function OurStory() {
+  const headerRef = useRef<HTMLDivElement>(null);
+  const headerInView = useInView(headerRef, { once: true, amount: 0.3 });
+
   return (
     <section
       className="relative border-t border-[var(--border)] section-py overflow-hidden"
       style={{ background: "rgba(9,9,9,0.72)" }}
     >
-      {/* Readability gradient */}
-      <div
-        className="pointer-events-none fixed inset-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse 90% 80% at 50% 50%, rgba(9,9,9,0.10) 0%, rgba(9,9,9,0.58) 100%)",
-          zIndex: 0,
-        }}
-      />
-
-      {/* TorusShape — background decoration */}
-      <div
-        className="pointer-events-none fixed"
-        style={{
-          right: "6%",
-          top: "50%",
-          transform: "translateY(-50%)",
-          opacity: 0.15,
-          zIndex: 0,
-        }}
-      >
-        <TorusShape />
-      </div>
-
       <div className="wrap relative z-10">
         {/* Section header */}
-        <div className="mb-20">
+        <div className="mb-20" ref={headerRef}>
           <motion.p
             className="eyebrow mb-4"
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.7, ease: EASE }}
-            viewport={{ once: true, margin: "-80px" }}
           >
             Our Story
           </motion.p>
@@ -254,9 +155,8 @@ export default function OurStory() {
             className="hed"
             style={{ fontSize: "clamp(3rem,6vw,5rem)" }}
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
-            viewport={{ once: true, margin: "-80px" }}
           >
             How we got{" "}
             <span className="script" style={{ color: "var(--teal)" }}>
@@ -265,13 +165,75 @@ export default function OurStory() {
           </motion.h2>
         </div>
 
-        {/* Timeline */}
-        <div className="space-y-16">
-          {EVENTS.map((event, i) => (
-            <TimelineCard key={i} event={event} index={i} isLeft={i % 2 === 0} />
-          ))}
+        {/* Timeline — continuous center line with alternating cards */}
+        <div className="relative">
+
+          {/* ── Continuous vertical line ── */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              top: 0,
+              bottom: 0,
+              left: "50%",
+              width: 1,
+              transform: "translateX(-50%)",
+              background: "linear-gradient(to bottom, rgba(58,191,138,0.55) 0%, rgba(58,191,138,0.08) 100%)",
+              zIndex: 0,
+            }}
+          />
+
+          {/* ── Cylinder shape — sits in center, behind cards ── */}
+          <div
+            className="pointer-events-none absolute"
+            style={{
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              opacity: 0.20,
+              zIndex: 1,
+            }}
+          >
+            <TorusShape />
+          </div>
+
+          {/* ── Cards ── */}
+          {EVENTS.map((event, i) => {
+            const isLeft = i % 2 === 0;
+            return (
+              <div
+                key={i}
+                className="relative grid items-center"
+                style={{
+                  gridTemplateColumns: "1fr 60px 1fr",
+                  paddingTop: "2.5rem",
+                  paddingBottom: "2.5rem",
+                  gap: "clamp(1rem, 3vw, 2.5rem)",
+                }}
+              >
+                {/* Left slot */}
+                {isLeft ? (
+                  <Card event={event} isLeft />
+                ) : (
+                  <div />
+                )}
+
+                {/* Center dot */}
+                <div className="flex items-center justify-center" style={{ zIndex: 2 }}>
+                  <Dot index={i} />
+                </div>
+
+                {/* Right slot */}
+                {!isLeft ? (
+                  <Card event={event} isLeft={false} />
+                ) : (
+                  <div />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
+
     </section>
   );
 }

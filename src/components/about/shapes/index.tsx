@@ -188,14 +188,27 @@ export function ArmillaryShape() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   TorusShape — perspective + rotateX illusion of a torus (donut)
-   Used as background decoration in OurStory
+   TorusShape — CSS 3D cylinder wireframe
+   Used as center decoration in OurStory timeline
 ───────────────────────────────────────────────────────────────────────── */
 export function TorusShape() {
+  // Horizontal rings at evenly spaced heights — rotateX makes them look like ellipses
+  const RINGS = [
+    { pct: 2,  opacity: 0.55, thickness: "1.5px" },
+    { pct: 16, opacity: 0.28, thickness: "1px" },
+    { pct: 30, opacity: 0.20, thickness: "1px" },
+    { pct: 44, opacity: 0.17, thickness: "1px" },
+    { pct: 58, opacity: 0.20, thickness: "1px" },
+    { pct: 72, opacity: 0.28, thickness: "1px" },
+    { pct: 86, opacity: 0.55, thickness: "1.5px" },
+  ];
+  // Vertical lines evenly around the circumference
+  const VLINES = [0, 45, 90, 135, 180, 225, 270, 315];
+
   return (
     <div
       className="pointer-events-none select-none"
-      style={{ width: 400, height: 400, perspective: "800px" }}
+      style={{ width: 260, height: 460, perspective: "700px", perspectiveOrigin: "50% 50%" }}
     >
       <div
         style={{
@@ -204,43 +217,64 @@ export function TorusShape() {
           height: "100%",
           transformStyle: "preserve-3d",
           WebkitTransformStyle: "preserve-3d",
-          animation: "torus-spin 20s linear infinite",
+          animation: "torus-spin 28s linear infinite",
         }}
       >
-        {/* Outer ring */}
+        {/* Horizontal rings — each flat circle rotated ~78° forward looks like a cylinder slice */}
+        {RINGS.map((r, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              top: `${r.pct}%`,
+              left: 0,
+              right: 0,
+              height: "14%",
+              borderRadius: "50%",
+              border: `${r.thickness} solid rgba(58,191,138,${r.opacity})`,
+              transform: "rotateX(78deg)",
+              transformOrigin: "center center",
+              boxShadow: i === 0 || i === RINGS.length - 1
+                ? `0 0 14px rgba(58,191,138,${r.opacity * 0.6})`
+                : "none",
+            }}
+          />
+        ))}
+
+        {/* Vertical lines — thin ellipses rotated around Y axis give the cylinder sides */}
+        {VLINES.map((deg) => (
+          <div
+            key={deg}
+            style={{
+              position: "absolute",
+              inset: "0 44%",
+              borderRadius: "50%",
+              border: "1px solid rgba(58,191,138,0.10)",
+              transform: `rotateY(${deg}deg)`,
+              transformOrigin: "center center",
+            }}
+          />
+        ))}
+
+        {/* Inner core glow */}
+        <div
+          style={{
+            position: "absolute",
+            inset: "20% 15%",
+            borderRadius: "50%",
+            background:
+              "radial-gradient(ellipse at 40% 40%, rgba(58,191,138,0.10) 0%, transparent 70%)",
+            filter: "blur(8px)",
+          }}
+        />
+
+        {/* Outer ambient glow */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             borderRadius: "50%",
-            border: "1.5px solid rgba(58,191,138,0.22)",
-          }}
-        />
-        {/* Mid ring */}
-        <div
-          style={{
-            position: "absolute",
-            inset: "15%",
-            borderRadius: "50%",
-            border: "1px solid rgba(58,191,138,0.14)",
-          }}
-        />
-        {/* Inner ring */}
-        <div
-          style={{
-            position: "absolute",
-            inset: "28%",
-            borderRadius: "50%",
-            border: "1px solid rgba(58,191,138,0.10)",
-          }}
-        />
-        {/* Outer glow */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: "50%",
-            boxShadow: "0 0 40px rgba(58,191,138,0.08)",
+            boxShadow: "0 0 60px rgba(58,191,138,0.07), inset 0 0 40px rgba(58,191,138,0.04)",
           }}
         />
       </div>
