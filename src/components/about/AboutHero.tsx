@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   CANVAS PARTICLES — flowing teal stream
+   CANVAS PARTICLES — soft teal dust
 ───────────────────────────────────────────────────────────────────────── */
 function ParticleStream() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -17,18 +17,18 @@ function ParticleStream() {
     const ctx = canvas.getContext("2d")!;
     type P = { x: number; y: number; vx: number; vy: number; size: number; alpha: number; phase: number };
     const W = () => canvas.width, H = () => canvas.height;
-    const particles: P[] = Array.from({ length: 180 }, () => ({
+    const particles: P[] = Array.from({ length: 120 }, () => ({
       x: Math.random() * W(), y: Math.random() * H(),
-      vx: 0.22 + Math.random() * 0.42, vy: (Math.random() - 0.5) * 0.1,
-      size: 0.7 + Math.random() * 1.3, alpha: 0.06 + Math.random() * 0.18,
+      vx: 0.18 + Math.random() * 0.35, vy: (Math.random() - 0.5) * 0.08,
+      size: 0.6 + Math.random() * 1.1, alpha: 0.04 + Math.random() * 0.13,
       phase: Math.random() * Math.PI * 2,
     }));
     let t = 0, raf: number;
     const tick = () => {
-      raf = requestAnimationFrame(tick); t += 0.006;
+      raf = requestAnimationFrame(tick); t += 0.005;
       ctx.clearRect(0, 0, W(), H());
       for (const p of particles) {
-        p.x += p.vx; p.y += Math.sin(t + p.phase) * 0.16 + p.vy;
+        p.x += p.vx; p.y += Math.sin(t + p.phase) * 0.14 + p.vy;
         if (p.x > W() + 4) { p.x = -4; p.y = Math.random() * H(); }
         if (p.y < 0) p.y = H(); if (p.y > H()) p.y = 0;
         ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -38,79 +38,194 @@ function ParticleStream() {
     tick();
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
   }, []);
-  return <canvas ref={canvasRef} aria-hidden className="pointer-events-none absolute inset-0" style={{ zIndex: 2, opacity: 0.7 }} />;
+  return <canvas ref={canvasRef} aria-hidden className="pointer-events-none absolute inset-0" style={{ zIndex: 2, opacity: 0.65 }} />;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   IRIDESCENT BLOB — multi-layer colorful shape like the reference image
+   WIREFRAME TORUS KNOT — (2,3) trefoil, drifts + breathes across hero
 ───────────────────────────────────────────────────────────────────────── */
-function IridescentBlob() {
-  const blobRef = useRef<HTMLDivElement>(null);
+function WireframeKnot() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   useEffect(() => {
-    if (!blobRef.current) return;
-    // Subtle organic morphing
-    gsap.to(blobRef.current.querySelector(".blob-main"), {
-      borderRadius: "42% 58% 52% 48% / 55% 42% 58% 45%",
-      duration: 8, ease: "sine.inOut", repeat: -1, yoyo: true,
-    });
-    gsap.to(blobRef.current.querySelector(".blob-cool"), {
-      borderRadius: "60% 40% 44% 56% / 40% 60% 40% 60%",
-      duration: 10, ease: "sine.inOut", repeat: -1, yoyo: true, delay: 1.5,
-    });
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+
+    const resize = () => {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    /* ── Torus knot geometry ── */
+    const KP = 2, KQ = 3;            // trefoil (2,3)
+    const KR = 0.90, Kr = 0.34;      // torus dimensions (normalised)
+    const TubeR = 0.19;              // tube radius
+    const N_PATH  = 90;              // points along knot spine
+    const N_RING  = 30;              // sides per cross-section circle
+    const N_LONG  = 12;              // longitudinal lines along tube surface
+
+    type V3 = [number, number, number];
+    const vadd  = (a: V3, b: V3): V3 => [a[0]+b[0], a[1]+b[1], a[2]+b[2]];
+    const vscl  = (a: V3, s: number): V3 => [a[0]*s, a[1]*s, a[2]*s];
+    const vcross = (a: V3, b: V3): V3 => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+    const vdot  = (a: V3, b: V3) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+    const vnorm = (a: V3): V3 => { const l = Math.sqrt(vdot(a,a)); return l > 1e-10 ? [a[0]/l,a[1]/l,a[2]/l] : [0,0,1]; };
+
+    function knotPt(t: number): V3 {
+      const phi = KQ * t;
+      return [
+        (KR + Kr * Math.cos(phi)) * Math.cos(KP * t),
+        (KR + Kr * Math.cos(phi)) * Math.sin(KP * t),
+        Kr * Math.sin(phi),
+      ];
+    }
+    function knotTan(t: number): V3 {
+      const dt = 0.002;
+      const a = knotPt(t-dt), b = knotPt(t+dt);
+      return vnorm([b[0]-a[0], b[1]-a[1], b[2]-a[2]]);
+    }
+
+    /* Parallel-transport Frenet frames for stable orientation */
+    interface Frame { pt: V3; N: V3; B: V3 }
+    const frames: Frame[] = [];
+
+    for (let i = 0; i < N_PATH; i++) {
+      const t = (i / N_PATH) * Math.PI * 2;
+      frames.push({ pt: knotPt(t), N: [0,0,1], B: [0,0,1] });
+    }
+    // Seed first normal (avoid parallel to Z)
+    const T0 = knotTan(0);
+    frames[0].N = vnorm(vcross(T0, [0, 1, 0.4]));
+    frames[0].B = vnorm(vcross(T0, frames[0].N));
+
+    for (let i = 1; i < N_PATH; i++) {
+      const prevT = knotTan(((i-1) / N_PATH) * Math.PI * 2);
+      const currT = knotTan((i / N_PATH) * Math.PI * 2);
+      const axis = vcross(prevT, currT);
+      const sinA  = Math.sqrt(vdot(axis, axis));
+      const cosA  = vdot(prevT, currT);
+      if (sinA > 1e-6) {
+        const k = vnorm(axis);
+        const ang = Math.atan2(sinA, cosA);
+        const c = Math.cos(ang), s = Math.sin(ang);
+        const rod = (v: V3): V3 => {
+          const d = vdot(k, v);
+          const cr = vcross(k, v);
+          return [c*v[0]+s*cr[0]+(1-c)*d*k[0], c*v[1]+s*cr[1]+(1-c)*d*k[1], c*v[2]+s*cr[2]+(1-c)*d*k[2]];
+        };
+        frames[i].N = vnorm(rod(frames[i-1].N));
+      } else {
+        frames[i].N = frames[i-1].N;
+      }
+      frames[i].B = vnorm(vcross(currT, frames[i].N));
+    }
+
+    /* ── Projection helper ── */
+    function proj(pt: V3, W: number, H: number, scale: number, cx: number, cy: number, ry: number, rx: number) {
+      let [x, y, z] = pt;
+      // Rotate Y
+      const cy_ = Math.cos(ry), sy_ = Math.sin(ry);
+      [x, z] = [x*cy_ + z*sy_, -x*sy_ + z*cy_];
+      // Rotate X
+      const cx_ = Math.cos(rx), sx_ = Math.sin(rx);
+      [y, z] = [y*cx_ - z*sx_, y*sx_ + z*cx_];
+      // Soft perspective
+      const fov = 3.4;
+      const d = fov / (fov + z * 0.3);
+      return { sx: cx + x*scale*d, sy: cy + y*scale*d, z };
+    }
+
+    /* ── Animation state ── */
+    let raf: number, time = 0;
+    let posX = 0.64, posY = 0.46;
+    let velX = 0.00020, velY = 0.00012;
+
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      time += 0.0045;
+
+      const rotY = time * 0.65;
+      const rotX = 0.30 + Math.sin(time * 0.22) * 0.20;
+      const scaleBreath = 0.88 + Math.sin(time * 0.17) * 0.24; // breathe 0.64–1.12×
+
+      // Drift — bounces between 15%–85% horizontally, 25%–75% vertically
+      posX += velX; posY += velY;
+      if (posX > 0.84 || posX < 0.14) velX *= -1;
+      if (posY > 0.74 || posY < 0.26) velY *= -1;
+
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const scale = Math.min(W, H) * 0.31 * scaleBreath;
+      const cx = posX * W, cy = posY * H;
+
+      /* — Ring cross-sections (meridians) — */
+      const ringStep = Math.max(1, Math.floor(N_PATH / 55));
+      for (let i = 0; i < N_PATH; i += ringStep) {
+        const fr = frames[i];
+        const cPt = proj(fr.pt, W, H, scale, cx, cy, rotY, rotX);
+        // Depth fade: front rings are brighter
+        const depth01 = (cPt.z / (KR + Kr) + 1) * 0.5;
+        const alpha = 0.08 + depth01 * 0.30;
+
+        const rp: { sx: number; sy: number }[] = [];
+        for (let j = 0; j <= N_RING; j++) {
+          const s   = (j / N_RING) * Math.PI * 2;
+          const spt = vadd(vadd(fr.pt, vscl(fr.N, Math.cos(s)*TubeR)), vscl(fr.B, Math.sin(s)*TubeR));
+          rp.push(proj(spt, W, H, scale, cx, cy, rotY, rotX));
+        }
+        ctx.beginPath();
+        ctx.moveTo(rp[0].sx, rp[0].sy);
+        for (let k = 1; k < rp.length; k++) ctx.lineTo(rp[k].sx, rp[k].sy);
+        ctx.closePath();
+        ctx.strokeStyle = `rgba(58,191,138,${Math.max(0.04, Math.min(0.52, alpha))})`;
+        ctx.lineWidth = 0.85;
+        ctx.stroke();
+      }
+
+      /* — Longitudinal lines (parallels along the tube) — */
+      for (let ls = 0; ls < N_LONG; ls++) {
+        const s = (ls / N_LONG) * Math.PI * 2;
+        const cs = Math.cos(s), ss = Math.sin(s);
+        ctx.beginPath();
+        for (let i = 0; i <= N_PATH; i++) {
+          const fr = frames[i % N_PATH];
+          const spt = vadd(vadd(fr.pt, vscl(fr.N, cs*TubeR)), vscl(fr.B, ss*TubeR));
+          const p = proj(spt, W, H, scale, cx, cy, rotY, rotX);
+          if (i === 0) ctx.moveTo(p.sx, p.sy);
+          else ctx.lineTo(p.sx, p.sy);
+        }
+        ctx.strokeStyle = "rgba(58,191,138,0.18)";
+        ctx.lineWidth = 0.65;
+        ctx.stroke();
+      }
+
+      /* — Spine (knot path) — */
+      ctx.beginPath();
+      for (let i = 0; i <= N_PATH; i++) {
+        const p = proj(frames[i % N_PATH].pt, W, H, scale, cx, cy, rotY, rotX);
+        if (i === 0) ctx.moveTo(p.sx, p.sy);
+        else ctx.lineTo(p.sx, p.sy);
+      }
+      ctx.strokeStyle = "rgba(58,191,138,0.32)";
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
+    };
+
+    tick();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
   }, []);
 
   return (
-    <div ref={blobRef} className="pointer-events-none absolute overflow-hidden" aria-hidden
-      style={{ inset: 0, zIndex: 3 }}>
-
-      {/* Warm core — orange/pink/magenta */}
-      <div className="blob-main absolute" style={{
-        top: "-5%", left: "22%", width: "62vw", height: "90vh",
-        borderRadius: "55% 45% 60% 40% / 48% 55% 45% 52%",
-        background: [
-          "radial-gradient(circle at 38% 28%, rgba(255,110,40,0.85) 0%, transparent 42%)",
-          "radial-gradient(circle at 62% 22%, rgba(230,50,130,0.70) 0%, transparent 38%)",
-          "radial-gradient(circle at 28% 60%, rgba(180,50,230,0.55) 0%, transparent 38%)",
-          "radial-gradient(circle at 68% 65%, rgba(58,191,138,0.60) 0%, transparent 40%)",
-        ].join(","),
-        filter: "blur(14px)",
-        mixBlendMode: "screen",
-        opacity: 0.90,
-      }} />
-
-      {/* Cool overlay — teal/cyan/purple */}
-      <div className="blob-cool absolute" style={{
-        top: "8%", left: "32%", width: "50vw", height: "72vh",
-        borderRadius: "50% 50% 44% 56% / 44% 52% 48% 56%",
-        background: [
-          "radial-gradient(circle at 55% 35%, rgba(45,215,195,0.60) 0%, transparent 45%)",
-          "radial-gradient(circle at 30% 45%, rgba(100,80,240,0.50) 0%, transparent 40%)",
-          "radial-gradient(circle at 72% 58%, rgba(58,191,138,0.45) 0%, transparent 38%)",
-        ].join(","),
-        filter: "blur(18px)",
-        mixBlendMode: "screen",
-        opacity: 0.85,
-      }} />
-
-      {/* Specular shine — white gloss highlight */}
-      <div className="absolute" style={{
-        top: "4%", left: "38%", width: "30vw", height: "38vh",
-        borderRadius: "48% 52% 55% 45% / 52% 46% 54% 48%",
-        background: "radial-gradient(circle at 42% 22%, rgba(255,255,255,0.18) 0%, transparent 50%)",
-        filter: "blur(8px)",
-        mixBlendMode: "screen",
-        opacity: 0.95,
-      }} />
-
-      {/* Edge softener — dark vignette so blob doesn't bleed to edges */}
-      <div className="absolute inset-0" style={{
-        background: [
-          "radial-gradient(ellipse 85% 90% at 50% 50%, transparent 50%, rgba(9,9,9,0.55) 100%)",
-          "linear-gradient(to right, rgba(9,9,9,0.90) 0%, transparent 18%, transparent 82%, rgba(9,9,9,0.90) 100%)",
-          "linear-gradient(to bottom, rgba(9,9,9,0.60) 0%, transparent 20%, transparent 80%, rgba(9,9,9,0.85) 100%)",
-        ].join(","),
-      }} />
-    </div>
+    <canvas
+      ref={canvasRef}
+      aria-hidden
+      className="pointer-events-none absolute inset-0"
+      style={{ zIndex: 3, opacity: 0.80 }}
+    />
   );
 }
 
@@ -125,7 +240,7 @@ export default function AboutHero() {
   const subRef     = useRef<HTMLDivElement>(null);
   const statsRef   = useRef<HTMLDivElement>(null);
 
-  /* Entrance animation — plays on mount (no scroll needed for hero) */
+  /* Entrance animation — plays on mount */
   useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
@@ -142,17 +257,31 @@ export default function AboutHero() {
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden" style={{ background: "transparent", minHeight: "100dvh" }}>
-      <IridescentBlob />
+
+      {/* Wireframe torus knot — drifts across hero */}
+      <WireframeKnot />
+
+      {/* Particle dust — floats in front of knot */}
       <ParticleStream />
 
-      {/* Hard bottom fade — clean transition to next section */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[4]"
-        style={{ height: "22vh", background: "linear-gradient(to bottom, transparent, rgba(9,9,9,0.95))" }} />
+      {/* Radial vignette — keeps edges dark */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden style={{
+        zIndex: 4,
+        background: [
+          "radial-gradient(ellipse 80% 85% at 50% 50%, transparent 42%, rgba(9,9,9,0.65) 100%)",
+          "linear-gradient(to right,  rgba(9,9,9,0.80) 0%, transparent 16%, transparent 84%, rgba(9,9,9,0.80) 100%)",
+          "linear-gradient(to bottom, rgba(9,9,9,0.55) 0%, transparent 18%)",
+        ].join(","),
+      }} />
 
-      {/* ── Heading block — fills the viewport ── */}
+      {/* Hard bottom fade — clean transition to next section */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5]"
+        style={{ height: "24vh", background: "linear-gradient(to bottom, transparent, rgba(9,9,9,0.97))" }} />
+
+      {/* ── Heading block ── */}
       <div className="wrap relative" style={{ zIndex: 10, paddingTop: "clamp(7rem,14vh,11rem)" }}>
 
-        {/* "WE BUILD" — line 1, left */}
+        {/* "WE BUILD" */}
         <div ref={line1Ref} style={{ lineHeight: 0.88, overflow: "hidden" }}>
           <h1 className="hed" style={{
             fontSize: "clamp(4rem, 20vw, 22rem)",
@@ -163,7 +292,7 @@ export default function AboutHero() {
           </h1>
         </div>
 
-        {/* "THINGS" — line 2, right, sits in front of blob */}
+        {/* "THINGS" — outline stroke, right-aligned */}
         <div ref={line2Ref} style={{ lineHeight: 0.88, overflow: "hidden", textAlign: "right", marginTop: "-0.04em", position: "relative", zIndex: 12 }}>
           <h1 className="hed" style={{
             fontSize: "clamp(4rem, 20vw, 22rem)",
@@ -175,7 +304,7 @@ export default function AboutHero() {
           </h1>
         </div>
 
-        {/* "unforgettable." — line 3, italic teal */}
+        {/* "unforgettable." — italic teal */}
         <div ref={line3Ref} style={{ overflow: "hidden", marginTop: "-0.02em" }}>
           <h1 className="hed script" style={{
             fontSize: "clamp(2.8rem, 11.5vw, 13rem)",
@@ -187,7 +316,7 @@ export default function AboutHero() {
           </h1>
         </div>
 
-        {/* ── Scattered stats ── */}
+        {/* ── Stats ── */}
         <div ref={statsRef} className="relative mt-8 flex items-end justify-between">
           {[
             { value: "14+", label: "projects shipped" },
