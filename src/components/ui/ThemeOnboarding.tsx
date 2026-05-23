@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useThemeStore } from "@/lib/themeStore";
 
@@ -32,6 +33,7 @@ export default function ThemeOnboarding() {
   const { hasChosen, setTheme, setHasChosen } = useThemeStore();
   const [isVisible, setIsVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -46,6 +48,7 @@ export default function ThemeOnboarding() {
     setTheme(modeId as "focused" | "creative" | "immersive");
     setHasChosen(true);
     setIsVisible(false);
+    router.push(`/${modeId}`);
   };
 
   return (
