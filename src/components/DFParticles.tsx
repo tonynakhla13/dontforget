@@ -453,7 +453,8 @@ export default function DFParticles() {
           cycleDelay = gsap.delayedCall(3.0, doTransition);
         },
         onUpdate(self) {
-          const adjusted = Math.max(0, self.progress - 0.14) / 0.86;
+          const p = self.progress;
+          const adjusted = Math.max(0, p - 0.14) / 0.86;
           const scaled = Math.min(5.999, adjusted * 6);
           const idx = Math.floor(scaled);
           const nextIdx = Math.min(5, idx + 1);
@@ -462,7 +463,9 @@ export default function DFParticles() {
           uniforms.uShapeB.value = 5 + nextIdx;
           uniforms.uShapeBlend.value = 0;
           uniforms.uNumberBlend.value = Math.min(Math.max((local - 0.18) / 0.64, 0), 1);
-          uniforms.uScene.value = 0;
+          // Keep particles in scatter during the intro slide — first service panel
+          // appears at ~8% of services scroll; fade from scatter→number over 0→9%.
+          uniforms.uScene.value = Math.max(0, 1 - p / 0.09);
         },
       });
     }

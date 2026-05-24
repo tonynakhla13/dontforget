@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-type ServicePipeShape =
+export type ServicePipeShape =
   | "web-development"
   | "ui-ux"
   | "e-commerce"
@@ -151,7 +151,7 @@ function serviceStrokes(shape: ServicePipeShape): StrokeSpec[] {
   }
 }
 
-function createServicePipeHologram(shape: ServicePipeShape) {
+export function createServicePipeHologram(shape: ServicePipeShape) {
   const group = new THREE.Group();
   const material = makeMaterial(0x35c592, 0.055);
   const brightMaterial = makeMaterial(0x53e6b2, 0.105);
@@ -176,7 +176,7 @@ function createServicePipeHologram(shape: ServicePipeShape) {
   return group;
 }
 
-function disposeObject(object: THREE.Object3D) {
+export function disposeServicePipeObject(object: THREE.Object3D) {
   object.traverse(child => {
     const mesh = child as THREE.LineSegments;
     mesh.geometry?.dispose();
@@ -262,7 +262,7 @@ export default function ServicePipeCardHologram({ shape }: ServicePipeCardHologr
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerleave", onPointerLeave);
       scene.remove(group);
-      disposeObject(group);
+      disposeServicePipeObject(group);
       renderer.dispose();
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };

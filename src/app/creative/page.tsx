@@ -4,6 +4,8 @@ import CreativeHero from "@/components/creative/CreativeHero";
 import CreativeAboutUs from "@/components/creative/CreativeAboutUs";
 import CreativeServices, { type CreativeHomeService } from "@/components/creative/CreativeServices";
 import CreativePortfolio, { type CreativeHomeProject } from "@/components/creative/CreativePortfolio";
+import CreativeProcess from "@/components/creative/CreativeProcess";
+import CreativeMusts from "@/components/creative/CreativeMusts";
 import CreativeCTA1 from "@/components/creative/CreativeCTA1";
 import CreativeTestimonials from "@/components/creative/CreativeTestimonials";
 import CreativeFAQ from "@/components/creative/CreativeFAQ";
@@ -70,6 +72,8 @@ export default async function CreativePage() {
       <CreativeAboutUs />
       <CreativeServices services={services} />
       <CreativePortfolio projects={projects} />
+      <CreativeProcess />
+      <CreativeMusts />
       <CreativeCTA1 />
       <CreativeTestimonials />
       <CreativeFAQ />
