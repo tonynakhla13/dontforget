@@ -1,3 +1,5 @@
+import DoodleCanvas from "@/components/home/DoodleCanvas";
+
 export default function FocusedLayout({
   children,
 }: {
@@ -7,19 +9,19 @@ export default function FocusedLayout({
     <>
       <style>{`
         :root {
-          --bg:          #ffffff;
+          --bg:          #EBDECE;
           --surface:     #f5f5f5;
           --surface2:    #f0f0f0;
           --border:      rgba(0, 0, 0, 0.08);
-          --fg:          #000000;
+          --fg:          #221F1A;
           --body:        #555555;
           --teal:        #14b8a6;
           --teal-faint:  rgba(20, 184, 166, 0.06);
           --teal-mid:    rgba(20, 184, 166, 0.22);
         }
 
-        html { background: var(--bg); }
-        body { background: var(--bg); color: var(--body); }
+        html { background: #EBDECE !important; }
+        body { background: #EBDECE !important; color: #221F1A !important; }
 
         /* Focused theme typography overrides */
         .hed {
@@ -36,7 +38,7 @@ export default function FocusedLayout({
 
         /* Section styling */
         section {
-          background: var(--bg);
+          background: transparent;
         }
 
         /* Card styling */
@@ -71,7 +73,13 @@ export default function FocusedLayout({
           color: var(--bg);
         }
       `}</style>
-      {children}
+      {/* Outer wrapper gives position:absolute canvas a containing block */}
+      <div style={{ position: "relative" }}>
+        <DoodleCanvas />
+        <div style={{ position: "relative", zIndex: 2 }}>
+          {children}
+        </div>
+      </div>
     </>
   );
 }

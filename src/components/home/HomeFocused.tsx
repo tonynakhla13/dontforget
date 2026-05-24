@@ -1,4 +1,5 @@
 "use client";
+// v3
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
@@ -18,8 +19,10 @@ const C = {
   ph:     "#CFCBC4",
 } as const;
 
+const PAGE_BG = "#EBDECE";
+
 const TEKO = "var(--font-teko), 'Teko', sans-serif";
-const MONO = "var(--font-source-code-pro), 'Source Code Pro', ui-monospace, monospace";
+const MONO = "var(--font-dm-sans), 'DM Sans', sans-serif";
 
 /* ── star SVG for testimonials ─────────────────────────────────── */
 function Star() {
@@ -61,9 +64,9 @@ function SocialLinks() {
 
 /* ── marquee ────────────────────────────────────────────────────── */
 const MARQUEE_ITEMS = [
-  "Digital Creative Agency", "★", "Digital Creative Agency", "★",
-  "Digital Creative Agency", "★", "Digital Creative Agency", "★",
-  "Digital Creative Agency", "★", "Digital Creative Agency", "★",
+  "We Don't Do Boring", "★", "We Don't Do Boring", "★",
+  "We Don't Do Boring", "★", "We Don't Do Boring", "★",
+  "We Don't Do Boring", "★", "We Don't Do Boring", "★",
 ];
 
 /* ── project data ───────────────────────────────────────────────── */
@@ -76,29 +79,50 @@ const PROJECTS = [
 
 /* ── services data ──────────────────────────────────────────────── */
 const SERVICES = [
-  {
-    title: "Brand Systems",
-    body:  "Names, identities, rules, and visual logic that keep every touchpoint coherent across every surface.",
-  },
-  {
-    title: "Digital Products",
-    body:  "Interfaces and flows built to feel fast, clear, and unmistakably yours — from wireframe to launch.",
-  },
-  {
-    title: "Immersive Web",
-    body:  "Three.js, GSAP, and tactile interactions that make the browser feel spatial and alive.",
-  },
+  { num: "01", title: "Web Dev",     body: "Fast, scalable, impossible to ignore. Landing pages to full web apps — built to perform and built to last." },
+  { num: "02", title: "UI / UX",    body: "Research before aesthetics. Interfaces that feel obvious and convert better than they look." },
+  { num: "03", title: "E-Commerce", body: "Shopify, WooCommerce, or custom. Stores designed around one goal — selling more." },
+  { num: "04", title: "Mobile",     body: "iOS and Android. The kind of app people actually keep on their home screen." },
+  { num: "05", title: "SEO",        body: "Growth that compounds. Structure, content, and authority working together — not in isolation." },
+  { num: "06", title: "CRM",        body: "Custom systems built around how your business actually runs. Not how a template assumes it does." },
+];
+
+/* ── stats data ─────────────────────────────────────────────────── */
+const STATS = [
+  { value: "14+", label: "Projects shipped" },
+  { value: "6",   label: "Countries reached" },
+  { value: "24h", label: "Average response" },
+  { value: "0",   label: "Boring websites made" },
+];
+
+/* ── process data ───────────────────────────────────────────────── */
+const PROCESS = [
+  { n: "01", title: "Ask",      body: "Right questions before the brief exists." },
+  { n: "02", title: "Define",   body: "The real problem, the real audience, the real constraints." },
+  { n: "03", title: "Research", body: "Study the market. Pick the strongest route." },
+  { n: "04", title: "Propose",  body: "Options, scope, trade-offs. No surprises." },
+  { n: "05", title: "Plan",     body: "UX, structure, references — locked and aligned." },
+  { n: "06", title: "Build",    body: "Make it work. Then make it unforgettable." },
+  { n: "07", title: "Ship",     body: "Test, refine, launch. Then we stay." },
+];
+
+/* ── principles data ────────────────────────────────────────────── */
+const PRINCIPLES = [
+  { n: "01", name: "Clarity",  line: "If it doesn't sharpen the message, it doesn't make the cut." },
+  { n: "02", name: "Motion",   line: "Every movement has to explain, reveal, or guide." },
+  { n: "03", name: "Systems",  line: "The launch is not the finish line. It is the first stress test." },
+  { n: "04", name: "Honesty",  line: "The strongest result starts with saying the useful thing early." },
 ];
 
 /* ── testimonials data ──────────────────────────────────────────── */
 const TESTIMONIALS = [
   {
-    quote:  "Working with DON'T FORGET transformed our online presence completely. Their attention to detail and creative vision exceeded every expectation we had going in.",
+    quote:  "They didn't just build a website. They made something people actually remember. First agency that ever made that happen for us.",
     name:   "Amanda Reed",
     role:   "Creative Director, WBS",
   },
   {
-    quote:  "Exceptional work from start to finish. The team delivered a website that truly represents our brand and has driven measurable growth in our conversion rates.",
+    quote:  "Sharp, fast, no fluff. They shipped something we're proud of and it converted from day one. Didn't know agencies like this still existed.",
     name:   "Bryan Knight",
     role:   "Head of Product, Google",
   },
@@ -106,9 +130,9 @@ const TESTIMONIALS = [
 
 /* ── blog data ──────────────────────────────────────────────────── */
 const BLOG = [
-  { tag: "Strategy", title: "Why your brand needs a digital system, not just a website" },
-  { tag: "Dev",      title: "How we use GSAP to make interfaces feel alive" },
-  { tag: "Branding", title: "5 branding mistakes that are costing you clients" },
+  { tag: "Strategy", title: "A website is not a brand. Here's the difference." },
+  { tag: "Dev",      title: "Why your interface feels slow (even when it isn't)" },
+  { tag: "Branding", title: "The 4 things clients notice before they read a word" },
 ];
 
 /* ── pill button ────────────────────────────────────────────────── */
@@ -198,21 +222,11 @@ export default function HomeFocused() {
       });
 
       /* ── 4. Services reveal ─────────────────────────────────── */
-      gsap.from(".kbm-svc-col1", {
-        x:        -50,
-        opacity:  0,
-        duration: 0.9,
-        ease:     "power3.out",
-        scrollTrigger: {
-          trigger: ".kbm-services",
-          start:   "top 80%",
-        },
-      });
       gsap.from(".kbm-svc-card", {
-        x:        50,
+        y:        40,
         opacity:  0,
-        stagger:  0.12,
-        duration: 0.85,
+        stagger:  0.08,
+        duration: 0.75,
         ease:     "power3.out",
         scrollTrigger: {
           trigger: ".kbm-services",
@@ -302,7 +316,7 @@ export default function HomeFocused() {
   );
 
   return (
-    <div ref={rootRef} style={{ backgroundColor: C.cream, color: C.ink, overflowX: "hidden" }}>
+    <div ref={rootRef} style={{ backgroundColor: "transparent", color: C.ink, overflowX: "hidden" }}>
 
       {/* ═══════════════════════════════════════
           BANNER
@@ -394,10 +408,10 @@ export default function HomeFocused() {
             <h2 style={{
               fontFamily: TEKO,
               fontWeight: 700,
-              fontSize:   "clamp(3rem, 7vw, 7rem)",
+              fontSize:   "clamp(2.4rem, 5.5vw, 6rem)",
               lineHeight: 1,
               color:      C.ink,
-            }}>Who we are</h2>
+            }}>We build things<br />unforgettable.</h2>
             <p style={{
               fontFamily: MONO,
               fontSize:   "clamp(0.8rem, 1.1vw, 1.1rem)",
@@ -406,9 +420,8 @@ export default function HomeFocused() {
               marginTop:  "clamp(1.5rem, 3vw, 3rem)",
               maxWidth:   620,
             }}>
-              We design visual identities. We are an insight and behavior-driven creative
-              marketing agency. A Full Service Digital Creative Agency Specializing in:
-              Video Production, Web Design, Branding, Brand Strategy.
+              Most websites are forgotten before the tab closes.
+              Ours aren&apos;t. Ask your competitors.
             </p>
           </div>
 
@@ -450,7 +463,7 @@ export default function HomeFocused() {
             gap:     "clamp(1rem, 2vw, 2rem)",
             flex:    "1",
           }}>
-            {/* Transform card */}
+            {/* Quote card */}
             <div
               className="kbm-hero-card"
               style={{
@@ -459,87 +472,173 @@ export default function HomeFocused() {
                 padding:         "clamp(1.5rem, 3vw, 2.5rem)",
                 position:        "relative",
                 overflow:        "hidden",
+                display:         "flex",
+                flexDirection:   "column",
+                justifyContent:  "space-between",
               }}
             >
-              <p style={{
-                fontFamily: MONO,
-                fontSize:   "clamp(0.8rem, 1.1vw, 1.1rem)",
-                lineHeight: 1.5,
-                color:      C.ink,
-                position:   "relative",
-                zIndex:     1,
-              }}>
-                Transform your enterprise with resolutions tailored to your
-                requirements & goals.
-              </p>
-              {/* decorative circle */}
-              <svg
-                style={{
-                  position: "absolute",
-                  right:    "-15%",
-                  bottom:   "-15%",
-                  width:    "60%",
-                  opacity:  0.25,
-                  pointerEvents: "none",
-                }}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={C.ink}
-                strokeWidth="1"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <circle cx="12" cy="12" r="6" />
-                <circle cx="12" cy="12" r="2" fill={C.ink} />
-              </svg>
+              {/* giant decorative quote mark */}
+              <div style={{
+                position:   "absolute",
+                top:        "-10%",
+                right:      "4%",
+                fontFamily: TEKO,
+                fontWeight: 900,
+                fontSize:   "clamp(8rem, 14vw, 14rem)",
+                lineHeight: 1,
+                color:      "rgba(34,31,26,0.12)",
+                pointerEvents: "none",
+                userSelect: "none",
+              }}>&ldquo;</div>
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <p style={{
+                  fontFamily: TEKO,
+                  fontWeight: 700,
+                  fontSize:   "clamp(1.2rem, 2.4vw, 2.6rem)",
+                  lineHeight: 1.1,
+                  color:      C.ink,
+                }}>Ask your<br />competitors.</p>
+                <p style={{
+                  fontFamily: MONO,
+                  fontSize:   "clamp(0.65rem, 0.9vw, 0.9rem)",
+                  color:      C.ink,
+                  opacity:    0.7,
+                  marginTop:  10,
+                }}>They know our work.</p>
+              </div>
             </div>
 
-            {/* Image placeholder */}
+            {/* Availability card */}
             <div
               className="kbm-hero-card"
               style={{
-                backgroundColor: C.ph,
+                backgroundColor: C.green,
                 borderRadius:    40,
+                padding:         "clamp(1.5rem, 3vw, 2.5rem)",
                 display:         "flex",
-                alignItems:      "center",
-                justifyContent:  "center",
+                flexDirection:   "column",
+                justifyContent:  "space-between",
               }}
             >
-              <svg width="40%" viewBox="0 0 80 80" fill="none">
-                <rect width="80" height="80" rx="12" fill={C.cream} />
-                <rect x="16" y="28" width="48" height="32" rx="4" stroke={C.green} strokeWidth="2" />
-                <circle cx="30" cy="42" r="6" fill={C.green} opacity="0.5" />
-                <path d="M42 52 l12-12 8 8" stroke={C.green} strokeWidth="2" />
-              </svg>
+              <div style={{
+                display:    "flex",
+                alignItems: "center",
+                gap:        8,
+              }}>
+                <span style={{
+                  width:           10,
+                  height:          10,
+                  borderRadius:    "50%",
+                  backgroundColor: C.yellow,
+                  flexShrink:      0,
+                }} />
+                <span style={{
+                  fontFamily:    MONO,
+                  fontSize:      "clamp(0.6rem, 0.8vw, 0.8rem)",
+                  color:         C.cream,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}>2 spots open</span>
+              </div>
+              <div>
+                <div style={{
+                  fontFamily: TEKO,
+                  fontWeight: 700,
+                  fontSize:   "clamp(1.2rem, 2.4vw, 2.6rem)",
+                  lineHeight: 1.1,
+                  color:      C.yellow,
+                }}>3–4 projects<br />per quarter.</div>
+                <div style={{
+                  fontFamily: MONO,
+                  fontSize:   "clamp(0.6rem, 0.8vw, 0.8rem)",
+                  color:      C.cream,
+                  marginTop:  8,
+                  opacity:    0.7,
+                }}>Response within 24h</div>
+              </div>
             </div>
           </div>
 
           {/* CTA card */}
           <Link
-            href="/focused/work"
+            href="/focused/contact"
             className="kbm-hero-card"
             style={{
-              backgroundColor: C.green,
+              backgroundColor: C.ink,
               borderRadius:    40,
               display:         "flex",
               alignItems:      "center",
-              justifyContent:  "center",
+              justifyContent:  "space-between",
               minHeight:       "clamp(80px, 12vw, 200px)",
               cursor:          "pointer",
               textDecoration:  "none",
+              padding:         "clamp(1.5rem, 3vw, 2.5rem)",
               transition:      "background .25s ease",
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = "#283629")}
-            onMouseLeave={e => (e.currentTarget.style.background = C.green)}
+            onMouseEnter={e => (e.currentTarget.style.background = C.green)}
+            onMouseLeave={e => (e.currentTarget.style.background = C.ink)}
           >
             <span style={{
               fontFamily: TEKO,
               fontWeight: 700,
               fontSize:   "clamp(1.5rem, 3.5vw, 3.5rem)",
               lineHeight: 1,
-              color:      C.yellow,
-            }}>View Our Projects</span>
+              color:      C.cream,
+            }}>Start a project.</span>
+            <span style={{
+              fontFamily:      TEKO,
+              fontWeight:      700,
+              fontSize:        "clamp(2rem, 4vw, 4.5rem)",
+              lineHeight:      1,
+              color:           C.yellow,
+              display:         "flex",
+              alignItems:      "center",
+              justifyContent:  "center",
+              width:           "clamp(60px, 8vw, 100px)",
+              height:          "clamp(60px, 8vw, 100px)",
+              borderRadius:    "50%",
+              border:          `2px solid ${C.yellow}`,
+              flexShrink:      0,
+            }}>↗</span>
           </Link>
         </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          STATS
+      ═══════════════════════════════════════ */}
+      <section style={{
+        padding: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(3rem, 5vw, 5rem)",
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap:     "clamp(1rem, 1.5vw, 1.5rem)",
+      }}>
+        {STATS.map((s, i) => (
+          <div key={i} style={{
+            backgroundColor: i === 3 ? C.yellow : C.green,
+            borderRadius:    24,
+            padding:         "clamp(1.5rem, 2.5vw, 2.5rem)",
+            display:         "flex",
+            flexDirection:   "column",
+            gap:             8,
+          }}>
+            <div style={{
+              fontFamily: TEKO,
+              fontWeight: 700,
+              fontSize:   "clamp(2.5rem, 4vw, 5rem)",
+              lineHeight: 1,
+              color:      i === 3 ? C.ink : C.yellow,
+            }}>{s.value}</div>
+            <div style={{
+              fontFamily:    MONO,
+              fontSize:      "clamp(0.65rem, 0.85vw, 0.85rem)",
+              lineHeight:    1.4,
+              color:         i === 3 ? C.ink : C.cream,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+            }}>{s.label}</div>
+          </div>
+        ))}
       </section>
 
       {/* ═══════════════════════════════════════
@@ -642,61 +741,183 @@ export default function HomeFocused() {
       ═══════════════════════════════════════ */}
       <section
         className="kbm-services"
-        style={{
-          padding:             "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)",
-          display:             "grid",
-          gridTemplateColumns: "1fr 1.4fr",
-          gap:                 "clamp(2rem, 4vw, 5rem)",
-          alignItems:          "start",
-        }}
+        style={{ padding: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)" }}
       >
-        {/* Left: title + copy */}
-        <div className="kbm-svc-col1" style={{ paddingTop: "clamp(1rem, 3vw, 2rem)" }}>
-          <SectionTitle>Services</SectionTitle>
-          <p style={{
-            fontFamily: MONO,
-            fontSize:   "clamp(0.8rem, 1.1vw, 1.1rem)",
-            lineHeight: 1.5,
-            maxWidth:   520,
-          }}>
-            Building a strong brand. Distinctive, recognizable and consistent. Effective
-            communication campaigns that activate your target group.
-          </p>
-        </div>
-
-        {/* Right: service cards */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "clamp(1rem, 2vw, 2rem)" }}>
+        <SectionTitle>Services</SectionTitle>
+        <div style={{
+          display:             "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap:                 "clamp(1rem, 1.5vw, 1.5rem)",
+        }}>
           {SERVICES.map((s, i) => (
             <div
               key={i}
               className="kbm-svc-card"
               style={{
-                backgroundColor: C.green,
-                borderRadius:    40,
-                padding:         "clamp(1.5rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem)",
+                backgroundColor: i % 2 === 0 ? C.green : C.ink,
+                borderRadius:    32,
+                padding:         "clamp(1.5rem, 2.5vw, 2.5rem)",
                 transition:      "transform .25s ease",
+                display:         "flex",
+                flexDirection:   "column",
+                gap:             12,
               }}
               onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = "translateY(-4px)")}
               onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = "translateY(0)")}
             >
+              <div style={{ fontFamily: MONO, fontSize: "0.65rem", color: C.yellow, letterSpacing: "0.1em" }}>{s.num}</div>
               <h3 style={{
                 fontFamily:    TEKO,
                 fontWeight:    700,
-                fontSize:      "clamp(1.5rem, 3.5vw, 4rem)",
+                fontSize:      "clamp(1.4rem, 2.5vw, 2.8rem)",
                 lineHeight:    1,
                 color:         C.yellow,
-                marginBottom:  "clamp(1rem, 3vw, 3rem)",
                 textTransform: "uppercase",
               }}>{s.title}</h3>
               <p style={{
                 fontFamily: MONO,
-                fontSize:   "clamp(0.75rem, 1vw, 1rem)",
-                lineHeight: 1.4,
+                fontSize:   "clamp(0.72rem, 0.9vw, 0.9rem)",
+                lineHeight: 1.5,
                 color:      C.cream,
               }}>{s.body}</p>
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          PROCESS
+      ═══════════════════════════════════════ */}
+      <section
+        className="kbm-process"
+        style={{ padding: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)" }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "clamp(2.5rem, 4vw, 4rem)" }}>
+          <SectionTitle>Process</SectionTitle>
+          <p style={{ fontFamily: MONO, fontSize: "clamp(0.75rem, 1vw, 1rem)", color: C.ink, opacity: 0.5, paddingBottom: "0.6rem" }}>
+            7 steps · 1–2 months · no surprises
+          </p>
+        </div>
+
+        {PROCESS.map((step, i) => (
+          <div
+            key={step.n}
+            style={{
+              display:       "grid",
+              gridTemplateColumns: "5rem 1fr 1fr",
+              alignItems:    "center",
+              gap:           "clamp(1rem, 2vw, 2.5rem)",
+              padding:       "clamp(1.2rem, 2vw, 2rem) 0",
+              borderTop:     `1px solid ${i === 0 ? C.ink : "rgba(34,31,26,0.15)"}`,
+              borderBottom:  i === PROCESS.length - 1 ? `1px solid rgba(34,31,26,0.15)` : "none",
+            }}
+          >
+            {/* step number */}
+            <span style={{
+              fontFamily:    TEKO,
+              fontWeight:    700,
+              fontSize:      "clamp(2rem, 3.5vw, 4rem)",
+              lineHeight:    1,
+              color:         i % 2 === 0 ? C.green : C.orange,
+              letterSpacing: "-0.02em",
+            }}>{step.n}</span>
+
+            {/* title */}
+            <h3 style={{
+              fontFamily:    TEKO,
+              fontWeight:    700,
+              fontSize:      "clamp(1.6rem, 3vw, 3.5rem)",
+              lineHeight:    1,
+              color:         C.ink,
+              textTransform: "uppercase",
+              letterSpacing: "-0.01em",
+            }}>{step.title}</h3>
+
+            {/* body */}
+            <p style={{
+              fontFamily: MONO,
+              fontSize:   "clamp(0.78rem, 1vw, 1rem)",
+              lineHeight: 1.5,
+              color:      C.ink,
+              opacity:    0.65,
+            }}>{step.body}</p>
+          </div>
+        ))}
+      </section>
+
+      {/* ═══════════════════════════════════════
+          PRINCIPLES  (Our Musts)
+      ═══════════════════════════════════════ */}
+      <section
+        className="kbm-principles"
+        style={{
+          margin:  "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)",
+          backgroundColor: C.ink,
+          borderRadius:    40,
+          overflow:        "hidden",
+        }}
+      >
+        {/* header row */}
+        <div style={{
+          padding:      "clamp(2rem, 3.5vw, 3.5rem) clamp(2rem, 4vw, 4rem)",
+          borderBottom: "1px solid rgba(235,222,206,0.12)",
+        }}>
+          <h2 style={{
+            fontFamily:    TEKO,
+            fontWeight:    700,
+            fontSize:      "clamp(3rem, 6vw, 5.5rem)",
+            lineHeight:    1,
+            color:         C.cream,
+            letterSpacing: "-0.01em",
+          }}>Our Musts</h2>
+        </div>
+
+        {/* principles rows */}
+        {PRINCIPLES.map((rule, i) => (
+          <div
+            key={rule.n}
+            style={{
+              display:     "grid",
+              gridTemplateColumns: "4rem 1fr auto",
+              alignItems:  "center",
+              gap:         "clamp(1.5rem, 3vw, 4rem)",
+              padding:     "clamp(1.5rem, 2.5vw, 2.5rem) clamp(2rem, 4vw, 4rem)",
+              borderBottom: i < PRINCIPLES.length - 1 ? "1px solid rgba(235,222,206,0.1)" : "none",
+              background:   i % 2 === 1 ? "rgba(235,222,206,0.03)" : "transparent",
+            }}
+          >
+            {/* number */}
+            <span style={{
+              fontFamily: MONO,
+              fontSize:   "clamp(0.6rem, 0.8vw, 0.85rem)",
+              color:      C.yellow,
+              letterSpacing: "0.12em",
+              opacity:    0.8,
+            }}>{rule.n}</span>
+
+            {/* big name */}
+            <h3 style={{
+              fontFamily:    TEKO,
+              fontWeight:    700,
+              fontSize:      "clamp(2.5rem, 5vw, 6rem)",
+              lineHeight:    1,
+              color:         C.cream,
+              textTransform: "uppercase",
+              letterSpacing: "-0.02em",
+            }}>{rule.name}</h3>
+
+            {/* description — right-aligned */}
+            <p style={{
+              fontFamily: MONO,
+              fontSize:   "clamp(0.7rem, 0.9vw, 0.9rem)",
+              lineHeight: 1.5,
+              color:      C.cream,
+              opacity:    0.55,
+              maxWidth:   280,
+              textAlign:  "right",
+            }}>{rule.line}</p>
+          </div>
+        ))}
       </section>
 
       {/* ═══════════════════════════════════════
@@ -860,6 +1081,52 @@ export default function HomeFocused() {
               }}>{b.title}</div>
             </a>
           ))}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          AVAILABILITY
+      ═══════════════════════════════════════ */}
+      <section style={{
+        margin:          "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)",
+        backgroundColor: C.yellow,
+        borderRadius:    40,
+        padding:         "clamp(2rem, 5vw, 5rem)",
+        display:         "flex",
+        justifyContent:  "space-between",
+        alignItems:      "center",
+        flexWrap:        "wrap",
+        gap:             "clamp(1.5rem, 3vw, 3rem)",
+      }}>
+        <div>
+          <h2 style={{ fontFamily: TEKO, fontWeight: 700, fontSize: "clamp(2rem, 4vw, 4.5rem)", lineHeight: 1, color: C.ink }}>
+            We take 3–4 projects per quarter.
+          </h2>
+          <p style={{ fontFamily: MONO, fontSize: "clamp(0.8rem, 1.1vw, 1rem)", lineHeight: 1.6, color: C.ink, marginTop: 12, maxWidth: 480 }}>
+            Not because we&apos;re precious. Because good work takes time and we don&apos;t half-ass things.
+          </p>
+          <p style={{ fontFamily: MONO, fontSize: "0.65rem", color: C.green, marginTop: 8, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            — Currently: 2 spots open
+          </p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
+          <Link
+            href="/focused/contact"
+            style={{
+              display:        "inline-flex",
+              alignItems:     "center",
+              padding:        "14px 36px",
+              backgroundColor: C.ink,
+              borderRadius:   40,
+              fontFamily:     TEKO,
+              fontWeight:     700,
+              fontSize:       "clamp(1.1rem, 1.8vw, 1.8rem)",
+              color:          C.yellow,
+              textDecoration: "none",
+              transition:     "background .2s",
+            }}
+          >Start a project →</Link>
+          <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: C.ink, letterSpacing: "0.1em" }}>Response within 24h</span>
         </div>
       </section>
 
