@@ -792,57 +792,65 @@ export default function HomeFocused() {
         className="kbm-process"
         style={{ padding: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)" }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "clamp(2.5rem, 4vw, 4rem)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "clamp(2rem, 3.5vw, 3.5rem)" }}>
           <SectionTitle>Process</SectionTitle>
           <p style={{ fontFamily: MONO, fontSize: "clamp(0.75rem, 1vw, 1rem)", color: C.ink, opacity: 0.5, paddingBottom: "0.6rem" }}>
             7 steps · 1–2 months · no surprises
           </p>
         </div>
 
-        {PROCESS.map((step, i) => (
-          <div
-            key={step.n}
-            style={{
-              display:       "grid",
-              gridTemplateColumns: "5rem 1fr 1fr",
-              alignItems:    "center",
-              gap:           "clamp(1rem, 2vw, 2.5rem)",
-              padding:       "clamp(1.2rem, 2vw, 2rem) 0",
-              borderTop:     `1px solid ${i === 0 ? C.ink : "rgba(34,31,26,0.15)"}`,
-              borderBottom:  i === PROCESS.length - 1 ? `1px solid rgba(34,31,26,0.15)` : "none",
-            }}
-          >
-            {/* step number */}
-            <span style={{
-              fontFamily:    TEKO,
-              fontWeight:    700,
-              fontSize:      "clamp(2rem, 3.5vw, 4rem)",
-              lineHeight:    1,
-              color:         i % 2 === 0 ? C.green : C.orange,
-              letterSpacing: "-0.02em",
-            }}>{step.n}</span>
-
-            {/* title */}
-            <h3 style={{
-              fontFamily:    TEKO,
-              fontWeight:    700,
-              fontSize:      "clamp(1.6rem, 3vw, 3.5rem)",
-              lineHeight:    1,
-              color:         C.ink,
-              textTransform: "uppercase",
-              letterSpacing: "-0.01em",
-            }}>{step.title}</h3>
-
-            {/* body */}
-            <p style={{
-              fontFamily: MONO,
-              fontSize:   "clamp(0.78rem, 1vw, 1rem)",
-              lineHeight: 1.5,
-              color:      C.ink,
-              opacity:    0.65,
-            }}>{step.body}</p>
-          </div>
-        ))}
+        <div style={{
+          display:             "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+          gap:                 "clamp(0.75rem, 1.5vw, 1.25rem)",
+        }}>
+          {PROCESS.map((step, i) => {
+            const accent = [C.green, C.orange, C.ink, C.green, C.orange, C.ink, C.green][i];
+            return (
+              <div
+                key={step.n}
+                style={{
+                  background:   "#fff",
+                  border:       `1.5px solid rgba(34,31,26,0.12)`,
+                  borderTop:    `4px solid ${accent}`,
+                  borderRadius: 12,
+                  padding:      "clamp(1.25rem, 2vw, 1.75rem)",
+                  display:      "flex",
+                  flexDirection:"column",
+                  gap:          8,
+                }}
+              >
+                <span style={{
+                  fontFamily:    TEKO,
+                  fontWeight:    700,
+                  fontSize:      "clamp(2.2rem, 3.5vw, 3.2rem)",
+                  lineHeight:    1,
+                  color:         accent,
+                  letterSpacing: "-0.02em",
+                }}>{step.n}</span>
+                <h3 style={{
+                  fontFamily:    TEKO,
+                  fontWeight:    700,
+                  fontSize:      "clamp(1.3rem, 2vw, 1.75rem)",
+                  lineHeight:    1.1,
+                  color:         C.ink,
+                  textTransform: "uppercase",
+                  letterSpacing: "-0.01em",
+                  marginTop:     4,
+                }}>{step.title}</h3>
+                <p style={{
+                  fontFamily: MONO,
+                  fontSize:   "clamp(0.72rem, 0.9vw, 0.88rem)",
+                  lineHeight: 1.55,
+                  color:      C.ink,
+                  opacity:    0.6,
+                  marginTop:  "auto",
+                  paddingTop: 8,
+                }}>{step.body}</p>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* ═══════════════════════════════════════
@@ -850,74 +858,93 @@ export default function HomeFocused() {
       ═══════════════════════════════════════ */}
       <section
         className="kbm-principles"
-        style={{
-          margin:  "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)",
-          backgroundColor: C.ink,
-          borderRadius:    40,
-          overflow:        "hidden",
-        }}
+        style={{ padding: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)" }}
       >
-        {/* header row */}
-        <div style={{
-          padding:      "clamp(2rem, 3.5vw, 3.5rem) clamp(2rem, 4vw, 4rem)",
-          borderBottom: "1px solid rgba(235,222,206,0.12)",
-        }}>
-          <h2 style={{
-            fontFamily:    TEKO,
-            fontWeight:    700,
-            fontSize:      "clamp(3rem, 6vw, 5.5rem)",
-            lineHeight:    1,
-            color:         C.cream,
-            letterSpacing: "-0.01em",
-          }}>Our Musts</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "clamp(2rem, 3.5vw, 3.5rem)" }}>
+          <SectionTitle>Our Musts</SectionTitle>
+          <p style={{ fontFamily: MONO, fontSize: "clamp(0.75rem, 1vw, 1rem)", color: C.ink, opacity: 0.5, paddingBottom: "0.6rem" }}>
+            non-negotiable · always
+          </p>
         </div>
 
-        {/* principles rows */}
-        {PRINCIPLES.map((rule, i) => (
-          <div
-            key={rule.n}
-            style={{
-              display:     "grid",
-              gridTemplateColumns: "4rem 1fr auto",
-              alignItems:  "center",
-              gap:         "clamp(1.5rem, 3vw, 4rem)",
-              padding:     "clamp(1.5rem, 2.5vw, 2.5rem) clamp(2rem, 4vw, 4rem)",
-              borderBottom: i < PRINCIPLES.length - 1 ? "1px solid rgba(235,222,206,0.1)" : "none",
-              background:   i % 2 === 1 ? "rgba(235,222,206,0.03)" : "transparent",
-            }}
-          >
-            {/* number */}
-            <span style={{
-              fontFamily: MONO,
-              fontSize:   "clamp(0.6rem, 0.8vw, 0.85rem)",
-              color:      C.yellow,
-              letterSpacing: "0.12em",
-              opacity:    0.8,
-            }}>{rule.n}</span>
+        <div style={{
+          display:             "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap:                 "clamp(0.75rem, 1.5vw, 1.25rem)",
+        }}>
+          {PRINCIPLES.map((rule, i) => {
+            const palettes = [
+              { bg: C.ink,    num: C.yellow,  name: C.cream,  line: "rgba(235,222,206,0.6)" },
+              { bg: C.green,  num: C.yellow,  name: C.cream,  line: "rgba(235,222,206,0.7)" },
+              { bg: C.orange, num: C.cream,   name: C.cream,  line: "rgba(235,222,206,0.75)" },
+              { bg: C.cream,  num: C.green,   name: C.ink,    line: "rgba(34,31,26,0.55)" },
+            ];
+            const p = palettes[i % palettes.length];
+            return (
+              <div
+                key={rule.n}
+                style={{
+                  background:    p.bg,
+                  borderRadius:  16,
+                  padding:       "clamp(1.5rem, 2.5vw, 2.5rem)",
+                  position:      "relative",
+                  overflow:      "hidden",
+                  minHeight:     "clamp(180px, 22vw, 280px)",
+                  display:       "flex",
+                  flexDirection: "column",
+                  justifyContent:"space-between",
+                }}
+              >
+                {/* watermark number */}
+                <span aria-hidden="true" style={{
+                  position:      "absolute",
+                  bottom:        "-0.15em",
+                  right:         "-0.05em",
+                  fontFamily:    TEKO,
+                  fontWeight:    700,
+                  fontSize:      "clamp(6rem, 14vw, 16rem)",
+                  lineHeight:    1,
+                  color:         p.num,
+                  opacity:       0.12,
+                  letterSpacing: "-0.04em",
+                  userSelect:    "none",
+                  pointerEvents: "none",
+                }}>{rule.n}</span>
 
-            {/* big name */}
-            <h3 style={{
-              fontFamily:    TEKO,
-              fontWeight:    700,
-              fontSize:      "clamp(2.5rem, 5vw, 6rem)",
-              lineHeight:    1,
-              color:         C.cream,
-              textTransform: "uppercase",
-              letterSpacing: "-0.02em",
-            }}>{rule.name}</h3>
+                {/* small label */}
+                <span style={{
+                  fontFamily:    MONO,
+                  fontSize:      "clamp(0.6rem, 0.8vw, 0.8rem)",
+                  color:         p.num,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  opacity:       0.85,
+                }}>{rule.n}</span>
 
-            {/* description — right-aligned */}
-            <p style={{
-              fontFamily: MONO,
-              fontSize:   "clamp(0.7rem, 0.9vw, 0.9rem)",
-              lineHeight: 1.5,
-              color:      C.cream,
-              opacity:    0.55,
-              maxWidth:   280,
-              textAlign:  "right",
-            }}>{rule.line}</p>
-          </div>
-        ))}
+                {/* principle name */}
+                <div>
+                  <h3 style={{
+                    fontFamily:    TEKO,
+                    fontWeight:    700,
+                    fontSize:      "clamp(2.8rem, 5vw, 6rem)",
+                    lineHeight:    1,
+                    color:         p.name,
+                    textTransform: "uppercase",
+                    letterSpacing: "-0.02em",
+                    marginBottom:  "clamp(0.4rem, 0.8vw, 0.8rem)",
+                  }}>{rule.name}</h3>
+                  <p style={{
+                    fontFamily: MONO,
+                    fontSize:   "clamp(0.7rem, 0.9vw, 0.9rem)",
+                    lineHeight: 1.5,
+                    color:      p.line,
+                    maxWidth:   320,
+                  }}>{rule.line}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* ═══════════════════════════════════════
