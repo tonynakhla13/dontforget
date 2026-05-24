@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
+import Link from "next/link";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -90,7 +91,7 @@ function Check() {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface FormData {
-  serviceId:   string;
+  serviceIds:  string[];
   subServices: string[];
   timeline:    string;
   budget:      string;
@@ -101,11 +102,11 @@ interface FormData {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function RequestForm() {
+export default function RequestForm({ embedded = false }: { embedded?: boolean } = {}) {
   const [step, setStep]     = useState(1);
   const [dir,  setDir]      = useState<1 | -1>(1);
   const [data, setData]     = useState<FormData>({
-    serviceId: "", subServices: [], timeline: "", budget: "", name: "", email: "", note: "",
+    serviceIds: [], subServices: [], timeline: "", budget: "", name: "", email: "", note: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
@@ -114,7 +115,7 @@ export default function RequestForm() {
   const contentRef  = useRef<HTMLDivElement>(null);
   const barRef      = useRef<HTMLDivElement>(null);
 
-  const service = SERVICES.find(s => s.id === data.serviceId);
+  const selectedServices = SERVICES.filter(s => data.serviceIds.includes(s.id));
 
   // ── Animate step enter ──────────────────────────────────────────────────
   useEffect(() => {
@@ -125,7 +126,7 @@ export default function RequestForm() {
       { x: dir === 1 ? 44 : -44, autoAlpha: 0 },
       { x: 0, autoAlpha: 1, duration: 0.34, ease: "power2.out" }
     );
-  }, [step, done]);
+  }, [step, done, dir]);
 
   // ── Animate progress bar ────────────────────────────────────────────────
   useEffect(() => {
@@ -160,7 +161,7 @@ export default function RequestForm() {
   }
 
   const canAdvance =
-    step === 1 ? !!data.serviceId :
+    step === 1 ? data.serviceIds.length > 0 :
     step === 2 ? data.subServices.length > 0 && !!data.timeline && !!data.budget :
     step === 3 ? !!data.name.trim() && !!data.email.trim() : false;
 
@@ -186,8 +187,7 @@ export default function RequestForm() {
   }
 
   function toggleAll() {
-    if (!service) return;
-    const all = service.examples;
+    const all = Array.from(new Set(selectedServices.flatMap(item => item.examples)));
     setData(d => ({
       ...d,
       subServices: d.subServices.length === all.length ? [] : [...all],
@@ -198,7 +198,8 @@ export default function RequestForm() {
   async function handleSubmit() {
     setSubmitting(true);
     setSubmitError(false);
-    const projectType = `${service?.title} — ${data.subServices.join(", ")}`;
+    const serviceTitles = selectedServices.map(item => item.title).join(", ");
+    const projectType = `${serviceTitles} — ${data.subServices.join(", ")}`;
     const message     = `Timeline: ${data.timeline} | Budget: ${data.budget}${data.note ? `\n\n${data.note}` : ""}`;
     try {
       const res = await fetch("/api/inquiries", {
@@ -233,32 +234,36 @@ export default function RequestForm() {
   //  Render
   // ════════════════════════════════════════════════════════════════════════
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[var(--bg)]">
+    <div className={embedded
+      ? "relative flex h-full min-h-0 flex-col overflow-hidden bg-transparent"
+      : "relative flex min-h-screen flex-col overflow-x-hidden bg-[var(--bg)]"}>
       <div className="noise" />
 
       {/* ── Progress bar ── */}
-      <div className={`fixed left-0 right-0 top-[72px] z-40 h-[2px] bg-[var(--border)] transition-opacity duration-500 ${step === 1 && !done ? "opacity-0" : "opacity-100"}`}>
+      <div className={`${embedded ? "absolute top-0" : "fixed top-[72px]"} left-0 right-0 z-40 h-[2px] bg-[var(--border)] transition-opacity duration-500 ${step === 1 && !done ? "opacity-0" : "opacity-100"}`}>
         <div ref={barRef} className="h-full rounded-full bg-[var(--teal)]" style={{ width: "0%" }} />
       </div>
 
       {/* ── Step counter (hidden on step 1) ── */}
-      <div className={`fixed left-0 right-0 top-[80px] z-40 flex justify-center pt-4 transition-opacity duration-500 ${step === 1 && !done ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+      <div className={`${embedded ? "absolute top-3" : "fixed top-[80px] pt-4"} left-0 right-0 z-40 flex justify-center transition-opacity duration-500 ${step === 1 && !done ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
         <span className="font-mono text-[0.58rem] uppercase tracking-[0.38em] text-[var(--teal)]">
           {done ? "Complete" : `0${step} / 03`}
         </span>
       </div>
 
       {/* ── Main content ── */}
-      <main className="flex flex-1 flex-col items-center justify-center px-5 pb-10 pt-36">
+      <main className={embedded
+        ? "flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-5 pb-8 pt-14"
+        : "flex flex-1 flex-col items-center justify-center px-5 pb-10 pt-36"}>
         <div className="w-full max-w-[940px]">
           <div ref={contentRef}>
             {done ? (
-              <SuccessScreen data={data} service={service} />
+              <SuccessScreen data={data} services={selectedServices} />
             ) : step === 1 ? (
               <Step1 data={data} setData={setData} />
             ) : step === 2 ? (
               <Step2
-                service={service!}
+                services={selectedServices}
                 data={data}
                 setData={setData}
                 onToggleSub={toggleSub}
@@ -273,7 +278,7 @@ export default function RequestForm() {
 
       {/* ── Navigation ── */}
       {!done && (
-        <nav className="sticky bottom-0 z-50 flex items-center justify-between border-t border-[var(--border)] bg-[rgba(9,9,9,0.88)] px-6 py-5 backdrop-blur-xl md:px-10">
+        <nav className={`${embedded ? "shrink-0" : "sticky bottom-0"} z-50 flex items-center justify-between border-t border-[var(--border)] bg-[rgba(9,9,9,0.88)] px-6 py-5 backdrop-blur-xl md:px-10`}>
           <button onClick={goBack} className="btn btn-outline text-[0.63rem]">
             {step === 1 ? "← Home" : "← Back"}
           </button>
@@ -320,22 +325,27 @@ function Step1({
 }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="eyebrow mb-6">Start a project</p>
-      <h1 className="hed mb-4 text-[clamp(2.6rem,6vw,5rem)] leading-[0.9]">
-        What are you<br />
-        <span className="text-[var(--teal)]">building?</span>
+      <p className="eyebrow mb-4">Start a project</p>
+      <h1 className="hed mb-4 whitespace-nowrap text-[clamp(2rem,4.4vw,3.9rem)] leading-[0.92]">
+        What are you <span className="text-[var(--teal)]">building?</span>
       </h1>
-      <p className="mb-12 max-w-sm text-[0.9375rem] leading-[1.85] text-[var(--body)]">
-        Pick the service that best describes your project.
+      <p className="mb-9 max-w-sm text-[0.9375rem] leading-[1.85] text-[var(--body)]">
+        Pick every service that belongs in the project.
       </p>
 
       <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-3">
         {SERVICES.map(svc => {
-          const selected = data.serviceId === svc.id;
+          const selected = data.serviceIds.includes(svc.id);
           return (
             <button
               key={svc.id}
-              onClick={() => setData(d => ({ ...d, serviceId: svc.id, subServices: [] }))}
+              onClick={() => setData(d => ({
+                ...d,
+                serviceIds: selected
+                  ? d.serviceIds.filter(id => id !== svc.id)
+                  : [...d.serviceIds, svc.id],
+                subServices: [],
+              }))}
               className="group relative overflow-hidden rounded-2xl border p-6 text-left transition-all duration-200 hover:scale-[1.02]"
               style={{
                 borderColor: selected ? "var(--teal)" : "rgba(58,191,138,0.18)",
@@ -392,24 +402,26 @@ function Step1({
 // ─── Step 2: Scope ────────────────────────────────────────────────────────────
 
 function Step2({
-  service,
+  services,
   data,
   setData,
   onToggleSub,
   onToggleAll,
 }: {
-  service: (typeof SERVICES)[0];
+  services: typeof SERVICES;
   data: FormData;
   setData: React.Dispatch<React.SetStateAction<FormData>>;
   onToggleSub: (ex: string) => void;
   onToggleAll: () => void;
 }) {
-  const allSelected = data.subServices.length === service.examples.length;
+  const examples = Array.from(new Set(services.flatMap(service => service.examples)));
+  const allSelected = data.subServices.length === examples.length;
+  const serviceTitle = services.map(service => service.title).join(" + ");
 
   return (
     <div className="mx-auto max-w-[780px]">
       <div className="mb-10 text-center">
-        <p className="eyebrow mb-4">{service.title}</p>
+        <p className="eyebrow mb-4">{serviceTitle}</p>
         <h2 className="hed mb-4 text-[clamp(2.2rem,5vw,4rem)] leading-[0.92]">
           What do you need?
         </h2>
@@ -432,7 +444,7 @@ function Step2({
       </div>
 
       <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {service.examples.map(ex => {
+        {examples.map(ex => {
           const on = data.subServices.includes(ex);
           return (
             <button
@@ -533,6 +545,13 @@ function Step3({
   label: string;
   submitError: boolean;
 }) {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestions = [
+    "I have a company that needs a clearer website and better lead flow.",
+    "We are launching a new offer and need the page, visuals, and funnel.",
+    "Our current site feels outdated and we need a sharper digital presence.",
+  ];
+
   return (
     <div className="mx-auto max-w-[600px]">
       <div className="mb-10 text-center">
@@ -581,8 +600,23 @@ function Step3({
             placeholder="Context, references, goals, timelines, dreams…"
             className={`${field} resize-none`}
             value={data.note}
+            onFocus={() => setShowSuggestions(true)}
+            onClick={() => setShowSuggestions(true)}
             onChange={e => setData(d => ({ ...d, note: e.target.value }))}
           />
+          {showSuggestions && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {suggestions.map(sentence => (
+                <button key={sentence} type="button"
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => setData(d => ({ ...d, note: d.note ? `${d.note}\n${sentence}` : sentence }))}
+                  className="rounded-full border border-[rgba(58,191,138,0.18)] bg-[rgba(58,191,138,0.045)] px-3 py-2 text-left text-[0.72rem] leading-snug text-[rgba(240,236,227,0.62)] transition-colors hover:border-[rgba(58,191,138,0.42)] hover:text-[var(--teal)]"
+                >
+                  {sentence}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -599,10 +633,10 @@ function Step3({
 
 function SuccessScreen({
   data,
-  service,
+  services,
 }: {
   data: FormData;
-  service: (typeof SERVICES)[0] | undefined;
+  services: typeof SERVICES;
 }) {
   const rowsRef = useRef<HTMLDivElement>(null);
 
@@ -617,7 +651,7 @@ function SuccessScreen({
   }, []);
 
   const summary = [
-    { k: "Service",      v: service?.title ?? "" },
+    { k: "Services",     v: services.map(service => service.title).join(", ") },
     { k: "Deliverables", v: data.subServices.join(", ") },
     { k: "Timeline",     v: data.timeline },
     { k: "Budget",       v: data.budget },
@@ -660,9 +694,9 @@ function SuccessScreen({
         ))}
       </div>
 
-      <a href="/" className="btn btn-outline inline-flex">
+      <Link href="/" className="btn btn-outline inline-flex">
         ← Back to home
-      </a>
+      </Link>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import ServicePipeCardHologram, { servicePipeShapes } from "@/components/services/ServicePipeCardHologram";
 
 const SERVICES = [
   {
@@ -10,155 +11,50 @@ const SERVICES = [
     num: "01",
     title: "Web Development",
     body: "High-converting landing pages, commercial sites, dashboards, and custom applications built with performance, motion, accessibility, and long-term maintainability in mind.",
-    examples: ["Landing pages", "Commercial sites", "Dashboards", "Web apps"],
+    examples: ["Landing pages", "Commercial sites", "Web apps", "Dashboards", "CMS builds", "Animations", "Performance", "Maintenance"],
+    line: "Pixel muscles, fast pages, fewer \"why is it broken?\" moments.",
   },
   {
     id: "uiux",
     num: "02",
     title: "UI / UX Design",
     body: "Research-led interfaces, wireframes, prototypes, design systems, and flows that make complex products feel direct, useful, and memorable.",
-    examples: ["Wireframes", "Design systems", "User flows", "Prototypes"],
+    examples: ["Wireframes", "Design systems", "User flows", "Prototypes", "App screens", "UX audits", "Interaction states", "Handoffs"],
+    line: "Interfaces that stop making users squint, guess, or sigh.",
   },
   {
     id: "ecomm",
     num: "03",
     title: "E-Commerce",
     body: "Shopify, WooCommerce, Salla, and custom stores shaped around product structure, checkout clarity, SEO, retention, and repeat purchase behavior.",
-    examples: ["Shopify", "WooCommerce", "Checkout", "Subscriptions"],
+    examples: ["Shopify", "WooCommerce", "Salla", "Checkout", "Product pages", "Subscriptions", "Cart flows", "Store SEO"],
+    line: "Carts that behave, checkouts that do not scare people away.",
   },
   {
     id: "mobile",
     num: "04",
     title: "Mobile Apps",
     body: "iOS, Android, and React Native experiences with sharp onboarding, product rhythm, push flows, and interface details that keep users coming back.",
-    examples: ["iOS", "Android", "React Native", "Onboarding"],
+    examples: ["iOS", "Android", "React Native", "Onboarding", "Push flows", "App dashboards", "User accounts", "Release support"],
+    line: "Pocket-sized product magic, minus the mystery crashes.",
   },
   {
     id: "seo",
     num: "05",
     title: "SEO & Search",
     body: "Technical SEO, content architecture, AI-aware search strategy, audits, reporting, and local visibility systems built to compound over time.",
-    examples: ["Technical SEO", "AI search", "Content plans", "Audits"],
+    examples: ["Technical SEO", "AI search", "Content plans", "Audits", "Local SEO", "Schema", "Reporting", "Site structure"],
+    line: "Helping search engines find you without bribing the algorithm.",
   },
   {
     id: "crm",
     num: "06",
     title: "CRM Systems",
     body: "Custom operational platforms for bookings, pipelines, travel, medical practices, permissions, dashboards, and internal automation.",
-    examples: ["Bookings", "Pipelines", "Automations", "Permissions"],
+    examples: ["Bookings", "Pipelines", "Automations", "Permissions", "Dashboards", "Reports", "Integrations", "Team portals"],
+    line: "Less spreadsheet archaeology, more work actually moving.",
   },
 ];
-
-const GLYPHS = [
-  [
-    "M126 110H394C416 110 432 126 432 148V282C432 304 416 320 394 320H126C104 320 88 304 88 282V148C88 126 104 110 126 110Z",
-    "M88 166H432",
-    "M176 218L136 248L176 278",
-    "M344 218L384 248L344 278",
-    "M286 210L236 288",
-  ],
-  [
-    "M108 92H244V228H108V92Z",
-    "M294 92H432V160H294V92Z",
-    "M294 208H432V296H294V208Z",
-    "M136 128H216M136 164H188M322 126H398M322 244H390",
-  ],
-  [
-    "M116 140H392C414 140 432 158 432 180V272C432 294 414 312 392 312H116C94 312 76 294 76 272V180C76 158 94 140 116 140Z",
-    "M116 140L154 84H354L392 140",
-    "M154 84L188 140M354 84L322 140",
-    "M144 214H260M144 252H342",
-  ],
-  [
-    "M196 62H336C358 62 374 78 374 100V324C374 346 358 362 336 362H196C174 362 158 346 158 324V100C158 78 174 62 196 62Z",
-    "M188 116H344M188 308H344",
-    "M222 158H310M222 198H286M222 238H316",
-    "M252 334H280",
-  ],
-  [
-    "M94 274C154 172 226 126 310 148C358 160 394 142 426 92",
-    "M98 304H434",
-    "M118 116H256",
-    "M118 154H202",
-    "M352 112A62 62 0 1 0 352 236A62 62 0 0 0 352 112Z",
-    "M396 208L456 268",
-  ],
-  [
-    "M92 118H204V214H92V118Z",
-    "M254 76H366V172H254V76Z",
-    "M416 118H528V214H416V118Z",
-    "M148 214V278H472V214",
-    "M310 172V318",
-    "M196 318H424",
-  ],
-];
-
-function ServiceGlyph({ index }: { index: number }) {
-  return (
-    <div
-      className="relative h-full min-h-[260px] overflow-hidden rounded-[1.5rem] border border-[rgba(58,191,138,0.12)] bg-[rgba(8,14,11,0.32)]"
-      style={{
-        backgroundImage:
-          "linear-gradient(135deg, rgba(58,191,138,0.09), transparent 42%), radial-gradient(ellipse at 55% 52%, rgba(58,191,138,0.1), transparent 58%)",
-      }}
-    >
-      <div className="absolute inset-0 opacity-[0.22] [background-image:linear-gradient(90deg,rgba(58,191,138,0.28)_1px,transparent_1px),linear-gradient(180deg,rgba(58,191,138,0.18)_1px,transparent_1px)] [background-size:34px_34px]" />
-      <svg
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full"
-        viewBox="0 0 620 430"
-        fill="none"
-      >
-        <defs>
-          <filter id={`band-glow-${index}`} x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3.5" result="blur" />
-            <feColorMatrix
-              in="blur"
-              type="matrix"
-              values="0 0 0 0 0.227 0 0 0 0 0.749 0 0 0 0 0.541 0 0 0 0.75 0"
-            />
-            <feMerge>
-              <feMergeNode />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        <path
-          data-glyph-line
-          d="M72 334C168 388 326 384 474 318C538 290 574 250 588 198"
-          stroke="rgba(58,191,138,0.18)"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M102 102L428 58L538 142L218 202Z"
-          fill="rgba(58,191,138,0.045)"
-          stroke="rgba(58,191,138,0.12)"
-        />
-        <path
-          d="M218 202L538 142L500 310L182 366Z"
-          fill="rgba(58,191,138,0.025)"
-          stroke="rgba(58,191,138,0.1)"
-        />
-        <g filter={`url(#band-glow-${index})`}>
-          {GLYPHS[index % GLYPHS.length].map((path, pathIndex) => (
-            <path
-              key={path}
-              data-glyph-line
-              d={path}
-              stroke={pathIndex % 2 === 0 ? "rgba(58,191,138,0.82)" : "rgba(248,245,238,0.34)"}
-              strokeWidth={pathIndex % 2 === 0 ? 1.75 : 1.25}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              vectorEffect="non-scaling-stroke"
-              transform="translate(28 8)"
-            />
-          ))}
-        </g>
-      </svg>
-    </div>
-  );
-}
 
 export default function ServicesOverview() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -215,18 +111,27 @@ export default function ServicesOverview() {
         </div>
 
         <div className="space-y-8">
-          {SERVICES.map((service, index) => (
+          {SERVICES.map(service => (
             <article
               key={service.id}
               data-service-row
-              className="relative overflow-hidden rounded-[1.75rem] border border-[rgba(58,191,138,0.14)] bg-[rgba(7,10,9,0.46)] p-5 shadow-[0_34px_120px_rgba(0,0,0,0.3)] backdrop-blur-md md:p-7"
+              className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(58,191,138,0.14)] bg-[rgba(7,10,9,0.46)] p-5 shadow-[0_34px_120px_rgba(0,0,0,0.3)] backdrop-blur-md md:p-7"
             >
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(58,191,138,0.075),transparent_32%,rgba(248,245,238,0.018))]" />
               <div className="relative grid gap-7 lg:grid-cols-[0.16fr_0.44fr_0.4fr] lg:items-stretch">
-                <div className="flex items-start justify-between border-b border-[rgba(58,191,138,0.12)] pb-5 lg:flex-col lg:border-b-0 lg:border-r lg:pb-0 lg:pr-6">
+                <div className="flex items-start justify-between gap-6 border-b border-[rgba(58,191,138,0.12)] pb-5 lg:flex-col lg:border-b-0 lg:border-r lg:pb-0 lg:pr-6">
                   <span className="font-mono text-[0.62rem] uppercase tracking-[0.36em] text-[var(--teal)]">
                     {service.num}
                   </span>
+                  <div className="hidden w-full space-y-5 lg:block">
+                    {service.examples.map(example => (
+                      <div key={example} data-service-meta>
+                        <span className="block origin-left border-l border-[rgba(83,230,178,0.24)] pl-3 font-mono text-[0.54rem] uppercase tracking-[0.18em] text-[#F8F5EE]/88 transition duration-300 ease-out hover:translate-x-1 hover:scale-110 hover:border-[#53E6B2] hover:text-[#F8F5EE]">
+                          {example}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                   <span className="font-mono text-[0.52rem] uppercase tracking-[0.24em] text-[var(--body)] lg:[writing-mode:vertical-rl]">
                     Don&apos;t Forget
                   </span>
@@ -243,17 +148,9 @@ export default function ServicesOverview() {
                   </div>
 
                   <div>
-                    <div className="mb-7 flex flex-wrap gap-x-5 gap-y-3">
-                      {service.examples.map(example => (
-                        <span
-                          key={example}
-                          data-service-meta
-                          className="font-mono text-[0.56rem] uppercase tracking-[0.2em] text-[#F8F5EE]"
-                        >
-                          {example}
-                        </span>
-                      ))}
-                    </div>
+                    <p data-service-meta className="mb-7 max-w-[620px] font-mono text-[0.66rem] uppercase tracking-[0.16em] text-[#53E6B2]">
+                      {service.line}
+                    </p>
                     <div className="flex flex-wrap gap-3">
                       <Link href={`/services/${service.id}`} className="btn btn-primary btn-ripple px-5 py-3 text-[0.58rem]">
                         Browse service
@@ -265,7 +162,9 @@ export default function ServicesOverview() {
                   </div>
                 </div>
 
-                <ServiceGlyph index={index} />
+                <div className="relative h-full min-h-[300px] overflow-visible">
+                  <ServicePipeCardHologram shape={servicePipeShapes[service.id]} />
+                </div>
               </div>
             </article>
           ))}

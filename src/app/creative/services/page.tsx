@@ -1,78 +1,102 @@
 "use client";
 
-import Loader from "@/components/Loader";
-import SmoothScroll from "@/components/SmoothScroll";
-import Navbar from "@/components/Navbar";
-import AmbientGlow from "@/components/AmbientGlow";
-import ServicesOverview from "@/components/services/ServicesOverview";
-import ServicesPipeHologram from "@/components/services/ServicesPipeHologram";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-import { gsap } from "@/lib/gsap";
+import CreativeNavbar from "@/components/creative/CreativeNavbar";
+import CreativePageHero from "@/components/creative/CreativePageHero";
+import CreativeFAQ from "@/components/creative/CreativeFAQ";
+import CreativeFooter from "@/components/creative/CreativeFooter";
 
-function ServicesBackground() {
+const SERVICES = [
+  { n: "01", id: "webdev", t: "Web\nDev", d: "Fast, scalable, interactive websites and applications built around performance, clarity, CMS needs, SEO, and measurable results." },
+  { n: "02", id: "uiux", t: "UI /\nUX", d: "Research, competitive analysis, wireframes, prototypes, design systems, interaction design, and usability refinement." },
+  { n: "03", id: "ecomm", t: "E-\nCommerce", d: "Custom storefronts, payments, inventory, retention flows, analytics, reporting, and SEO-ready sales paths." },
+  { n: "04", id: "mobile", t: "Mobile", d: "iOS and Android product flows with native-feeling interaction, push notifications, offline support, and release preparation." },
+  { n: "05", id: "seo", t: "SEO", d: "Technical audits, keyword strategy, content planning, link building, Core Web Vitals, and AI-powered search visibility." },
+  { n: "06", id: "crm", t: "CRM", d: "Custom workflow platforms with role-based access, dashboards, reporting, integrations, automation, and data migration." },
+];
+
+const PROCESS = [
+  { n: "01", t: "Listen.", d: "A 60-minute call. You talk, we take a lot of notes and ask the questions you weren't expecting." },
+  { n: "02", t: "Shape.", d: "A written direction — territory, tone, references and what we'd cut. No mood boards from Pinterest. Promise." },
+  { n: "03", t: "Make.", d: "We design in public — Figma open, shared link, working sessions on Wednesdays. You see it as it happens." },
+  { n: "04", t: "Ship.", d: "A delivery week. Files, guidelines, walk-throughs and a half-day with whoever inherits the work." },
+];
+
+const PRICING = [
+  { label: "Sprint", price: "$8k", period: "two-week burst", desc: "For when you need shape — a wordmark, a one-pager, a campaign concept. Fast, focused, finished.", cta: "Book a sprint →", highlight: false },
+  { label: "Project", price: "$24k+", period: "six to ten weeks", desc: "A full identity system, a marketing site or a campaign with deliverables across surfaces. Most clients land here.", cta: "Scope a project →", highlight: true },
+  { label: "Retainer", price: "$12k/mo", period: "ongoing partner", desc: "An embedded design team for in-house brands and product orgs. Monthly cadence, shared boards, slack channel.", cta: "Talk retainer →", highlight: false },
+];
+
+function ArrowSvg() {
   return (
-    <div className="pointer-events-none fixed inset-0 z-0">
-      <div className="absolute inset-0" style={{
-        background: "radial-gradient(ellipse 72% 54% at 70% 46%, rgba(58,191,138,0.07), transparent 58%), linear-gradient(180deg, rgba(9,9,9,0.96) 0%, rgba(9,9,9,1) 48%, rgba(9,9,9,0.96) 100%)",
-      }} />
-    </div>
-  );
-}
-
-function ServicesHero() {
-  const headRef = useRef<HTMLHeadingElement>(null);
-  const bodyRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef  = useRef<HTMLDivElement>(null);
-  const shapeRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const tl = gsap.timeline({ delay: 2.2 });
-    tl.fromTo([headRef.current, bodyRef.current, ctaRef.current],
-      { autoAlpha: 0, y: 34 },
-      { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.95, ease: "power3.out" }
-    ).fromTo(shapeRef.current,
-      { autoAlpha: 0, scale: 1.08, x: 70 },
-      { autoAlpha: 1, scale: 1, x: 0, duration: 1.35, ease: "power3.out" }, "<0.05"
-    );
-  }, []);
-
-  return (
-    <section className="relative flex min-h-[100svh] items-center overflow-hidden" style={{ background: "transparent" }}>
-      <div ref={shapeRef} className="absolute inset-0 z-0" style={{ visibility: "hidden" }}>
-        <ServicesPipeHologram />
-      </div>
-      <div className="relative z-10 wrap flex items-center pt-32 pb-20">
-        <div className="max-w-[760px]">
-          <h1 ref={headRef} className="hed text-[clamp(4.2rem,10vw,9.6rem)] leading-[0.84] text-[#F8F5EE]" style={{ visibility: "hidden" }}>
-            Our<br /><span className="text-[var(--teal)]">Services</span>
-          </h1>
-          <p ref={bodyRef} className="mt-8 max-w-[520px] text-[clamp(0.92rem,1.3vw,1.04rem)] leading-[1.9] text-[var(--body)]" style={{ visibility: "hidden" }}>
-            Brand systems, digital products, immersive web, and motion identities — built to be impossible to forget.
-          </p>
-          <div ref={ctaRef} className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-            <Link href="/creative/contact" className="btn btn-primary btn-ripple">Start a project</Link>
-            <Link href="/creative/work" className="btn btn-outline">View work →</Link>
-          </div>
-        </div>
-      </div>
-    </section>
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" width={18} height={18}>
+      <path d="M28 4 L4 28 M28 20 L28 4 L12 4" />
+    </svg>
   );
 }
 
 export default function CreativeServicesPage() {
   return (
     <>
-      <Loader />
-      <SmoothScroll />
-      <main className="relative z-[1] overflow-x-clip">
-        <ServicesBackground />
-        <div className="noise" />
-        <AmbientGlow />
-        <Navbar inner />
-        <ServicesHero />
-        <ServicesOverview />
-      </main>
+      <CreativeNavbar active="services" />
+
+      <CreativePageHero
+        crumb="Home / Services"
+        title={<>Six things<br />we do<br /><em>obsessively</em>.</>}
+        sub="No fifty-line capabilities deck. We do six things, and we do them properly. Pick one, or chain them together as a full system."
+      />
+
+      {/* Service list rows */}
+      <section className="c-svc-list">
+        {SERVICES.map(({ n, id, t, d }) => (
+          <div key={n} className="c-svc-row">
+            <div className="c-svc-row__n">{n}</div>
+            <div className="c-svc-row__t" style={{ whiteSpace: "pre-line" }}>{t}</div>
+            <p className="c-svc-row__d">{d}</p>
+            <Link href={`/services/${id}`} className="c-iconbtn c-svc-row__arr" aria-label={`More about ${t.replace(/\s+/g, " ")}`}>
+              <ArrowSvg />
+            </Link>
+          </div>
+        ))}
+      </section>
+
+      {/* Pricing panel */}
+      <section className="c-pricing-panel">
+        <div className="c-pricing-card">
+          <h2 className="c-pricing-title">How we<br />work together.</h2>
+          <div className="c-pricing-grid">
+            {PRICING.map(({ label, price, period, desc, cta, highlight }) => (
+              <div key={label} className={`c-pricing-tier${highlight ? " c-pricing-tier--highlight" : ""}`}>
+                <div>
+                  <div className="c-tier__label">{label}</div>
+                  <div className="c-tier__price">{price}</div>
+                  <p className="c-tier__period">{period}</p>
+                </div>
+                <p className="c-tier__desc">{desc}</p>
+                <Link href="/creative/contact" className="c-btn" style={{ marginTop: 20 }}>{cta}</Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Process */}
+      <section className="c-process">
+        <h2 className="c-process__title">The<br />process.</h2>
+        <div className="c-process__grid">
+          {PROCESS.map(({ n, t, d }) => (
+            <div key={n} className="c-step">
+              <div className="c-step__n">{n}</div>
+              <div className="c-step__t">{t}</div>
+              <p className="c-step__d">{d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <CreativeFAQ />
+      <CreativeFooter />
     </>
   );
 }

@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { prisma }          from "@/lib/prisma";
 import Loader              from "@/components/Loader";
 import SmoothScroll        from "@/components/SmoothScroll";
-import AltParticleLayer    from "@/components/AltParticleLayer";
+import KnotOnly            from "@/components/KnotOnly";
+import MeshGrid            from "@/components/MeshGrid";
 import Navbar              from "@/components/Navbar";
 import AmbientGlow         from "@/components/AmbientGlow";
 import WorkListContent     from "./WorkListContent";
@@ -95,6 +96,8 @@ export type WorkProject = {
   tags: string[];
   liveUrl: string | null;
   coverImage: string | null;
+  gifUrl?: string | null;
+  images?: string[] | null;
 };
 
 export default async function WorkPage() {
@@ -104,7 +107,8 @@ export default async function WorkPage() {
     <>
       <Loader />
       <SmoothScroll />
-      <AltParticleLayer mode="galaxy" />
+      <KnotOnly />
+      <MeshGrid />
       <main className="relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
