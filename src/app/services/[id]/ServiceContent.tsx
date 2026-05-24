@@ -1,52 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import ImmersiveContact from "@/components/immersive/ImmersiveContact";
+import ServiceBrickBreaker from "@/components/services/ServiceBrickBreaker";
 import type { ServiceData } from "./page";
 
 const SERVICE_TOTAL = "06";
-
-type RelatedProject = {
-  id: string;
-  slug?: string | null;
-  title: string;
-  category?: string | null;
-  year?: string | null;
-  description?: string | null;
-  coverImage?: string | null;
-};
-
-const RELATED_FALLBACK: RelatedProject[] = [
-  {
-    id: "elia-clinic",
-    slug: "elia-clinic",
-    title: "Elia Clinic",
-    category: "Healthcare",
-    year: "2025",
-    description: "Calm medical web experience built for credibility, conversion, and speed.",
-    coverImage: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=85&auto=format&fit=crop",
-  },
-  {
-    id: "montgab",
-    slug: "montgab",
-    title: "Montgab",
-    category: "E-Commerce",
-    year: "2025",
-    description: "A tactile storefront with product storytelling, checkout clarity, and editorial rhythm.",
-    coverImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&q=85&auto=format&fit=crop",
-  },
-  {
-    id: "launchpad",
-    slug: "launchpad",
-    title: "Launchpad",
-    category: "SaaS Platform",
-    year: "2026",
-    description: "Developer-focused dashboard shaped around speed, collaboration, and clean workflow.",
-    coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=85&auto=format&fit=crop",
-  },
-];
 
 const PROCESS: Record<string, { title: string; body: string }[]> = {
   webdev: [
@@ -87,51 +48,54 @@ const PROCESS: Record<string, { title: string; body: string }[]> = {
   ],
 };
 
-const TECH_MARKS: Record<string, string> = {
-  "Next.js": "N",
-  React: "R",
-  TypeScript: "TS",
-  "Tailwind CSS": "TW",
-  GSAP: "G",
-  Figma: "F",
-  FigJam: "FJ",
-  Maze: "MZ",
-  Hotjar: "HJ",
-  Principle: "PR",
-  Shopify: "S",
-  WooCommerce: "WC",
-  Salla: "SA",
-  Stripe: "ST",
-  Klaviyo: "K",
-  "React Native": "RN",
-  Swift: "SW",
-  Kotlin: "KT",
-  Expo: "EX",
-  Firebase: "FB",
-  Ahrefs: "AH",
-  "Screaming Frog": "SF",
-  GSC: "GS",
-  Semrush: "SE",
-  Perplexity: "PX",
-  PostgreSQL: "PG",
-  Prisma: "P",
-  Redis: "RD",
-  Zapier: "Z",
-};
+function ServiceBlueprint({ svc }: { svc: ServiceData }) {
+  const cards = [
+    {
+      label: "Scope",
+      title: "Clear project shape",
+      body: `We turn the ${svc.title.toLowerCase()} brief into screens, flows, integrations, content needs, and launch priorities before production gets noisy.`,
+    },
+    {
+      label: "Delivery",
+      title: "Built in connected passes",
+      body: "Strategy, interface, motion, implementation, QA, and deployment move together so the final system feels intentional instead of assembled late.",
+    },
+    {
+      label: "Handoff",
+      title: "Ready to run",
+      body: "You get the finished experience, the operational details behind it, and a clean path for maintenance, growth, or the next release.",
+    },
+  ];
 
-function FeatureBand({ label, index }: { label: string; index: number }) {
   return (
-    <li
-      data-feature-row
-      className="grid gap-4 border-t border-[rgba(58,191,138,0.12)] py-6 md:grid-cols-[0.18fr_1fr]"
-    >
-      <span className="font-mono text-[0.56rem] uppercase tracking-[0.3em] text-[var(--teal)]">
-        {String(index + 1).padStart(2, "0")}
-      </span>
-      <span className="font-mono text-[0.76rem] uppercase tracking-[0.18em] text-[#F8F5EE]">
-        {label}
-      </span>
-    </li>
+    <section data-motion-section className="relative z-10 py-10 md:py-20">
+      <div className="wrap">
+        <div className="grid gap-5 md:grid-cols-3">
+          {cards.map((card, index) => (
+            <article
+              key={card.title}
+              className="relative min-h-[280px] overflow-hidden rounded-[1.45rem] border border-[rgba(58,191,138,0.14)] bg-[rgba(7,10,9,0.44)] p-6 backdrop-blur-md"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_28%_18%,rgba(58,191,138,0.1),transparent_52%)]" />
+              <div className="relative flex h-full flex-col justify-between gap-10">
+                <div className="flex items-center justify-between gap-5">
+                  <span className="font-mono text-[0.54rem] uppercase tracking-[0.3em] text-[var(--teal)]">
+                    {card.label}
+                  </span>
+                  <span className="font-mono text-[0.54rem] uppercase tracking-[0.24em] text-[var(--body)]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="hed text-[clamp(2.2rem,4vw,3.8rem)] leading-[0.9]">{card.title}</h3>
+                  <p className="mt-5 text-[0.92rem] leading-[1.8] text-[var(--body)]">{card.body}</p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -232,141 +196,10 @@ function ProcessSection({ svc }: { svc: ServiceData }) {
   );
 }
 
-function TechnologyCarousel({ tech }: { tech: readonly string[] }) {
-  const items = [...tech, ...tech, ...tech];
-
-  return (
-    <section data-motion-section className="relative z-10 py-24">
-      <div className="wrap">
-        <div className="mb-10 flex flex-col justify-between gap-5 border-y border-[rgba(58,191,138,0.12)] py-8 md:flex-row md:items-end">
-          <div>
-            <p className="eyebrow mb-4">Technology stack</p>
-            <h2 className="hed text-[clamp(2.6rem,5vw,5.4rem)] leading-[0.9]">
-              Tools in<br />
-              <span className="text-[var(--teal)]">motion.</span>
-            </h2>
-          </div>
-          <p className="max-w-[520px] text-[0.95rem] leading-[1.85] text-[var(--body)]">
-            The stack changes by project, but these are the tools usually involved in this service path.
-          </p>
-        </div>
-      </div>
-
-      <div className="overflow-hidden border-y border-[rgba(58,191,138,0.1)] py-5">
-        <div className="service-tech-track flex w-max gap-4">
-          {items.map((item, index) => (
-            <div
-              key={`${item}-${index}`}
-              className="flex min-w-[220px] items-center gap-4 rounded-[1.1rem] border border-[rgba(58,191,138,0.16)] bg-[rgba(7,10,9,0.5)] px-5 py-4 backdrop-blur-md"
-            >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[0.9rem] border border-[rgba(58,191,138,0.26)] bg-[rgba(58,191,138,0.08)] font-mono text-[0.72rem] font-bold uppercase tracking-[0.08em] text-[var(--teal)]">
-                {TECH_MARKS[item] ?? item.slice(0, 2)}
-              </span>
-              <span className="font-mono text-[0.68rem] uppercase tracking-[0.2em] text-[#F8F5EE]">{item}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <style>{`
-        .service-tech-track {
-          animation: service-tech-marquee 26s linear infinite;
-        }
-        @keyframes service-tech-marquee {
-          from { transform: translateX(0); }
-          to { transform: translateX(-33.333%); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .service-tech-track { animation: none; }
-        }
-      `}</style>
-    </section>
-  );
-}
-
-function RelatedWorkSection({ serviceId }: { serviceId: string }) {
-  const [projects, setProjects] = useState<RelatedProject[]>(RELATED_FALLBACK);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        const response = await fetch("/api/projects");
-        if (!response.ok) return;
-        const data = (await response.json()) as RelatedProject[];
-        if (!cancelled && data.length) setProjects(data.slice(0, 3));
-      } catch {
-        // Fallback projects keep the section populated when the API is unavailable.
-      }
-    };
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [serviceId]);
-
-  const related = useMemo(() => projects.slice(0, 3), [projects]);
-
-  return (
-    <section data-motion-section className="relative z-10 py-24 md:py-32">
-      <div className="wrap">
-        <div className="mb-10 flex flex-col justify-between gap-5 border-y border-[rgba(58,191,138,0.12)] py-8 md:flex-row md:items-end">
-          <div>
-            <p className="eyebrow mb-4">Related work</p>
-            <h2 className="hed text-[clamp(2.8rem,5vw,5.6rem)] leading-[0.9]">
-              Proof in<br />
-              <span className="text-[var(--teal)]">production.</span>
-            </h2>
-          </div>
-          <Link href="/work" className="btn btn-outline self-start md:self-auto">
-            See all work →
-          </Link>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          {related.map(project => (
-            <Link
-              key={project.id}
-              href={`/work/${project.slug ?? project.id}`}
-              data-related-card
-              className="group relative min-h-[430px] overflow-hidden rounded-[1.5rem] border border-[rgba(58,191,138,0.14)] bg-[rgba(7,10,9,0.48)]"
-            >
-              {project.coverImage ? (
-                <Image
-                  src={project.coverImage}
-                  alt={project.title}
-                  fill
-                  className="object-cover opacity-62 transition duration-700 group-hover:scale-[1.04] group-hover:opacity-80"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-              ) : (
-                <div className="absolute inset-0 bg-[rgba(58,191,138,0.06)]" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/48 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-6">
-                <p className="mb-3 font-mono text-[0.56rem] uppercase tracking-[0.24em] text-[var(--teal)]">
-                  {project.category ?? project.year ?? "Project"}
-                </p>
-                <h3 className="hed text-[2.4rem] leading-[0.9]">{project.title}</h3>
-                {project.description && (
-                  <p className="mt-4 line-clamp-3 text-[0.86rem] leading-[1.7] text-white/68">{project.description}</p>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function ServiceContent({ svc }: { svc: ServiceData }) {
   const heroRef = useRef<HTMLElement>(null);
-  const featureRef = useRef<HTMLElement>(null);
   const techRef = useRef<HTMLElement>(null);
-  const ctaRef = useRef<HTMLElement>(null);
+  const contactRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -394,23 +227,7 @@ export default function ServiceContent({ svc }: { svc: ServiceData }) {
         });
       }
 
-      const featureRows = featureRef.current?.querySelectorAll("[data-feature-row]");
-      if (featureRows?.length) {
-        gsap.fromTo(
-          featureRows,
-          { autoAlpha: 0, y: 24 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            stagger: 0.07,
-            duration: 0.65,
-            ease: "power3.out",
-            scrollTrigger: { trigger: featureRef.current, start: "top 76%", toggleActions: "play none none reverse" },
-          }
-        );
-      }
-
-      [techRef.current, ctaRef.current].forEach(element => {
+      [techRef.current, contactRef.current].forEach(element => {
         if (!element) return;
         gsap.fromTo(
           element,
@@ -439,22 +256,6 @@ export default function ServiceContent({ svc }: { svc: ServiceData }) {
               end: "top 38%",
               scrub: 1,
             },
-          }
-        );
-      });
-
-      gsap.utils.toArray<HTMLElement>("[data-related-card]").forEach((element, index) => {
-        gsap.fromTo(
-          element,
-          { autoAlpha: 0, y: 42, scale: 0.96 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.75,
-            delay: index * 0.06,
-            ease: "power3.out",
-            scrollTrigger: { trigger: element, start: "top 84%", toggleActions: "play none none reverse" },
           }
         );
       });
@@ -508,7 +309,7 @@ export default function ServiceContent({ svc }: { svc: ServiceData }) {
               {svc.body}
             </p>
             <div data-hero-item className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-              <Link href="/#contact" className="btn btn-primary btn-ripple">
+              <Link href="#contact" className="btn btn-primary btn-ripple">
                 Start this project
               </Link>
               <Link href="/services" className="btn btn-outline">
@@ -516,26 +317,12 @@ export default function ServiceContent({ svc }: { svc: ServiceData }) {
               </Link>
             </div>
           </div>
-
         </div>
       </section>
 
-      <section ref={featureRef} data-motion-section className="relative z-10 py-24 md:py-32">
-        <div className="wrap grid gap-12 border-y border-[rgba(58,191,138,0.12)] py-12 lg:grid-cols-[0.38fr_0.62fr]">
-          <div>
-            <p className="eyebrow mb-6">What&apos;s included</p>
-            <h2 className="hed text-[clamp(3rem,6vw,6rem)] leading-[0.9]">
-              Built as<br />
-              <span className="text-[var(--teal)]">a system.</span>
-            </h2>
-          </div>
-          <ul>
-            {svc.features.map((feature, index) => (
-              <FeatureBand key={feature} label={feature} index={index} />
-            ))}
-          </ul>
-        </div>
-      </section>
+      <ServiceBrickBreaker serviceTitle={svc.title} features={svc.features} tech={svc.tech} />
+
+      <ServiceBlueprint svc={svc} />
 
       <ProcessSection svc={svc} />
 
@@ -554,29 +341,8 @@ export default function ServiceContent({ svc }: { svc: ServiceData }) {
         </div>
       </section>
 
-      <TechnologyCarousel tech={svc.tech} />
-
-      <RelatedWorkSection serviceId={svc.id} />
-
-      <section ref={ctaRef} data-motion-section className="relative z-10 section-py text-center">
-        <div className="wrap">
-          <p className="eyebrow mb-6">Ready to build?</p>
-          <h2 className="hed text-[clamp(3rem,6vw,5.8rem)] leading-[0.9]">
-            Let&apos;s make this<br />
-            <span className="text-[var(--teal)]">unforgettable.</span>
-          </h2>
-          <p className="mx-auto mt-8 max-w-[520px] text-[0.95rem] leading-[1.9] text-[var(--body)]">
-            We take on a small number of projects at a time so the strategy, interface, and engineering all stay sharp.
-          </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link href="/#contact" className="btn btn-primary btn-ripple">
-              Start the conversation →
-            </Link>
-            <Link href="/services" className="btn btn-outline">
-              Back to services
-            </Link>
-          </div>
-        </div>
+      <section ref={contactRef} data-motion-section className="relative z-10 border-t border-[rgba(58,191,138,0.12)]">
+        <ImmersiveContact embedded />
       </section>
     </>
   );

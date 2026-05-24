@@ -3,6 +3,11 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { gsap } from "@/lib/gsap";
+import {
+  createServicePipeHologram,
+  disposeServicePipeObject,
+  servicePipeShapes,
+} from "@/components/services/ServicePipeCardHologram";
 
 export default function ServiceHeroHologram({ serviceId }: { serviceId: string }) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -21,58 +26,12 @@ export default function ServiceHeroHologram({ serviceId }: { serviceId: string }
     const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.z = 7.2;
 
-    const group = new THREE.Group();
+    const group = createServicePipeHologram(servicePipeShapes[serviceId] ?? servicePipeShapes.webdev);
     scene.add(group);
 
-    const geo =
-      serviceId === "webdev"
-        ? new THREE.TorusKnotGeometry(1.72, 0.38, 180, 18, 2, 3)
-        : serviceId === "ecomm"
-          ? new THREE.TorusGeometry(1.74, 0.54, 18, 180)
-          : serviceId === "mobile"
-            ? new THREE.CapsuleGeometry(0.88, 2.8, 12, 34)
-            : new THREE.IcosahedronGeometry(1.95, 3);
-
-    const wire = new THREE.WireframeGeometry(geo);
-    const material = new THREE.LineBasicMaterial({
-      color: 0x3abf8a,
-      transparent: true,
-      opacity: 0.18,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-    const lines = new THREE.LineSegments(wire, material);
-    group.add(lines);
-
-    const ghostMaterial = new THREE.LineBasicMaterial({
-      color: 0x1efc78,
-      transparent: true,
-      opacity: 0.08,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-    const ghost = new THREE.LineSegments(wire.clone(), ghostMaterial);
-    ghost.scale.setScalar(1.14);
-    ghost.rotation.set(0.46, -0.24, 0.18);
-    group.add(ghost);
-
-    const planeGeo = new THREE.RingGeometry(1.45, 2.88, 96);
-    const planeWire = new THREE.WireframeGeometry(planeGeo);
-    const ring = new THREE.LineSegments(
-      planeWire,
-      new THREE.LineBasicMaterial({
-        color: 0x3abf8a,
-        transparent: true,
-        opacity: 0.06,
-        blending: THREE.AdditiveBlending,
-      })
-    );
-    ring.rotation.set(1.18, 0.18, -0.24);
-    group.add(ring);
-
-    group.rotation.set(-0.12, -0.46, 0.18);
-    group.position.set(window.innerWidth < 900 ? 1.15 : 2.95, window.innerWidth < 900 ? 0.25 : 0.05, -0.4);
-    group.scale.setScalar(window.innerWidth < 900 ? 1.2 : 2.05);
+    group.rotation.set(-0.12, -0.42, 0.1);
+    group.position.set(window.innerWidth < 900 ? 1.0 : 3.05, window.innerWidth < 900 ? 0.15 : 0.02, -0.35);
+    group.scale.setScalar(window.innerWidth < 900 ? 1.0 : 1.85);
 
     const travel = gsap.timeline({
       scrollTrigger: {
@@ -114,10 +73,8 @@ export default function ServiceHeroHologram({ serviceId }: { serviceId: string }
       frame = requestAnimationFrame(tick);
       const t = clock.getElapsedTime();
       group.rotation.x += ((-0.12 + pointer.y * 0.12) - group.rotation.x) * 0.055;
-      group.rotation.y += ((-0.46 + pointer.x * 0.18 + Math.sin(t * 0.18) * 0.08) - group.rotation.y) * 0.055;
-      group.rotation.z = 0.18 + Math.sin(t * 0.13) * 0.08;
-      ring.rotation.z -= 0.0018;
-      material.opacity = 0.14 + Math.sin(t * 1.2) * 0.035;
+      group.rotation.y += ((-0.42 + pointer.x * 0.18 + Math.sin(t * 0.18) * 0.08) - group.rotation.y) * 0.055;
+      group.rotation.z = 0.1 + Math.sin(t * 0.13) * 0.08;
       renderer.render(scene, camera);
     };
     tick();
@@ -127,13 +84,9 @@ export default function ServiceHeroHologram({ serviceId }: { serviceId: string }
       travel.scrollTrigger?.kill();
       window.removeEventListener("mousemove", updateMouse);
       window.removeEventListener("resize", resize);
+      scene.remove(group);
+      disposeServicePipeObject(group);
       renderer.dispose();
-      geo.dispose();
-      wire.dispose();
-      planeGeo.dispose();
-      planeWire.dispose();
-      material.dispose();
-      ghostMaterial.dispose();
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };
   }, [serviceId]);
