@@ -786,22 +786,23 @@ export default function HomeFocused() {
       </section>
 
       {/* ═══════════════════════════════════════
-          PROCESS  (auto-scrolling carousel)
+          PROCESS  (3D rotating wheel)
       ═══════════════════════════════════════ */}
       <section
         className="kbm-process"
         style={{ paddingBottom: "clamp(4rem, 8vw, 10rem)" }}
       >
         <style>{`
-          @keyframes processRoll {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+          @keyframes wheel3d {
+            0%   { transform: rotateY(0deg); }
+            100% { transform: rotateY(-360deg); }
           }
-          .process-track {
-            animation: processRoll 22s linear infinite;
+          .process-wheel {
+            animation: wheel3d 28s linear infinite;
             will-change: transform;
+            transform-style: preserve-3d;
           }
-          .process-track:hover { animation-play-state: paused; }
+          .process-wheel:hover { animation-play-state: paused; }
         `}</style>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", padding: "0 clamp(1.5rem, 4vw, 3.75rem)", marginBottom: "clamp(2rem, 3.5vw, 3.5rem)" }}>
@@ -811,50 +812,64 @@ export default function HomeFocused() {
           </p>
         </div>
 
-        {/* overflow clip — no horizontal padding so cards bleed to edges */}
-        <div style={{ overflow: "hidden" }}>
+        {/* 3D scene */}
+        <div style={{
+          perspective:     "1100px",
+          perspectiveOrigin: "50% 50%",
+          height:          380,
+          position:        "relative",
+        }}>
+          {/* wheel stage — centered */}
           <div
-            className="process-track"
+            className="process-wheel"
             style={{
-              display:   "flex",
-              gap:       16,
-              width:     "max-content",
-              paddingLeft: 24,
+              position:        "absolute",
+              top:             "50%",
+              left:            "50%",
+              width:           0,
+              height:          0,
+              transformStyle:  "preserve-3d",
             }}
           >
-            {/* duplicate 2× for seamless loop */}
-            {[...PROCESS, ...PROCESS].map((step, i) => {
+            {PROCESS.map((step, i) => {
               const PALETTES = [
                 { bg: C.ink,    num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.65)" },
                 { bg: C.green,  num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.7)"  },
-                { bg: C.orange, num: C.cream,  text: C.cream,  body: "rgba(235,222,206,0.75)" },
+                { bg: C.orange, num: C.cream,  text: C.cream,  body: "rgba(235,222,206,0.78)" },
                 { bg: C.yellow, num: C.ink,    text: C.ink,    body: "rgba(34,31,26,0.6)"     },
                 { bg: C.ink,    num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.65)" },
                 { bg: C.green,  num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.7)"  },
-                { bg: C.orange, num: C.cream,  text: C.cream,  body: "rgba(235,222,206,0.75)" },
+                { bg: C.orange, num: C.cream,  text: C.cream,  body: "rgba(235,222,206,0.78)" },
               ];
-              const p = PALETTES[i % PROCESS.length];
+              const p     = PALETTES[i];
+              const angle = (360 / PROCESS.length) * i;
+              const R     = 420; // radius in px — controls wheel size
+              const W     = 260; // card width
+              const H     = 220; // card height
               return (
                 <div
-                  key={i}
+                  key={step.n}
                   style={{
-                    width:         "calc(25vw - 20px)",
-                    minWidth:      240,
-                    maxWidth:      320,
-                    flexShrink:    0,
+                    position:      "absolute",
+                    width:         W,
+                    height:        H,
+                    left:          -W / 2,
+                    top:           -H / 2,
                     background:    p.bg,
-                    borderRadius:  12,
-                    padding:       "clamp(1.25rem, 2vw, 1.75rem)",
+                    borderRadius:  14,
+                    padding:       "1.4rem 1.6rem",
                     display:       "flex",
                     flexDirection: "column",
                     gap:           8,
-                    minHeight:     220,
+                    transform:     `rotateY(${angle}deg) translateZ(${R}px)`,
+                    backfaceVisibility: "hidden",
+                    boxShadow:     "0 8px 40px rgba(0,0,0,0.22)",
                   }}
                 >
                   <span style={{
                     fontFamily:    TEKO,
                     fontWeight:    700,
-                    fontSize:      "clamp(2rem, 3vw, 3rem)",
+                    fontSize:      "2.8rem",
                     lineHeight:    1,
                     color:         p.num,
                     letterSpacing: "-0.02em",
@@ -862,7 +877,7 @@ export default function HomeFocused() {
                   <h3 style={{
                     fontFamily:    TEKO,
                     fontWeight:    700,
-                    fontSize:      "clamp(1.2rem, 1.8vw, 1.6rem)",
+                    fontSize:      "1.5rem",
                     lineHeight:    1.1,
                     color:         p.text,
                     textTransform: "uppercase",
@@ -871,11 +886,11 @@ export default function HomeFocused() {
                   }}>{step.title}</h3>
                   <p style={{
                     fontFamily: MONO,
-                    fontSize:   "clamp(0.7rem, 0.85vw, 0.85rem)",
+                    fontSize:   "0.78rem",
                     lineHeight: 1.55,
                     color:      p.body,
                     marginTop:  "auto",
-                    paddingTop: 8,
+                    paddingTop: 6,
                   }}>{step.body}</p>
                 </div>
               );
