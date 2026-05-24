@@ -877,7 +877,7 @@ export default function HomeFocused() {
               { bg: C.ink,    num: C.yellow,  name: C.cream,  line: "rgba(235,222,206,0.6)" },
               { bg: C.green,  num: C.yellow,  name: C.cream,  line: "rgba(235,222,206,0.7)" },
               { bg: C.orange, num: C.cream,   name: C.cream,  line: "rgba(235,222,206,0.75)" },
-              { bg: C.cream,  num: C.green,   name: C.ink,    line: "rgba(34,31,26,0.55)" },
+              { bg: C.yellow, num: C.ink,    name: C.ink,    line: "rgba(34,31,26,0.6)" },
             ];
             const p = palettes[i % palettes.length];
             return (
