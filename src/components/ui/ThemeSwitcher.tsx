@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
 import { useThemeStore, type HomeTheme } from "@/lib/themeStore";
@@ -26,12 +26,8 @@ function parseRoute(pathname: string): { mode: string | null; page: string | nul
 export default function ThemeSwitcher() {
   const { theme, setTheme } = useThemeStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-
-  useEffect(() => { setMounted(true); }, []);
-  if (!mounted) return null;
 
   const { mode: currentMode, page: currentPage } = parseRoute(pathname);
 
@@ -45,7 +41,9 @@ export default function ThemeSwitcher() {
 
     let targetRoute: string;
 
-    if (currentPage) {
+    if (newMode === "creative") {
+      targetRoute = "/creative";
+    } else if (currentPage) {
       /* Inner page: /focused/about → /immersive/about */
       targetRoute = `/${newMode}/${currentPage}`;
     } else if (currentMode) {

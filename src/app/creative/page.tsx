@@ -1,78 +1,80 @@
-import About from "@/components/About";
-import Availability from "@/components/Availability";
-import AmbientGlow from "@/components/AmbientGlow";
-import Contact from "@/components/Contact";
-import Hero from "@/components/Hero";
-import Loader from "@/components/Loader";
-import Marquee from "@/components/Marquee";
-import Navbar from "@/components/Navbar";
-import Principles from "@/components/Principles";
-import Process from "@/components/Process";
-import Services from "@/components/Services";
-import SmoothScroll from "@/components/SmoothScroll";
-import Work from "@/components/Work";
-import ParticleLayer from "@/components/ParticleLayer";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import CreativeHero from "@/components/creative/CreativeHero";
+import CreativeAboutUs from "@/components/creative/CreativeAboutUs";
+import CreativeServices, { type CreativeHomeService } from "@/components/creative/CreativeServices";
+import CreativePortfolio, { type CreativeHomeProject } from "@/components/creative/CreativePortfolio";
+import CreativeCTA1 from "@/components/creative/CreativeCTA1";
+import CreativeTestimonials from "@/components/creative/CreativeTestimonials";
+import CreativeFAQ from "@/components/creative/CreativeFAQ";
+import CreativeCTA2 from "@/components/creative/CreativeCTA2";
+import CreativeFooter from "@/components/creative/CreativeFooter";
+import CreativeHomeMotion from "@/components/creative/CreativeHomeMotion";
+
+export const metadata: Metadata = {
+  title: "DON'T FORGET — Creative Agency",
+  description: "Crafting unique and compelling creative solutions that captivate and inspire.",
+};
 
 export const dynamic = "force-dynamic";
 
+async function getCreativeHomeData(): Promise<{
+  services: CreativeHomeService[] | undefined;
+  projects: CreativeHomeProject[] | undefined;
+}> {
+  try {
+    const [services, projects] = await Promise.all([
+      prisma.service.findMany({
+        where: { active: true },
+        orderBy: { order: "asc" },
+        take: 6,
+        select: { title: true, description: true },
+      }),
+      prisma.project.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: [{ featured: "desc" }, { order: "asc" }, { createdAt: "desc" }],
+        take: 4,
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          category: true,
+          year: true,
+          coverImage: true,
+          gifUrl: true,
+        },
+      }),
+    ]);
+
+    return {
+      services: services.length >= 6
+        ? services.map((service) => ({
+            title: service.title,
+            description: service.description ?? "Creative strategy, design, and production shaped around your goals.",
+          }))
+        : undefined,
+      projects: projects.length ? projects : undefined,
+    };
+  } catch {
+    return { services: undefined, projects: undefined };
+  }
+}
+
 export default async function CreativePage() {
-  const [projects, services] = process.env.DATABASE_URL
-    ? await Promise.all([
-        prisma.project.findMany({
-          where: { status: "PUBLISHED" },
-          orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-        }),
-        prisma.service.findMany({
-          where: { active: true },
-          orderBy: { order: "asc" },
-        }),
-      ])
-    : [[], []];
+  const { services, projects } = await getCreativeHomeData();
 
   return (
     <>
-      <Loader />
-      <SmoothScroll />
-      <ParticleLayer />
-      <main
-        className="relative z-[1] overflow-x-clip"
-        style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
-        }}
-      >
-        <div className="noise" />
-
-        {/* Creative accent elements */}
-        <div className="pointer-events-none fixed inset-0 z-0">
-          <div
-            className="absolute top-20 -right-40 w-80 h-80 rounded-full opacity-20 blur-3xl"
-            style={{
-              background: "radial-gradient(circle, #14b8a6 0%, transparent 70%)",
-            }}
-          />
-          <div
-            className="absolute bottom-40 -left-40 w-96 h-96 rounded-full opacity-15 blur-3xl"
-            style={{
-              background: "radial-gradient(circle, #ec4899 0%, transparent 70%)",
-            }}
-          />
-        </div>
-
-        <div className="relative z-10">
-          <AmbientGlow />
-          <Navbar />
-          <Hero />
-          <About />
-          <Marquee />
-          <Services />
-          <Process />
-          <Work projects={projects} />
-          <Principles />
-          <Availability />
-          <Contact />
-        </div>
-      </main>
+      <CreativeHomeMotion />
+      <CreativeHero />
+      <CreativeAboutUs />
+      <CreativeServices services={services} />
+      <CreativePortfolio projects={projects} />
+      <CreativeCTA1 />
+      <CreativeTestimonials />
+      <CreativeFAQ />
+      <CreativeCTA2 />
+      <CreativeFooter />
     </>
   );
 }

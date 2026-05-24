@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { Inter, Caveat, Space_Mono, Teko, Source_Code_Pro } from "next/font/google";
+import { Inter, Caveat, Space_Mono, Teko, Source_Code_Pro, Turret_Road, Funnel_Display, DM_Sans, Space_Grotesk } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/lib/themeContext";
-import ThemeOnboarding from "@/components/ui/ThemeOnboarding";
 import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 import PageTransitionOverlay from "@/components/ui/PageTransitionOverlay";
 import "./globals.css";
@@ -45,6 +44,30 @@ const sourceCodePro = Source_Code_Pro({
   variable: "--font-source-code-pro",
 });
 
+const turretRoad = Turret_Road({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "800"],
+  variable: "--font-turret",
+});
+
+const funnelDisplay = Funnel_Display({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-funnel",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-dm-sans",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
+});
+
 export const metadata: Metadata = {
   title: "DON'T FORGET — Web Development Agency",
   description:
@@ -67,7 +90,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${csRobust.variable} ${caveat.variable} ${spaceMono.variable} ${teko.variable} ${sourceCodePro.variable}`}
+      className={`${inter.variable} ${csRobust.variable} ${caveat.variable} ${spaceMono.variable} ${teko.variable} ${sourceCodePro.variable} ${turretRoad.variable} ${funnelDisplay.variable} ${dmSans.variable} ${spaceGrotesk.variable}`}
     >
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>
@@ -83,7 +106,6 @@ export default function RootLayout({
 function ThemeUIWrapper() {
   return (
     <>
-      <ThemeOnboarding />
       <ThemeSwitcher />
       <PageTransitionOverlay />
     </>

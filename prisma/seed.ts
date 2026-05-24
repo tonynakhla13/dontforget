@@ -10,28 +10,40 @@ async function main() {
   await prisma.service.createMany({
     data: [
       {
-        title: "Brand Systems",
-        description: "Names, identities, rules, and visual logic that keep every touchpoint coherent across every surface.",
+        title: "Web Dev",
+        description: "Fast, scalable, interactive websites and applications built around performance, clarity, and measurable results.",
         icon: "01",
         order: 1,
       },
       {
-        title: "Digital Products",
-        description: "Interfaces and flows built to feel fast, clear, and unmistakably yours — from wireframe to launch.",
+        title: "UI / UX",
+        description: "Research-led interfaces, product flows, prototypes, and design systems shaped around how people actually use them.",
         icon: "02",
         order: 2,
       },
       {
-        title: "Immersive Web",
-        description: "Three.js, GSAP, and tactile interactions that make the browser feel spatial and alive.",
+        title: "E-Commerce",
+        description: "Conversion-focused stores with storefront design, payments, retention flows, analytics, and growth foundations.",
         icon: "03",
         order: 3,
       },
       {
-        title: "Motion Identities",
-        description: "Systems that move with intent — from logo behaviour to full campaign launch films.",
+        title: "Mobile",
+        description: "iOS and Android experiences with native-feeling flows, app release support, notifications, and analytics.",
         icon: "04",
         order: 4,
+      },
+      {
+        title: "SEO",
+        description: "Technical audits, search architecture, content planning, Core Web Vitals, and AI-search visibility strategy.",
+        icon: "05",
+        order: 5,
+      },
+      {
+        title: "CRM",
+        description: "Custom operational platforms for bookings, teams, pipelines, reports, integrations, and business workflows.",
+        icon: "06",
+        order: 6,
       },
     ],
   });

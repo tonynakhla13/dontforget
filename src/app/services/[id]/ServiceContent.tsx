@@ -139,12 +139,12 @@ function ProcessSection({ svc }: { svc: ServiceData }) {
   const steps = PROCESS[svc.id] ?? PROCESS.webdev;
   const sectionRef = useRef<HTMLElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
-  const panelsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const panelsRef = useRef<(HTMLElement | null)[]>([]);
   const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
-    const panels = panelsRef.current.filter(Boolean) as HTMLDivElement[];
+    const panels = panelsRef.current.filter(Boolean) as HTMLElement[];
     if (!section || !panels.length) return;
 
     const ctx = gsap.context(() => {

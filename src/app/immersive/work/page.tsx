@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import Loader from "@/components/Loader";
 import SmoothScroll from "@/components/SmoothScroll";
-import AltParticleLayer from "@/components/AltParticleLayer";
-import ParticleLayer from "@/components/ParticleLayer";
+import KnotOnly from "@/components/KnotOnly";
+import MeshGrid from "@/components/MeshGrid";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
 import WorkListContent from "@/app/work/WorkListContent";
@@ -38,8 +38,8 @@ export default async function ImmersiveWorkPage() {
     <>
       <Loader />
       <SmoothScroll />
-      <ParticleLayer />
-      <AltParticleLayer mode="galaxy" />
+      <KnotOnly />
+      <MeshGrid />
       <main className="relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />

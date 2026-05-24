@@ -21,20 +21,33 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
              : pathname.startsWith("/immersive") ? "immersive"
              : null;
 
+  // On inner pages that aren't mode-prefixed (e.g. /work, /about, /services)
+  // use full route links instead of homepage anchor links
+  const isInnerPage = !mode && pathname !== "/";
+
   const navLinks = mode
     ? [
-        { label: "Work",    href: `/${mode}/work`    },
-        { label: "About",   href: `/about`           },
-        { label: "Contact", href: `/${mode}/contact` },
+        { label: "Work",     href: `/${mode}/work`    },
+        { label: "Services", href: `/services`        },
+        { label: "About",    href: `/about`           },
+        { label: "Contact",  href: `/${mode}/contact` },
+      ]
+    : isInnerPage
+    ? [
+        { label: "Work",     href: "/work"     },
+        { label: "Services", href: "/services" },
+        { label: "About",    href: "/about"    },
+        { label: "Contact",  href: "/#contact" },
       ]
     : [
-        { label: "Work",    href: "#work"    },
-        { label: "Process", href: "#process" },
-        { label: "About",   href: "/about"   },
-        { label: "Contact", href: "#contact" },
+        { label: "Work",     href: "/work"     },
+        { label: "Services", href: "/services" },
+        { label: "Process",  href: "#process"  },
+        { label: "About",    href: "/about"    },
+        { label: "Contact",  href: "#contact"  },
       ];
 
-  const ctaHref = mode ? `/${mode}/contact` : "#contact";
+  const ctaHref = mode ? `/${mode}/contact` : isInnerPage ? "/#contact" : "#contact";
 
   /* ── Full-screen overlay animation ── */
   useEffect(() => {
@@ -112,7 +125,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
       >
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <a href={mode ? `/${mode}` : "#"} onClick={() => setMenuOpen(false)}>
+          <a href={mode ? `/${mode}` : "/"} onClick={() => setMenuOpen(false)}>
             <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
           </a>
           <button
@@ -159,7 +172,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
       >
         <div className="wrap flex w-full items-center justify-between">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <a href={mode ? `/${mode}` : "#"}>
+          <a href={mode ? `/${mode}` : "/"}>
             <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
           </a>
 
@@ -192,7 +205,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         >
           <div className="py-[18px]">
             <div className="wrap flex w-full items-center justify-between">
-              <Link href={mode ? `/${mode}` : "#"} className="flex shrink-0 items-center">
+              <Link href={mode ? `/${mode}` : "/"} className="flex shrink-0 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
               </Link>
