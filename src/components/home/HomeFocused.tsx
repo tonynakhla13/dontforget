@@ -786,70 +786,96 @@ export default function HomeFocused() {
       </section>
 
       {/* ═══════════════════════════════════════
-          PROCESS
+          PROCESS  (auto-scrolling carousel)
       ═══════════════════════════════════════ */}
       <section
         className="kbm-process"
-        style={{ padding: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)" }}
+        style={{ paddingBottom: "clamp(4rem, 8vw, 10rem)" }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "clamp(2rem, 3.5vw, 3.5rem)" }}>
+        <style>{`
+          @keyframes processRoll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .process-track {
+            animation: processRoll 22s linear infinite;
+            will-change: transform;
+          }
+          .process-track:hover { animation-play-state: paused; }
+        `}</style>
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", padding: "0 clamp(1.5rem, 4vw, 3.75rem)", marginBottom: "clamp(2rem, 3.5vw, 3.5rem)" }}>
           <SectionTitle>Process</SectionTitle>
           <p style={{ fontFamily: MONO, fontSize: "clamp(0.75rem, 1vw, 1rem)", color: C.ink, opacity: 0.5, paddingBottom: "0.6rem" }}>
             7 steps · 1–2 months · no surprises
           </p>
         </div>
 
-        <div style={{
-          display:             "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap:                 "clamp(0.75rem, 1.5vw, 1.25rem)",
-        }}>
-          {PROCESS.map((step, i) => {
-            const accent = [C.green, C.orange, C.ink, C.green, C.orange, C.ink, C.green][i];
-            return (
-              <div
-                key={step.n}
-                style={{
-                  background:   "#fff",
-                  border:       `1.5px solid rgba(34,31,26,0.12)`,
-                  borderTop:    `4px solid ${accent}`,
-                  borderRadius: 12,
-                  padding:      "clamp(1.25rem, 2vw, 1.75rem)",
-                  display:      "flex",
-                  flexDirection:"column",
-                  gap:          8,
-                }}
-              >
-                <span style={{
-                  fontFamily:    TEKO,
-                  fontWeight:    700,
-                  fontSize:      "clamp(2.2rem, 3.5vw, 3.2rem)",
-                  lineHeight:    1,
-                  color:         accent,
-                  letterSpacing: "-0.02em",
-                }}>{step.n}</span>
-                <h3 style={{
-                  fontFamily:    TEKO,
-                  fontWeight:    700,
-                  fontSize:      "clamp(1.3rem, 2vw, 1.75rem)",
-                  lineHeight:    1.1,
-                  color:         C.ink,
-                  textTransform: "uppercase",
-                  letterSpacing: "-0.01em",
-                  marginTop:     4,
-                }}>{step.title}</h3>
-                <p style={{
-                  fontFamily: MONO,
-                  fontSize:   "clamp(0.72rem, 0.9vw, 0.88rem)",
-                  lineHeight: 1.55,
-                  color:      C.ink,
-                  opacity:    0.6,
-                  marginTop:  "auto",
-                  paddingTop: 8,
-                }}>{step.body}</p>
-              </div>
-            );
-          })}
+        {/* overflow clip — no horizontal padding so cards bleed to edges */}
+        <div style={{ overflow: "hidden" }}>
+          <div
+            className="process-track"
+            style={{
+              display:   "flex",
+              gap:       16,
+              width:     "max-content",
+              paddingLeft: 24,
+            }}
+          >
+            {/* duplicate 2× for seamless loop */}
+            {[...PROCESS, ...PROCESS].map((step, i) => {
+              const ACCENTS = [C.green, C.orange, C.ink, C.green, C.orange, C.ink, C.green];
+              const accent  = ACCENTS[i % PROCESS.length];
+              return (
+                <div
+                  key={i}
+                  style={{
+                    width:         "calc(25vw - 20px)",
+                    minWidth:      240,
+                    maxWidth:      320,
+                    flexShrink:    0,
+                    background:    "#fff",
+                    border:        "1.5px solid rgba(34,31,26,0.12)",
+                    borderTop:     `4px solid ${accent}`,
+                    borderRadius:  12,
+                    padding:       "clamp(1.25rem, 2vw, 1.75rem)",
+                    display:       "flex",
+                    flexDirection: "column",
+                    gap:           8,
+                    minHeight:     220,
+                  }}
+                >
+                  <span style={{
+                    fontFamily:    TEKO,
+                    fontWeight:    700,
+                    fontSize:      "clamp(2rem, 3vw, 3rem)",
+                    lineHeight:    1,
+                    color:         accent,
+                    letterSpacing: "-0.02em",
+                  }}>{step.n}</span>
+                  <h3 style={{
+                    fontFamily:    TEKO,
+                    fontWeight:    700,
+                    fontSize:      "clamp(1.2rem, 1.8vw, 1.6rem)",
+                    lineHeight:    1.1,
+                    color:         C.ink,
+                    textTransform: "uppercase",
+                    letterSpacing: "-0.01em",
+                    marginTop:     4,
+                  }}>{step.title}</h3>
+                  <p style={{
+                    fontFamily: MONO,
+                    fontSize:   "clamp(0.7rem, 0.85vw, 0.85rem)",
+                    lineHeight: 1.55,
+                    color:      C.ink,
+                    opacity:    0.6,
+                    marginTop:  "auto",
+                    paddingTop: 8,
+                  }}>{step.body}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
