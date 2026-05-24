@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Caveat, Space_Mono, Teko, Source_Code_Pro } from "next/font/google";
+import { Inter, Caveat, Space_Mono, Teko, Source_Code_Pro, DM_Sans } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/lib/themeContext";
 import ThemeOnboarding from "@/components/ui/ThemeOnboarding";
@@ -45,6 +45,12 @@ const sourceCodePro = Source_Code_Pro({
   variable: "--font-source-code-pro",
 });
 
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  variable: "--font-dm-sans",
+});
+
 export const metadata: Metadata = {
   title: "DON'T FORGET — Web Development Agency",
   description:
@@ -67,7 +73,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${csRobust.variable} ${caveat.variable} ${spaceMono.variable} ${teko.variable} ${sourceCodePro.variable}`}
+      className={`${inter.variable} ${csRobust.variable} ${caveat.variable} ${spaceMono.variable} ${teko.variable} ${sourceCodePro.variable} ${dmSans.variable}`}
     >
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>

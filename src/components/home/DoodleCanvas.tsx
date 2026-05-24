@@ -4,15 +4,15 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 /* ── colour palette ──────────────────────────────────────────────────────── */
 const PALETTE_LIGHT = [
-  "rgba(50,68,56,0.88)",
-  "rgba(227,85,35,0.84)",
-  "rgba(34,31,26,0.80)",
-  "rgba(50,68,56,0.78)",
-  "rgba(227,85,35,0.80)",
+  "rgba(50,68,56,0.5)",
+  "rgba(227,85,35,0.5)",
+  "rgba(34,31,26,0.5)",
+  "rgba(50,68,56,0.5)",
+  "rgba(227,85,35,0.5)",
 ];
 const PALETTE_DARK = [
-  "rgba(235,222,206,0.90)",
-  "rgba(244,185,5,0.92)",
+  "rgba(235,222,206,0.5)",
+  "rgba(244,185,5,0.5)",
 ];
 const COLOR_STEP_PX = 130;
 
@@ -63,17 +63,17 @@ function drawLoopy(
     const r  = 10 + Math.random() * 16;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
-    ctx.quadraticCurveTo(mx + rnd(14), my - r * 1.5, mx, my - r);
+    ctx.quadraticCurveTo(mx + rnd(6), my - r * 1.5, mx, my - r);
     ctx.arc(mx, my, r, -Math.PI / 2, Math.PI * 1.5, false);
-    ctx.quadraticCurveTo(mx + rnd(14), my + rnd(14), x2, y2);
+    ctx.quadraticCurveTo(mx + rnd(6), my + rnd(6), x2, y2);
     ctx.stroke();
   } else {
     ctx.beginPath();
     ctx.moveTo(x1 + rnd(3), y1 + rnd(3));
     ctx.quadraticCurveTo(
-      (x1 + x2) / 2 + rnd(36),
-      (y1 + y2) / 2 + rnd(36),
-      x2 + rnd(3), y2 + rnd(3),
+      (x1 + x2) / 2 + rnd(12),
+      (y1 + y2) / 2 + rnd(12),
+      x2 + rnd(2), y2 + rnd(2),
     );
     ctx.stroke();
   }
@@ -100,7 +100,7 @@ function drawSquiggly(
     const t  = i / steps;
     const px = x1 + (x2 - x1) * t;
     const py = y1 + (y2 - y1) * t;
-    ctx.quadraticCurveTo(px + rnd(28), py + rnd(28), px + rnd(5), py + rnd(5));
+    ctx.quadraticCurveTo(px + rnd(10), py + rnd(10), px + rnd(2), py + rnd(2));
   }
   ctx.stroke();
   ctx.restore();
@@ -118,17 +118,17 @@ function drawBubbly(
   ctx.fillStyle   = color;
   ctx.lineWidth   = 8 + Math.random() * 7;
   ctx.lineCap     = "round";
-  ctx.globalAlpha = 0.45 + Math.random() * 0.2;
+  ctx.globalAlpha = 0.5;
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.quadraticCurveTo(
-    (x1 + x2) / 2 + rnd(22),
-    (y1 + y2) / 2 + rnd(22),
+    (x1 + x2) / 2 + rnd(8),
+    (y1 + y2) / 2 + rnd(8),
     x2, y2,
   );
   ctx.stroke();
   if (Math.random() < 0.22) {
-    ctx.globalAlpha = 0.35;
+    ctx.globalAlpha = 0.8;
     ctx.beginPath();
     ctx.arc(
       (x1 + x2) / 2 + rnd(24),
@@ -148,19 +148,19 @@ function drawScribbly(
   x2: number, y2: number,
   color: string,
 ) {
-  const cpx = (x1 + x2) / 2 + rnd(36);
-  const cpy = (y1 + y2) / 2 + rnd(36);
+  const cpx = (x1 + x2) / 2 + rnd(14);
+  const cpy = (y1 + y2) / 2 + rnd(14);
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineCap     = "round";
   ctx.lineWidth   = 3 + Math.random() * 2;
-  ctx.globalAlpha = 0.75;
+  ctx.globalAlpha = 0.5;
   ctx.beginPath();
   ctx.moveTo(x1 + rnd(2), y1 + rnd(2));
   ctx.quadraticCurveTo(cpx, cpy, x2 + rnd(2), y2 + rnd(2));
   ctx.stroke();
   ctx.lineWidth   = 1.6;
-  ctx.globalAlpha = 0.35;
+  ctx.globalAlpha = 0.3;
   ctx.beginPath();
   ctx.moveTo(x1 + 5 + rnd(3), y1 + 4 + rnd(3));
   ctx.quadraticCurveTo(cpx + rnd(8), cpy + rnd(8), x2 + 5 + rnd(3), y2 + 4 + rnd(3));
@@ -363,7 +363,7 @@ export default function DoodleCanvas() {
         style={{
           position:       "fixed",
           bottom:         28,
-          right:          28,
+          left:           28,
           zIndex:         9999,
           width:          52,
           height:         52,

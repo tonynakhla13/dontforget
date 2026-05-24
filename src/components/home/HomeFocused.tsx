@@ -799,15 +799,64 @@ export default function HomeFocused() {
           </p>
         </div>
 
+        <style>{`
+          @keyframes kbm-draw { to { stroke-dashoffset: 0; } }
+          @keyframes kbm-trace {
+            0%   { stroke-dashoffset: 1; }
+            55%  { stroke-dashoffset: 0; }
+            88%  { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 1; }
+          }
+        `}</style>
         {/* scattered pinboard layout */}
         {(() => {
-          const FIVE = [PROCESS[0], PROCESS[1], PROCESS[2], PROCESS[4], PROCESS[6]];
+          const FIVE = [PROCESS[0], PROCESS[1], PROCESS[2], PROCESS[4], PROCESS[6]].map((s, i) => ({ ...s, n: String(i + 1).padStart(2, "0") }));
           const PALETTES = [
             { bg: C.ink,    num: C.yellow, text: C.cream, body: "rgba(235,222,206,0.65)" },
             { bg: C.green,  num: C.yellow, text: C.cream, body: "rgba(235,222,206,0.7)"  },
             { bg: C.orange, num: C.cream,  text: C.cream, body: "rgba(235,222,206,0.78)" },
-            { bg: C.yellow, num: C.ink,    text: C.ink,   body: "rgba(34,31,26,0.6)"     },
-            { bg: C.ink,    num: C.yellow, text: C.cream, body: "rgba(235,222,206,0.65)" },
+            { bg: C.yellow, num: C.white,  text: C.white, body: "rgba(255,255,255,0.75)" },
+            { bg: "#7B3F2A", num: C.yellow, text: C.cream, body: "rgba(235,222,206,0.75)" },
+          ];
+          const TR = (delay = 0, dur = 3.5) =>
+            ({ strokeDasharray:"1", pathLength:"1",
+               strokeDashoffset:"1",
+               style:{animation:`kbm-trace ${dur}s ${delay}s ease-in-out infinite`} as React.CSSProperties });
+          const CARD_ICONS = [
+            /* ASK — speech bubble */
+            <svg key="ask" width="68" height="68" viewBox="0 0 52 52" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5">
+              <path {...TR(0)}     d="M8 10h36v26H30l-6 8-2-8H8z"/>
+              <path {...TR(0.6)}   d="M18 22h16M18 28h10"/>
+            </svg>,
+            /* DEFINE — bullseye */
+            <svg key="def" width="68" height="68" viewBox="0 0 52 52" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5">
+              <circle cx="26" cy="26" r="18" {...TR(0)}/>
+              <circle cx="26" cy="26" r="11" {...TR(0.5)}/>
+              <circle cx="26" cy="26" r="4"  {...TR(1)}/>
+              <line x1="44" y1="8" x2="30" y2="22" {...TR(1.4)}/>
+              <polyline points="44,8 44,14 38,8" {...TR(1.7)}/>
+            </svg>,
+            /* RESEARCH — magnifier */
+            <svg key="res" width="68" height="68" viewBox="0 0 52 52" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5">
+              <circle cx="21" cy="21" r="13" {...TR(0)}/>
+              <line x1="31" y1="31" x2="44" y2="44" {...TR(0.8)}/>
+              <line x1="16" y1="21" x2="26" y2="21" {...TR(1.2)}/>
+              <line x1="21" y1="16" x2="21" y2="26" {...TR(1.5)}/>
+            </svg>,
+            /* PLAN — clipboard + check */
+            <svg key="plan" width="68" height="68" viewBox="0 0 52 52" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5">
+              <rect x="10" y="8" width="32" height="38" rx="3" {...TR(0)}/>
+              <polyline points="18,22 22,27 32,17" {...TR(0.7)}/>
+              <line x1="18" y1="33" x2="34" y2="33" {...TR(1.1)}/>
+              <line x1="18" y1="39" x2="27" y2="39" {...TR(1.4)}/>
+            </svg>,
+            /* SHIP — rocket */
+            <svg key="ship" width="68" height="68" viewBox="0 0 52 52" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5">
+              <path {...TR(0)}   d="M26 5c0 0 13 9 13 23l-13 5-13-5C13 14 26 5 26 5z"/>
+              <circle cx="26" cy="23" r="4" {...TR(0.8)}/>
+              <path {...TR(1.2)} d="M17 33l-5 9 9-3"/>
+              <path {...TR(1.5)} d="M35 33l5 9-9-3"/>
+            </svg>,
           ];
           return (
             <div style={{
@@ -828,6 +877,8 @@ export default function HomeFocused() {
                       flexDirection: "column",
                       gap:           8,
                       minHeight:     "clamp(200px, 22vw, 260px)",
+                      position:      "relative",
+                      overflow:      "hidden",
                     }}
                   >
                     <span style={{
@@ -846,16 +897,24 @@ export default function HomeFocused() {
                       color:         p.text,
                       textTransform: "uppercase",
                       letterSpacing: "-0.01em",
-                      marginTop:     4,
+                      marginTop:     0,
                     }}>{step.title}</h3>
                     <p style={{
                       fontFamily: MONO,
-                      fontSize:   "clamp(0.68rem, 0.85vw, 0.82rem)",
-                      lineHeight: 1.55,
+                      fontSize:   "clamp(0.85rem, 1.1vw, 1rem)",
+                      lineHeight: 1.5,
                       color:      p.body,
-                      marginTop:  "auto",
-                      paddingTop: 6,
+                      marginTop:  0,
                     }}>{step.body}</p>
+                    <div style={{
+                      position: "absolute",
+                      bottom:   12,
+                      right:    12,
+                      color:    p.num,
+                      opacity:  0.9,
+                    }}>
+                      {CARD_ICONS[i]}
+                    </div>
                   </div>
                 );
               })}
@@ -888,7 +947,7 @@ export default function HomeFocused() {
               { bg: C.ink,    num: C.yellow,  name: C.cream,  line: "rgba(235,222,206,0.6)" },
               { bg: C.green,  num: C.yellow,  name: C.cream,  line: "rgba(235,222,206,0.7)" },
               { bg: C.orange, num: C.cream,   name: C.cream,  line: "rgba(235,222,206,0.75)" },
-              { bg: C.yellow, num: C.ink,    name: C.ink,    line: "rgba(34,31,26,0.6)" },
+              { bg: C.yellow, num: C.white,  name: C.white,  line: "rgba(255,255,255,0.7)" },
             ];
             const p = palettes[i % palettes.length];
             return (
@@ -1031,31 +1090,44 @@ export default function HomeFocused() {
       <section
         className="kbm-clients"
         style={{
-          padding: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)",
-          display: "grid",
-          gridTemplateColumns: "repeat(8, 1fr)",
-          gap:     "clamp(0.5rem, 1.5vw, 1.5rem)",
+          padding:   "0 0 clamp(4rem, 8vw, 10rem)",
+          overflow:  "hidden",
         }}
       >
-        {["ACME", "NEON", "PIXEL", "FORGE", "SHIFT", "APEX", "VOLT", "GRID"].map((name, i) => (
-          <div
-            key={i}
-            className="kbm-client-logo"
-            style={{
-              backgroundColor: "#E5E3DF",
-              borderRadius:    8,
-              height:          "clamp(44px, 6vw, 80px)",
-              display:         "flex",
-              alignItems:      "center",
-              justifyContent:  "center",
-              fontFamily:      TEKO,
-              fontWeight:      700,
-              fontSize:        "clamp(0.8rem, 1.5vw, 1.5rem)",
-              color:           "#999",
-              letterSpacing:   "0.05em",
-            }}
-          >{name}</div>
-        ))}
+        <style>{`
+          @keyframes kbm-marquee {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+          }
+        `}</style>
+        <div style={{
+          display:   "flex",
+          gap:       "clamp(0.75rem, 1.5vw, 1.25rem)",
+          animation: "kbm-marquee 18s linear infinite",
+          width:     "max-content",
+        }}>
+          {[...["ACME","NEON","PIXEL","FORGE","SHIFT","APEX","VOLT","GRID","ACME","NEON","PIXEL","FORGE","SHIFT","APEX","VOLT","GRID"]].map((name, i) => (
+            <div
+              key={i}
+              className="kbm-client-logo"
+              style={{
+                backgroundColor: C.ink,
+                borderRadius:    10,
+                height:          "clamp(52px, 6vw, 80px)",
+                width:           "clamp(100px, 12vw, 160px)",
+                display:         "flex",
+                alignItems:      "center",
+                justifyContent:  "center",
+                fontFamily:      TEKO,
+                fontWeight:      700,
+                fontSize:        "clamp(1rem, 1.6vw, 1.6rem)",
+                color:           C.cream,
+                letterSpacing:   "0.08em",
+                flexShrink:      0,
+              }}
+            >{name}</div>
+          ))}
+        </div>
       </section>
 
       {/* ═══════════════════════════════════════
