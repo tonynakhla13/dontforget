@@ -182,7 +182,7 @@ export default function Principles() {
 
   const [typedLines, setTypedLines] = useState<string[]>(rules.map(() => ""));
   const maxRevealedRef = useRef(-1);
-  const timersRef = useRef<(ReturnType<typeof setInterval> | null)[]>([null, null, null, null]);
+  const timersRef = useRef<(number | null)[]>([null, null, null, null]);
 
   function triggerTyping(idx: number) {
     if (idx < 0 || idx >= rules.length || timersRef.current[idx]) return;

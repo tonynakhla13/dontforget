@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CreativeNavbar from "./CreativeNavbar";
+import BustCard from "./BustCard";
 
 function GlobeIcon() {
   return (
@@ -49,7 +50,7 @@ export default function CreativeHero() {
           <TypeWord>AGENCY</TypeWord>
           <span className="c-hero__star" aria-hidden="true" />
         </div>
-        <div className="c-hero__card" aria-hidden="true" />
+        <BustCard />
         <div className="c-hero__sub">
           <p>Crafting unique and compelling{"\n"}creative solutions that captivate and inspire.</p>
           <Link href="/creative/work" className="c-btn">

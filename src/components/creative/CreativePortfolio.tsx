@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback, type RefObject } from "react";
 
 export type CreativeHomeProject = {
   id: string;
@@ -89,10 +89,60 @@ function projectCoverStyle(project: CreativeHomeProject): CSSProperties | undefi
   return { backgroundImage: `url("${project.coverImage}")`, backgroundSize: "cover", backgroundPosition: "center" };
 }
 
+function ThinkingBadge({ sectionRef }: { sectionRef: RefObject<HTMLElement | null> }) {
+  const badgeRef = useRef<HTMLDivElement>(null);
+
+  // Mouse-track: badge tilts toward cursor within the section
+  const onMouseMove = useCallback((e: MouseEvent) => {
+    const badge = badgeRef.current;
+    if (!badge) return;
+    const rect = badge.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const maxTilt = 20;
+    const factor = Math.min(1, 320 / (dist + 1));
+    const rx = (-dy / (dist || 1)) * maxTilt * factor;
+    const ry = (dx / (dist || 1)) * maxTilt * factor;
+    const sc = dist < 140 ? 1.1 : 1;
+    badge.style.transform = `perspective(500px) rotateX(${rx.toFixed(1)}deg) rotateY(${ry.toFixed(1)}deg) scale(${sc})`;
+  }, []);
+
+  const onMouseLeave = useCallback(() => {
+    if (badgeRef.current) badgeRef.current.style.transform = "perspective(500px) rotateX(0deg) rotateY(0deg) scale(1)";
+  }, []);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    section.addEventListener("mousemove", onMouseMove);
+    section.addEventListener("mouseleave", onMouseLeave);
+    return () => {
+      section.removeEventListener("mousemove", onMouseMove);
+      section.removeEventListener("mouseleave", onMouseLeave);
+    };
+  }, [sectionRef, onMouseMove, onMouseLeave]);
+
+  return (
+    <div
+      ref={badgeRef}
+      className="c-thinking-badge"
+      aria-hidden="true"
+      style={{ transition: "transform 0.18s cubic-bezier(.22,1,.36,1)" }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/creative/thinking.png" alt="" draggable={false} style={{ width: "100%", height: "100%", display: "block" }} />
+    </div>
+  );
+}
+
 export default function CreativePortfolio({ projects = ITEMS }: { projects?: CreativeHomeProject[] }) {
   const items = projects.length ? projects.slice(0, 4) : ITEMS;
   const [hovered, setHovered] = useState<number | null>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const goTo = (nextIndex: number) => {
     viewportRef.current?.scrollBy({
       top: nextIndex * PROJECT_ROW_HEIGHT,
@@ -101,7 +151,8 @@ export default function CreativePortfolio({ projects = ITEMS }: { projects?: Cre
   };
 
   return (
-    <section id="portfolio" className="c-portfolio">
+    <section id="portfolio" className="c-portfolio" ref={sectionRef as RefObject<HTMLElement>}>
+      <ThinkingBadge sectionRef={sectionRef} />
       <div className="c-portfolio__card">
         <div className="c-portfolio__shape" aria-hidden="true" />
         <div className="c-portfolio__earth" aria-hidden="true" />
@@ -150,7 +201,22 @@ export default function CreativePortfolio({ projects = ITEMS }: { projects?: Cre
                     onBlur={() => setHovered(null)}
                   >
                     <div className="c-pf__date" style={{ whiteSpace: "pre-line" }}>{formatProjectDate(project)}</div>
-                    <div className="c-pf__title" style={{ whiteSpace: "pre-line" }}>{formatProjectTitle(project.title)}</div>
+                    <div>
+                      <div className="c-pf__title" style={{ whiteSpace: "pre-line" }}>{formatProjectTitle(project.title)}</div>
+                      {project.category && (
+                        <div style={{
+                          fontFamily: "var(--c-f-ui)",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          letterSpacing: "0.18em",
+                          textTransform: "uppercase",
+                          color: "#3d6200",
+                          marginTop: "5px",
+                        }}>
+                          {project.category}
+                        </div>
+                      )}
+                    </div>
                     <div className="c-pf__img c-checker" style={projectCoverStyle(project)}>
                       <span className={`c-pf__gif${hovered === index ? " active" : ""}`} style={projectPreviewStyle(project)} />
                     </div>
