@@ -809,24 +809,14 @@ export default function HomeFocused() {
             { bg: C.yellow, num: C.ink,    text: C.ink,   body: "rgba(34,31,26,0.6)"     },
             { bg: C.ink,    num: C.yellow, text: C.cream, body: "rgba(235,222,206,0.65)" },
           ];
-          // scatter offsets: [rotate, translateX, translateY]
-          const SCATTER = [
-            [-3,  -18,  12],
-            [ 2.5, 10, -20],
-            [-1.5,  4,  18],
-            [ 4,  -12,  -8],
-            [-2,   16,   6],
-          ];
           return (
             <div style={{
               display:             "grid",
               gridTemplateColumns: "repeat(5, 1fr)",
               gap:                 "clamp(0.75rem, 1.5vw, 1.25rem)",
-              alignItems:          "start",
             }}>
               {FIVE.map((step, i) => {
                 const p = PALETTES[i];
-                const [rot, tx, ty] = SCATTER[i];
                 return (
                   <div
                     key={step.n}
@@ -838,17 +828,6 @@ export default function HomeFocused() {
                       flexDirection: "column",
                       gap:           8,
                       minHeight:     "clamp(200px, 22vw, 260px)",
-                      transform:     `rotate(${rot}deg) translate(${tx}px, ${ty}px)`,
-                      boxShadow:     "0 6px 28px rgba(0,0,0,0.13)",
-                      transition:    "transform .25s ease, box-shadow .25s ease",
-                    }}
-                    onMouseEnter={e => {
-                      (e.currentTarget as HTMLDivElement).style.transform = "rotate(0deg) translate(0,0) scale(1.04)";
-                      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.22)";
-                    }}
-                    onMouseLeave={e => {
-                      (e.currentTarget as HTMLDivElement).style.transform = `rotate(${rot}deg) translate(${tx}px, ${ty}px)`;
-                      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 28px rgba(0,0,0,0.13)";
                     }}
                   >
                     <span style={{
