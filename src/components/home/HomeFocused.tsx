@@ -824,8 +824,16 @@ export default function HomeFocused() {
           >
             {/* duplicate 2× for seamless loop */}
             {[...PROCESS, ...PROCESS].map((step, i) => {
-              const ACCENTS = [C.green, C.orange, C.ink, C.green, C.orange, C.ink, C.green];
-              const accent  = ACCENTS[i % PROCESS.length];
+              const PALETTES = [
+                { bg: C.ink,    num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.65)" },
+                { bg: C.green,  num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.7)"  },
+                { bg: C.orange, num: C.cream,  text: C.cream,  body: "rgba(235,222,206,0.75)" },
+                { bg: C.yellow, num: C.ink,    text: C.ink,    body: "rgba(34,31,26,0.6)"     },
+                { bg: C.ink,    num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.65)" },
+                { bg: C.green,  num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.7)"  },
+                { bg: C.orange, num: C.cream,  text: C.cream,  body: "rgba(235,222,206,0.75)" },
+              ];
+              const p = PALETTES[i % PROCESS.length];
               return (
                 <div
                   key={i}
@@ -834,9 +842,7 @@ export default function HomeFocused() {
                     minWidth:      240,
                     maxWidth:      320,
                     flexShrink:    0,
-                    background:    "#fff",
-                    border:        "1.5px solid rgba(34,31,26,0.12)",
-                    borderTop:     `4px solid ${accent}`,
+                    background:    p.bg,
                     borderRadius:  12,
                     padding:       "clamp(1.25rem, 2vw, 1.75rem)",
                     display:       "flex",
@@ -850,7 +856,7 @@ export default function HomeFocused() {
                     fontWeight:    700,
                     fontSize:      "clamp(2rem, 3vw, 3rem)",
                     lineHeight:    1,
-                    color:         accent,
+                    color:         p.num,
                     letterSpacing: "-0.02em",
                   }}>{step.n}</span>
                   <h3 style={{
@@ -858,7 +864,7 @@ export default function HomeFocused() {
                     fontWeight:    700,
                     fontSize:      "clamp(1.2rem, 1.8vw, 1.6rem)",
                     lineHeight:    1.1,
-                    color:         C.ink,
+                    color:         p.text,
                     textTransform: "uppercase",
                     letterSpacing: "-0.01em",
                     marginTop:     4,
@@ -867,8 +873,7 @@ export default function HomeFocused() {
                     fontFamily: MONO,
                     fontSize:   "clamp(0.7rem, 0.85vw, 0.85rem)",
                     lineHeight: 1.55,
-                    color:      C.ink,
-                    opacity:    0.6,
+                    color:      p.body,
                     marginTop:  "auto",
                     paddingTop: 8,
                   }}>{step.body}</p>
