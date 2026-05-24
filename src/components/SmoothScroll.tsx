@@ -12,6 +12,9 @@ export default function SmoothScroll() {
       smoothWheel: true,
     });
 
+    // Expose globally so components can call lenis.scrollTo()
+    (window as any).__lenis = lenis;
+
     lenis.on("scroll", ScrollTrigger.update);
 
     function raf(time: number) {

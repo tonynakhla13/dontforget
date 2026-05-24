@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import type { Project } from "@prisma/client";
 import { ScrollTrigger } from "@/lib/gsap";
 import About from "@/components/About";
-import Availability from "@/components/Availability";
+import ClientsMarquee from "@/components/about/ClientsMarquee";
 import AmbientGlow from "@/components/AmbientGlow";
-import Contact from "@/components/Contact";
+import ImmersiveContact from "@/components/immersive/ImmersiveContact";
 import Hero from "@/components/Hero";
 import Loader from "@/components/Loader";
 import Marquee from "@/components/Marquee";
@@ -17,6 +17,7 @@ import Services from "@/components/Services";
 import SmoothScroll from "@/components/SmoothScroll";
 import Work from "@/components/Work";
 import ParticleLayer from "@/components/ParticleLayer";
+import ImmersiveFooter from "@/components/immersive/ImmersiveFooter";
 
 export default function HomeImmersive() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -60,8 +61,9 @@ export default function HomeImmersive() {
         <Process />
         <Work projects={projects} />
         <Principles />
-        <Availability />
-        <Contact />
+        <ClientsMarquee />
+        <ImmersiveContact embedded />
+        <ImmersiveFooter />
       </main>
     </>
   );

@@ -931,7 +931,7 @@ function ContactDetailsModal({
 /* ─────────────────────────────────────────────────────────────────────────
    MAIN COMPONENT
 ───────────────────────────────────────────────────────────────────────── */
-export default function ImmersiveContact() {
+export default function ImmersiveContact({ embedded = false }: { embedded?: boolean }) {
   const [voiceClips, setVoiceClips] = useState<Blob[]>([]);
   const [form, setForm]     = useState({ message: "" });
   const [sub, setSub]       = useState(false);
@@ -1020,11 +1020,13 @@ export default function ImmersiveContact() {
   );
 
   return (
-    <section ref={sectionRef}
+    <section ref={sectionRef} id="contact"
       style={{
-        minHeight: "calc(100dvh - 86px)",
+        minHeight: embedded ? "auto" : "calc(100dvh - 86px)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "clamp(5.25rem,10vh,6.5rem) clamp(1rem,3vw,2.5rem) clamp(1rem,2.5vh,1.75rem)",
+        padding: embedded
+          ? "clamp(5rem,10vh,7rem) clamp(1rem,3vw,2.5rem)"
+          : "clamp(5.25rem,10vh,6.5rem) clamp(1rem,3vw,2.5rem) clamp(1rem,2.5vh,1.75rem)",
         position: "relative", overflow: "visible",
       }}>
 
@@ -1053,7 +1055,7 @@ export default function ImmersiveContact() {
 
           <div data-in className="grid gap-4" style={{ opacity: 0 }}>
 
-            <div style={{ minHeight: "clamp(330px,48vh,390px)", minWidth: 0, display: "flex", flexDirection: "column",
+            <div style={{ minHeight: embedded ? "clamp(260px,34vh,320px)" : "clamp(330px,48vh,390px)", minWidth: 0, display: "flex", flexDirection: "column",
               borderRadius: "1rem", overflow: "hidden",
               border: "1px solid rgba(58,191,138,0.20)",
               background: "linear-gradient(145deg,rgba(15,20,18,0.92),rgba(8,9,9,0.86))",
@@ -1069,12 +1071,19 @@ export default function ImmersiveContact() {
                 onFocus={() => setShowMessageSuggestions(true)}
                 onClick={() => setShowMessageSuggestions(true)}
                 onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+                onWheel={e => {
+                  const el = e.currentTarget;
+                  const canScrollInside = el.scrollHeight > el.clientHeight;
+                  if (!canScrollInside) return;
+                  e.stopPropagation();
+                }}
                 style={{ flex: 1, minHeight: 0, resize: "none", background: "transparent",
                   border: "none", outline: "none",
                   padding: "1.2rem 1.25rem 0.8rem",
                   color: "var(--fg)", fontSize: "1rem",
                   fontFamily: "inherit", lineHeight: 1.75,
-                  position: "relative", zIndex: 1 }} />
+                  position: "relative", zIndex: 1,
+                  overflow: "hidden" }} />
               {showMessageSuggestions && (
                 <div className="flex flex-wrap gap-2 px-5 pb-4" style={{ position: "relative", zIndex: 2 }}>
                   {messageSuggestions.map(sentence => (

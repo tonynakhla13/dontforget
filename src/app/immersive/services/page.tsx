@@ -4,12 +4,16 @@ import Loader from "@/components/Loader";
 import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
-import ParticleLayer from "@/components/ParticleLayer";
 import ServicesOverview from "@/components/services/ServicesOverview";
 import ServicesPipeHologram from "@/components/services/ServicesPipeHologram";
+import ServicesDFParticles from "@/components/services/ServicesDFParticles";
+import Work from "@/components/Work";
+import ImmersiveContact from "@/components/immersive/ImmersiveContact";
+import ImmersiveFooter from "@/components/immersive/ImmersiveFooter";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
+import type { Project } from "@prisma/client";
 
 function ServicesBackground() {
   return (
@@ -62,18 +66,39 @@ function ServicesHero() {
 }
 
 export default function ImmersiveServicesPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch("/api/projects?published=true");
+        if (response.ok) {
+          const data = await response.json();
+          setProjects(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   return (
     <>
       <Loader />
       <SmoothScroll />
-      <ParticleLayer />
       <main className="relative z-[1] overflow-x-clip">
         <ServicesBackground />
+        <ServicesDFParticles />
         <div className="noise" />
         <AmbientGlow />
         <Navbar inner />
         <ServicesHero />
         <ServicesOverview />
+        <Work projects={projects} />
+        <ImmersiveContact embedded />
+        <ImmersiveFooter />
       </main>
     </>
   );

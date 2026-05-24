@@ -13,6 +13,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const linksRef   = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [compact, setCompact] = useState(false);
   const pathname = usePathname();
 
   /* ── Resolve nav links based on current path ── */
@@ -48,6 +49,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
       ];
 
   const ctaHref = mode ? `/${mode}/contact` : isInnerPage ? "/#contact" : "#contact";
+  const isImmersive = mode === "immersive";
 
   /* ── Full-screen overlay animation ── */
   useEffect(() => {
@@ -83,6 +85,17 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
       { autoAlpha: 1, y: 0, duration: 1, ease: "power3.out", delay }
     );
 
+    if (isImmersive) {
+      const onImmersiveScroll = () => {
+        const nextCompact = window.scrollY > 42;
+        setCompact(current => current === nextCompact ? current : nextCompact);
+      };
+
+      onImmersiveScroll();
+      window.addEventListener("scroll", onImmersiveScroll, { passive: true });
+      return () => window.removeEventListener("scroll", onImmersiveScroll);
+    }
+
     let lastY   = 0;
     let ticking = false;
 
@@ -113,7 +126,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [inner]);
+  }, [inner, isImmersive]);
 
   return (
     <>
@@ -124,8 +137,8 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         style={{ background: "var(--bg)", visibility: "hidden" }}
       >
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <a href={mode ? `/${mode}` : "/"} onClick={() => setMenuOpen(false)}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
           </a>
           <button
@@ -167,13 +180,28 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
       {/* ── Header A: Primary ── */}
       <header
         ref={primaryRef}
-        className="absolute left-0 right-0 top-0 z-[1000] flex items-center"
-        style={{ height: NAV_H, visibility: "hidden" }}
+        className={`${isImmersive ? "fixed" : "absolute"} left-0 right-0 top-0 z-[1000] flex items-center transition-[height,background,border-color,backdrop-filter] duration-500`}
+        style={{
+          height: isImmersive ? (compact ? 66 : NAV_H) : NAV_H,
+          visibility: "hidden",
+          background: isImmersive && compact ? "rgba(4,10,8,0.72)" : "transparent",
+          borderBottom: isImmersive && compact ? "1px solid rgba(58,191,138,0.16)" : "1px solid transparent",
+          backdropFilter: isImmersive && compact ? "blur(16px)" : "blur(0px)",
+        }}
       >
         <div className="wrap flex w-full items-center justify-between">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <a href={mode ? `/${mode}` : "/"}>
-            <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/dont%20forget%20logo.png"
+              alt="DON'T FORGET"
+              className="transition-[height,filter] duration-500"
+              style={{
+                height: isImmersive ? (compact ? 64 : 134) : 134,
+                width: "auto",
+                filter: isImmersive && compact ? "drop-shadow(0 0 18px rgba(58,191,138,0.24))" : "none",
+              }}
+            />
           </a>
 
           <ul className="hidden items-center gap-8 md:flex">
@@ -190,14 +218,21 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
             ))}
           </ul>
 
-          <Link href={ctaHref} className="btn btn-primary py-2.5 px-5 text-[0.62rem]">
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            className={`${isImmersive ? "md:hidden" : "hidden"} h-11 items-center gap-3 rounded-[8px] border border-[rgba(58,191,138,0.2)] bg-[rgba(8,14,11,0.7)] px-5 font-mono text-[0.58rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] backdrop-blur-xl`}
+          >
+            Menu
+          </button>
+
+          <Link href={ctaHref} className={`btn btn-primary px-5 text-[0.62rem] transition-[padding,transform] duration-500 ${isImmersive && compact ? "py-2 scale-[0.94]" : "py-2.5"}`}>
             Let&apos;s talk
           </Link>
         </div>
       </header>
 
       {/* ── Header B: Floating ── */}
-      <aside className="pointer-events-none fixed inset-x-0 top-0 z-[999]">
+      {!isImmersive && <aside className="pointer-events-none fixed inset-x-0 top-0 z-[999]">
         <div
           ref={floatRef}
           className="pointer-events-auto"
@@ -234,7 +269,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
             </div>
           </div>
         </div>
-      </aside>
+      </aside>}
     </>
   );
 }

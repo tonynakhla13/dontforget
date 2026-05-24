@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { gsap } from "@/lib/gsap";
 
-const COUNT = 2400;
+const COUNT = 7600;
 
 function buildAmbientField() {
   const pos = new Float32Array(COUNT * 3);
@@ -50,7 +50,7 @@ const VERT = /* glsl */`
     vDepth = pos.z;
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mv;
-    gl_PointSize = clamp(uSize * (3.2 / max(-mv.z, 0.5)), 0.4, 3.1);
+    gl_PointSize = clamp(uSize * (3.8 / max(-mv.z, 0.5)), 0.55, 3.8);
   }
 `;
 
@@ -67,7 +67,7 @@ const FRAG = /* glsl */`
     vec3 cream = vec3(0.973, 0.953, 0.918);
     vec3 color = mix(teal, cream, clamp(vDepth + 0.5, 0.0, 1.0) * 0.36);
 
-    gl_FragColor = vec4(color, alpha * mix(0.18, 0.13, uScroll));
+    gl_FragColor = vec4(color, alpha * mix(0.34, 0.22, uScroll));
   }
 `;
 
@@ -98,7 +98,7 @@ export default function ServicesDFParticles() {
     const uniforms = {
       uScroll: { value: 0 },
       uTime: { value: 0 },
-      uSize: { value: window.devicePixelRatio * 1.15 },
+      uSize: { value: window.devicePixelRatio * 1.28 },
       uMouse: { value: new THREE.Vector2(9999, 9999) },
     };
 

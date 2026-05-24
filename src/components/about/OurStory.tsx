@@ -131,7 +131,7 @@ function Header() {
 ───────────────────────────────────────────────────────────────────────── */
 export default function OurStory() {
   return (
-    <section className="relative border-t border-[var(--border)] section-py overflow-hidden"
+    <section id="our-story" className="relative border-t border-[var(--border)] section-py overflow-hidden"
       style={{ background: "rgba(9,9,9,0.72)" }}>
       <div className="wrap relative z-10">
         <Header />

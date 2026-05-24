@@ -1,354 +1,434 @@
 "use client";
 
-import React, { Suspense, useMemo, useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { AdaptiveDpr } from "@react-three/drei";
 import * as THREE from "three";
 
 const CONFIG = {
   background: "#020807",
-  teal: "#13d9aa",
-  tealSoft: "#0a8f73",
-  meshOpacity: 0.15,
-  panelOpacity: 0.1,
-  particleOpacity: 0.78,
-  particleCount: 2600,
-  starCount: 850,
-  particleSize: 0.012,
-  speed: 0.09,
-  parallax: 0.38,
+  green: "#3CBE8B",
+  greenSoft: "#2F9A71",
+  cream: "#F4EFE4",
+  gridSize: 17,
+  cellSize: 0.22,
+  maxSnakeLength: 64,
+  initialSnakeLength: 13,
+  stepInterval: 0.15,
+  snakeHeight: 0.06,
+  particleCount: 1400,
+  starCount: 700,
+  autoRestartDelay: 2.4,
 };
 
-type Vec3 = [number, number, number];
-
-type BrowserLine = {
-  x: number;
-  y: number;
-  width: number;
-  opacity: number;
+type Cell = { x: number; y: number };
+type Direction = { x: number; y: number };
+type SnakeState = {
+  body: Cell[];
+  direction: Direction;
+  food: Cell;
+  score: number;
+  accumulator: number;
+  lastEatTime: number;
+  turnPreference: number;
+  gameOver: boolean;
+  gameOverTime: number;
+  forcedCrashAtScore: number;
 };
 
-function randomBetween(min: number, max: number) {
-  return min + Math.random() * (max - min);
-}
+const DIRECTIONS: Direction[] = [
+  { x: 1, y: 0 }, { x: -1, y: 0 },
+  { x: 0, y: 1 }, { x: 0, y: -1 },
+];
 
-function makeFloat32Buffer(values: number[]) {
-  return new Float32Array(values);
-}
+function randomBetween(min: number, max: number) { return min + Math.random() * (max - min); }
+function boardHalf() { return Math.floor(CONFIG.gridSize / 2); }
+function isInsideBoard(c: Cell) { const h = boardHalf(); return c.x >= -h && c.x <= h && c.y >= -h && c.y <= h; }
+function cellKey(c: Cell) { return `${c.x}:${c.y}`; }
+function cellToWorld(c: Cell): [number, number, number] { return [c.x * CONFIG.cellSize, CONFIG.snakeHeight, c.y * CONFIG.cellSize]; }
+function cellsEqual(a: Cell, b: Cell) { return a.x === b.x && a.y === b.y; }
+function isOpposite(a: Direction, b: Direction) { return a.x + b.x === 0 && a.y + b.y === 0; }
+function manhattan(a: Cell, b: Cell) { return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
+function nextCell(h: Cell, d: Direction): Cell { return { x: h.x + d.x, y: h.y + d.y }; }
 
-function makeLinePositions(points: Vec3[]) {
-  return makeFloat32Buffer(points.flat());
-}
-
-function makeBrowserLines(
-  count: number,
-  options: { startY: number; stepY: number; minWidth: number; maxWidth: number }
-): BrowserLine[] {
-  return Array.from({ length: count }, (_, index): BrowserLine => ({
-    x: randomBetween(-0.18, 0.1),
-    y: options.startY - index * options.stepY,
-    width: randomBetween(options.minWidth, options.maxWidth),
-    opacity: randomBetween(0.2, 0.65),
-  }));
-}
-
-function makeParticlePositions(count: number) {
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    const o = i * 3;
-    if (Math.random() > 0.38) {
-      positions[o]     = randomBetween(0.2, 3.3);
-      positions[o + 1] = randomBetween(-1.15, 1.25);
-      positions[o + 2] = randomBetween(-1.25, 0.9);
-    } else {
-      positions[o]     = randomBetween(-3.2, 3.6);
-      positions[o + 1] = randomBetween(-1.8, 1.7);
-      positions[o + 2] = randomBetween(-1.8, 1.2);
-    }
+function randomFood(body: Cell[]): Cell {
+  const half = boardHalf();
+  const occ = new Set(body.map(cellKey));
+  for (let i = 0; i < 160; i++) {
+    const f = { x: Math.floor(randomBetween(-half, half + 1)), y: Math.floor(randomBetween(-half, half + 1)) };
+    if (!occ.has(cellKey(f))) return f;
   }
-  return positions;
+  return { x: half, y: -half };
+}
+
+function createInitialSnake(): SnakeState {
+  const body: Cell[] = Array.from({ length: CONFIG.initialSnakeLength }, (_, i) => ({ x: -i + 2, y: 0 }));
+  return { body, direction: { x: 1, y: 0 }, food: randomFood(body), score: 0, accumulator: 0, lastEatTime: 0, turnPreference: 1, gameOver: false, gameOverTime: 0, forcedCrashAtScore: 6 };
+}
+
+function collidesWithSelf(cell: Cell, body: Cell[], includeTail: boolean) {
+  return (includeTail ? body : body.slice(0, -1)).some(s => cellsEqual(s, cell));
+}
+
+function chooseDirection(state: SnakeState) {
+  const head = state.body[0];
+  const occ = new Set(state.body.slice(0, -1).map(cellKey));
+  const valid = DIRECTIONS.filter(d => !isOpposite(d, state.direction) && isInsideBoard(nextCell(head, d)) && !occ.has(cellKey(nextCell(head, d))));
+  if (!valid.length) return null;
+
+  const shouldRisk = state.score >= state.forcedCrashAtScore && Math.sin(state.score * 1.7 + state.body.length) > 0.15;
+  if (shouldRisk) {
+    const risky = DIRECTIONS.filter(d => !isOpposite(d, state.direction) && (!isInsideBoard(nextCell(head, d)) || occ.has(cellKey(nextCell(head, d)))));
+    if (risky.length) return risky[0];
+  }
+
+  return valid.map(d => {
+    const n = nextCell(head, d);
+    return {
+      d,
+      score: manhattan(n, state.food)
+        + (d.x === state.direction.x && d.y === state.direction.y ? -0.2 : 0)
+        + (Math.abs(n.x) + Math.abs(n.y)) * 0.012
+        + Math.sin((state.score + n.x * 3.1 + n.y * 4.7) * 0.41) * 0.1 * state.turnPreference,
+    };
+  }).sort((a, b) => a.score - b.score)[0].d;
+}
+
+function markGameOver(state: SnakeState, t: number) { state.gameOver = true; state.gameOverTime = t; state.accumulator = 0; }
+
+function stepSnake(state: SnakeState, t: number) {
+  if (state.gameOver) return;
+  const dir = chooseDirection(state);
+  if (!dir) { markGameOver(state, t); return; }
+  const head = nextCell(state.body[0], dir);
+  const ate = cellsEqual(head, state.food);
+  if (!isInsideBoard(head)) { state.direction = dir; markGameOver(state, t); return; }
+  if (collidesWithSelf(head, state.body, ate)) { state.direction = dir; markGameOver(state, t); return; }
+  const body = [head, ...state.body];
+  if (!ate) body.pop();
+  if (body.length > CONFIG.maxSnakeLength) body.length = CONFIG.maxSnakeLength;
+  state.body = body; state.direction = dir;
+  if (ate) { state.score++; state.food = randomFood(body); state.lastEatTime = t; state.turnPreference *= -1; }
+}
+
+function makeBoxLinePositions() {
+  const half = boardHalf();
+  const e = (half + 0.5) * CONFIG.cellSize, h = 0.01;
+  return new Float32Array([-e,h,-e, e,h,-e, e,h,-e, e,h,e, e,h,e, -e,h,e, -e,h,e, -e,h,-e]);
+}
+
+function makeGridLinePositions() {
+  const half = boardHalf(), ext = half * CONFIG.cellSize, vals: number[] = [];
+  for (let i = -half; i <= half; i++) {
+    const p = i * CONFIG.cellSize;
+    vals.push(-ext,0,p, ext,0,p, p,0,-ext, p,0,ext);
+  }
+  return new Float32Array(vals);
+}
+
+function makeGridNodePositions() {
+  const half = boardHalf(), vals: number[] = [];
+  for (let x = -half; x <= half; x++)
+    for (let y = -half; y <= half; y++)
+      vals.push(x*CONFIG.cellSize, 0.012, y*CONFIG.cellSize);
+  return new Float32Array(vals);
 }
 
 function makeStarPositions(count: number) {
-  const positions = new Float32Array(count * 3);
+  const p = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) { p[i*3]=randomBetween(-4.5,4.5); p[i*3+1]=randomBetween(-2.2,2.2); p[i*3+2]=randomBetween(-3.8,-1.2); }
+  return p;
+}
+
+function makeAmbientParticlePositions(count: number) {
+  const p = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
-    const o = i * 3;
-    positions[o]     = randomBetween(-4.5, 4.5);
-    positions[o + 1] = randomBetween(-2.3, 2.3);
-    positions[o + 2] = randomBetween(-3.2, -1.4);
+    const r = Math.sqrt(Math.random()) * 2.3, a = Math.random() * Math.PI * 2;
+    p[i*3]=Math.cos(a)*r+randomBetween(-0.2,0.8); p[i*3+1]=randomBetween(-0.12,0.9); p[i*3+2]=Math.sin(a)*r*0.75;
   }
-  return positions;
+  return p;
 }
 
-function makeFlowingMeshData() {
-  const cols = 52, rows = 18;
-  const sX = 0.145, sY = 0.11;
-  const x0 = -cols * sX * 0.5, y0 = -rows * sY * 0.5;
-
-  const grid: THREE.Vector3[][] = Array.from({ length: rows }, (_, y) =>
-    Array.from({ length: cols }, (_, x) => new THREE.Vector3(
-      x0 + x * sX + Math.sin(y * 0.55) * 0.18,
-      y0 + y * sY,
-      Math.sin(x * 0.35) * 0.22 + Math.cos(y * 0.62) * 0.16
-    ))
-  );
-
-  const lineValues: number[] = [];
-  const pointValues: number[] = [];
-
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      const p = grid[y][x];
-      pointValues.push(p.x, p.y, p.z);
-      if (x < cols - 1) {
-        const n = grid[y][x + 1];
-        lineValues.push(p.x, p.y, p.z, n.x, n.y, n.z);
-      }
-      if (y < rows - 1 && Math.random() > 0.18) {
-        const n = grid[y + 1][x];
-        lineValues.push(p.x, p.y, p.z, n.x, n.y, n.z);
-      }
-      if (x < cols - 1 && y < rows - 1 && Math.random() > 0.72) {
-        const n = grid[y + 1][x + 1];
-        lineValues.push(p.x, p.y, p.z, n.x, n.y, n.z);
-      }
-    }
+function makeFoodParticlePositions() {
+  const p = new Float32Array(180 * 3);
+  for (let i = 0; i < 180; i++) {
+    const r = randomBetween(0.03, 0.27), theta = Math.random()*Math.PI*2, phi = Math.random()*Math.PI;
+    p[i*3]=r*Math.sin(phi)*Math.cos(theta); p[i*3+1]=r*Math.sin(phi)*Math.sin(theta); p[i*3+2]=r*Math.cos(phi);
   }
-
-  return {
-    linePositions: makeFloat32Buffer(lineValues),
-    pointPositions: makeFloat32Buffer(pointValues),
-  };
+  return p;
 }
 
-function SegmentLine({
-  points,
-  opacity = 0.55,
-  color = CONFIG.teal,
-}: {
-  points: Vec3[];
-  opacity?: number;
-  color?: string;
-}) {
-  const positions = useMemo(() => makeLinePositions(points), [points]);
-  return (
-    <lineSegments>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <lineBasicMaterial
-        color={color}
-        transparent
-        opacity={opacity}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </lineSegments>
-  );
-}
-
-function BrowserPanel() {
+function BoxedMeshGrid() {
   const groupRef = useRef<THREE.Group>(null);
-  const { pointer } = useThree();
-
-  const codeLines = useMemo(
-    () => makeBrowserLines(24, { startY: 0.78, stepY: 0.07, minWidth: 0.35, maxWidth: 1.1 }),
-    []
-  );
-
-  const sidebarLines = useMemo(
-    () =>
-      Array.from({ length: 13 }, (_, i) => ({
-        y: 0.75 - i * 0.115,
-        width: randomBetween(0.28, 0.62),
-        opacity: randomBetween(0.2, 0.5),
-      })),
-    []
-  );
-
-  useFrame((state, delta) => {
-    const g = groupRef.current;
-    if (!g) return;
-    g.rotation.y += delta * CONFIG.speed;
-    g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, -0.08 + pointer.y * CONFIG.parallax * 0.22, 0.04);
-    g.rotation.z = THREE.MathUtils.lerp(g.rotation.z, 0.02 - pointer.x * CONFIG.parallax * 0.12, 0.04);
-    g.position.y = Math.sin(state.clock.elapsedTime * 0.45) * 0.055;
-  });
-
-  return (
-    <group ref={groupRef} position={[1.55, 0.15, -0.8]} rotation={[-0.06, -0.33, 0.04]} scale={1.04}>
-      <mesh>
-        <boxGeometry args={[3.75, 2.35, 0.045, 18, 12, 1]} />
-        <meshBasicMaterial color={CONFIG.teal} wireframe transparent opacity={CONFIG.meshOpacity} depthWrite={false} blending={THREE.AdditiveBlending} />
-      </mesh>
-      <mesh position={[0, 0, -0.012]}>
-        <boxGeometry args={[3.65, 2.25, 0.012]} />
-        <meshBasicMaterial color={CONFIG.tealSoft} transparent opacity={0.025} depthWrite={false} />
-      </mesh>
-      <mesh position={[0, 0.93, 0.04]}>
-        <boxGeometry args={[3.55, 0.24, 0.035, 12, 2, 1]} />
-        <meshBasicMaterial color={CONFIG.teal} wireframe transparent opacity={0.24} depthWrite={false} blending={THREE.AdditiveBlending} />
-      </mesh>
-
-      {([-1.62, -1.48, -1.34] as number[]).map((x) => (
-        <mesh key={x} position={[x, 0.94, 0.09]}>
-          <sphereGeometry args={[0.032, 10, 10]} />
-          <meshBasicMaterial color={CONFIG.teal} transparent opacity={0.75} depthWrite={false} />
-        </mesh>
-      ))}
-
-      <mesh position={[-0.15, 0.94, 0.075]}>
-        <boxGeometry args={[1.55, 0.055, 0.02]} />
-        <meshBasicMaterial color={CONFIG.teal} transparent opacity={0.22} depthWrite={false} />
-      </mesh>
-      <mesh position={[-1.28, -0.12, 0.045]}>
-        <boxGeometry args={[0.62, 1.82, 0.025, 6, 10, 1]} />
-        <meshBasicMaterial color={CONFIG.teal} wireframe transparent opacity={CONFIG.panelOpacity} depthWrite={false} blending={THREE.AdditiveBlending} />
-      </mesh>
-
-      {sidebarLines.map((line, i) => (
-        <mesh key={i} position={[-1.45 + line.width / 2, line.y - 0.2, 0.095]}>
-          <boxGeometry args={[line.width, 0.012, 0.012]} />
-          <meshBasicMaterial color={CONFIG.teal} transparent opacity={line.opacity} depthWrite={false} />
-        </mesh>
-      ))}
-
-      <mesh position={[-0.24, -0.12, 0.04]}>
-        <boxGeometry args={[1.35, 1.82, 0.025, 10, 10, 1]} />
-        <meshBasicMaterial color={CONFIG.teal} wireframe transparent opacity={0.13} depthWrite={false} blending={THREE.AdditiveBlending} />
-      </mesh>
-
-      {codeLines.map((line, i) => (
-        <mesh key={i} position={[-0.82 + line.x + line.width / 2, line.y - 0.22, 0.095]}>
-          <boxGeometry args={[line.width, 0.012, 0.012]} />
-          <meshBasicMaterial color={CONFIG.teal} transparent opacity={line.opacity} depthWrite={false} />
-        </mesh>
-      ))}
-
-      <mesh position={[1.04, 0.22, 0.047]}>
-        <boxGeometry args={[1.15, 1.02, 0.025, 8, 8, 1]} />
-        <meshBasicMaterial color={CONFIG.teal} wireframe transparent opacity={0.16} depthWrite={false} blending={THREE.AdditiveBlending} />
-      </mesh>
-
-      <group position={[1.04, 0.3, 0.12]} scale={0.72}>
-        <SegmentLine opacity={0.78} points={[[-0.42, 0.12, 0], [-0.72, -0.1, 0], [-0.42, -0.32, 0]]} />
-        <SegmentLine opacity={0.78} points={[[0.42, 0.12, 0], [0.72, -0.1, 0], [0.42, -0.32, 0]]} />
-        <SegmentLine opacity={0.72} points={[[-0.06, -0.42, 0], [0.16, 0.22, 0]]} />
-      </group>
-
-      {([0.12, -0.38, -0.74] as number[]).map((y, i) => (
-        <group key={i} position={[0.74, y - 0.45, 0.08]}>
-          <mesh>
-            <boxGeometry args={[0.24, 0.17, 0.018]} />
-            <meshBasicMaterial color={CONFIG.teal} transparent opacity={0.23} depthWrite={false} />
-          </mesh>
-          <mesh position={[0.42, 0.04, 0]}>
-            <boxGeometry args={[0.48, 0.018, 0.012]} />
-            <meshBasicMaterial color={CONFIG.teal} transparent opacity={0.35} depthWrite={false} />
-          </mesh>
-          <mesh position={[0.35, -0.045, 0]}>
-            <boxGeometry args={[0.34, 0.012, 0.012]} />
-            <meshBasicMaterial color={CONFIG.teal} transparent opacity={0.25} depthWrite={false} />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
-}
-
-function FlowingMesh() {
-  const linesRef  = useRef<THREE.LineSegments>(null);
-  const pointsRef = useRef<THREE.Points>(null);
-  const { linePositions, pointPositions } = useMemo(() => makeFlowingMeshData(), []);
+  const linePos  = useMemo(() => makeGridLinePositions(), []);
+  const nodePos  = useMemo(() => makeGridNodePositions(), []);
+  const boxPos   = useMemo(() => makeBoxLinePositions(), []);
 
   useFrame(({ clock }) => {
+    if (!groupRef.current) return;
     const t = clock.elapsedTime;
-    if (linesRef.current)  { linesRef.current.rotation.y  = Math.sin(t * 0.18) * 0.08; linesRef.current.position.y  = Math.sin(t * 0.45) * 0.035; }
-    if (pointsRef.current) { pointsRef.current.rotation.y = Math.sin(t * 0.14) * 0.08; pointsRef.current.position.y = Math.sin(t * 0.48) * 0.035; }
+    groupRef.current.rotation.y = Math.sin(t * 0.13) * 0.08;
+    groupRef.current.position.y = Math.sin(t * 0.35) * 0.018;
   });
 
   return (
-    <group position={[1.0, -1.05, -0.2]} rotation={[-0.66, -0.08, 0.04]} scale={[1.18, 0.95, 1]}>
-      <lineSegments ref={linesRef}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[linePositions, 3]} />
-        </bufferGeometry>
-        <lineBasicMaterial color={CONFIG.tealSoft} transparent opacity={0.18} depthWrite={false} blending={THREE.AdditiveBlending} />
+    <group ref={groupRef} position={[2.6, 0, 0]} rotation={[-1.45, 0, 0]} scale={1.5}>
+      <lineSegments>
+        <bufferGeometry><bufferAttribute attach="attributes-position" args={[linePos, 3]} /></bufferGeometry>
+        <lineBasicMaterial color={CONFIG.greenSoft} transparent opacity={0.21} depthWrite={false} blending={THREE.AdditiveBlending} />
       </lineSegments>
-      <points ref={pointsRef}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[pointPositions, 3]} />
-        </bufferGeometry>
-        <pointsMaterial color={CONFIG.teal} size={0.013} transparent opacity={0.38} depthWrite={false} blending={THREE.AdditiveBlending} />
+      <lineSegments>
+        <bufferGeometry><bufferAttribute attach="attributes-position" args={[boxPos, 3]} /></bufferGeometry>
+        <lineBasicMaterial color={CONFIG.green} transparent opacity={0.85} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </lineSegments>
+      {([ [-1,-1],[1,-1],[1,1],[-1,1] ] as [number,number][]).map(([x,y], i) => {
+        const e = (boardHalf() + 0.5) * CONFIG.cellSize;
+        return (
+          <mesh key={i} position={[x*e, 0.02, y*e]}>
+            <sphereGeometry args={[0.045, 12, 12]} />
+            <meshBasicMaterial color={CONFIG.green} transparent opacity={0.66} depthWrite={false} blending={THREE.AdditiveBlending} />
+          </mesh>
+        );
+      })}
+      <points>
+        <bufferGeometry><bufferAttribute attach="attributes-position" args={[nodePos, 3]} /></bufferGeometry>
+        <pointsMaterial color={CONFIG.green} size={0.016} transparent opacity={0.5} depthWrite={false} blending={THREE.AdditiveBlending} />
       </points>
     </group>
   );
 }
 
-function ParticleCloud() {
-  const ref = useRef<THREE.Points>(null);
-  const positions = useMemo(() => makeParticlePositions(CONFIG.particleCount), []);
+function SnakeGameMesh({ onGameOver, resetKey }: { onGameOver: () => void; resetKey: number }) {
+  const groupRef         = useRef<THREE.Group>(null);
+  const snakeMeshRef     = useRef<THREE.InstancedMesh>(null);
+  const glowMeshRef      = useRef<THREE.InstancedMesh>(null);
+  const foodRef          = useRef<THREE.Group>(null);
+  const foodParticlesRef = useRef<THREE.Points>(null);
+  const trailRef         = useRef<THREE.Points>(null);
+  const stateRef         = useRef<SnakeState>(createInitialSnake());
+  const notifiedRef      = useRef(false);
 
-  useFrame(({ clock }) => {
-    if (!ref.current) return;
-    const t = clock.elapsedTime;
-    ref.current.rotation.y = Math.sin(t * 0.12) * 0.08;
-    ref.current.rotation.x = Math.cos(t * 0.1)  * 0.035;
+  const tempMatrix     = useMemo(() => new THREE.Matrix4(), []);
+  const tempPosition   = useMemo(() => new THREE.Vector3(), []);
+  const tempQuaternion = useMemo(() => new THREE.Quaternion(), []);
+  const tempScale      = useMemo(() => new THREE.Vector3(), []);
+  const foodParticlePos = useMemo(() => makeFoodParticlePositions(), []);
+  const trailPos        = useMemo(() => new Float32Array(CONFIG.maxSnakeLength * 3), []);
+
+  useMemo(() => { stateRef.current = createInitialSnake(); notifiedRef.current = false; return null; }, [resetKey]);
+
+  useFrame(({ clock }, delta) => {
+    const state = stateRef.current;
+    const time  = clock.elapsedTime;
+
+    if (!state.gameOver) {
+      state.accumulator += delta;
+      while (state.accumulator >= CONFIG.stepInterval) { stepSnake(state, time); state.accumulator -= CONFIG.stepInterval; }
+    }
+
+    if (state.gameOver && !notifiedRef.current) { notifiedRef.current = true; onGameOver(); }
+
+    if (groupRef.current) {
+      const shake = state.gameOver ? Math.sin(time * 34) * 0.018 : 0;
+      groupRef.current.rotation.y = Math.sin(time * 0.16) * 0.08 + shake;
+      groupRef.current.position.y = Math.sin(time * 0.38) * 0.025;
+    }
+
+    const snake = snakeMeshRef.current, glow = glowMeshRef.current, body = state.body;
+    const interp = state.gameOver ? 1 : THREE.MathUtils.clamp(state.accumulator / CONFIG.stepInterval, 0, 1);
+
+    if (snake && glow) {
+      for (let i = 0; i < CONFIG.maxSnakeLength; i++) {
+        if (i < body.length) {
+          const cur = body[i], prev = body[i+1] ?? cur;
+          const cw = cellToWorld(cur), pw = cellToWorld(prev);
+          const sx = THREE.MathUtils.lerp(pw[0], cw[0], interp);
+          const sy = CONFIG.snakeHeight + Math.sin(time*3.2+i*0.55)*0.011;
+          const sz = THREE.MathUtils.lerp(pw[2], cw[2], interp);
+          const size = THREE.MathUtils.lerp(0.18, 0.095, i/CONFIG.maxSnakeLength);
+          const hb = i===0 ? 1.4+Math.sin(time*5.2)*0.08 : 1;
+          const gop = state.gameOver ? 1+Math.sin(time*18+i)*0.08 : 1;
+          tempPosition.set(sx,sy,sz); tempQuaternion.identity();
+          tempScale.setScalar(size*hb*gop); tempMatrix.compose(tempPosition,tempQuaternion,tempScale); snake.setMatrixAt(i,tempMatrix);
+          tempScale.setScalar(size*hb*1.65*gop); tempMatrix.compose(tempPosition,tempQuaternion,tempScale); glow.setMatrixAt(i,tempMatrix);
+          trailPos[i*3]=sx; trailPos[i*3+1]=sy+0.02; trailPos[i*3+2]=sz;
+        } else {
+          tempPosition.set(999,999,999); tempQuaternion.identity(); tempScale.setScalar(0.0001);
+          tempMatrix.compose(tempPosition,tempQuaternion,tempScale);
+          snake.setMatrixAt(i,tempMatrix); glow.setMatrixAt(i,tempMatrix);
+          trailPos[i*3]=trailPos[i*3+1]=trailPos[i*3+2]=999;
+        }
+      }
+      snake.instanceMatrix.needsUpdate = true; glow.instanceMatrix.needsUpdate = true;
+    }
+
+    if (trailRef.current) {
+      (trailRef.current.geometry.getAttribute("position") as THREE.BufferAttribute).needsUpdate = true;
+      trailRef.current.rotation.y = Math.sin(time*0.13)*0.02;
+    }
+    if (foodRef.current) {
+      const fw = cellToWorld(state.food);
+      const eatPulse = Math.max(0,1-(time-state.lastEatTime)*2.7);
+      const pulse    = 0.5+0.5*Math.sin(time*4.2);
+      foodRef.current.position.set(fw[0],CONFIG.snakeHeight+0.03,fw[2]);
+      foodRef.current.rotation.y += delta*1.4;
+      foodRef.current.rotation.x  = Math.sin(time*0.8)*0.35;
+      foodRef.current.scale.setScalar(1+pulse*0.18+eatPulse*0.9);
+    }
+    if (foodParticlesRef.current) { foodParticlesRef.current.rotation.y+=delta*1.8; foodParticlesRef.current.rotation.x=Math.sin(time*0.7)*0.35; }
   });
 
   return (
-    <points ref={ref} position={[0.65, 0.05, -0.55]}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial color={CONFIG.teal} size={CONFIG.particleSize} transparent opacity={CONFIG.particleOpacity} depthWrite={false} blending={THREE.AdditiveBlending} />
+    <group ref={groupRef} position={[2.6, 0, 0]} rotation={[-1.45, 0, 0]} scale={[1.5,1.5,1.5]}>
+      <instancedMesh ref={glowMeshRef} args={[undefined,undefined,CONFIG.maxSnakeLength]}>
+        <sphereGeometry args={[0.5,12,12]} />
+        <meshBasicMaterial color={CONFIG.green} transparent opacity={0.07} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </instancedMesh>
+      <instancedMesh ref={snakeMeshRef} args={[undefined,undefined,CONFIG.maxSnakeLength]}>
+        <sphereGeometry args={[0.5,14,14]} />
+        <meshBasicMaterial color={CONFIG.green} wireframe transparent opacity={0.78} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </instancedMesh>
+      <points ref={trailRef}>
+        <bufferGeometry><bufferAttribute attach="attributes-position" args={[trailPos, 3]} /></bufferGeometry>
+        <pointsMaterial color={CONFIG.green} size={0.022} transparent opacity={0.56} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </points>
+      <group ref={foodRef}>
+        <pointLight color={CONFIG.green} intensity={3.2} distance={2.2} decay={2} />
+        <mesh><sphereGeometry args={[0.09,16,16]} /><meshBasicMaterial color={CONFIG.cream} transparent opacity={0.95} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
+        <mesh scale={1.9}><sphereGeometry args={[0.09,14,14]} /><meshBasicMaterial color={CONFIG.green} transparent opacity={0.16} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
+        <mesh scale={2.3}><sphereGeometry args={[0.09,12,12]} /><meshBasicMaterial color={CONFIG.green} wireframe transparent opacity={0.42} depthWrite={false} blending={THREE.AdditiveBlending} /></mesh>
+        <points ref={foodParticlesRef}>
+          <bufferGeometry><bufferAttribute attach="attributes-position" args={[foodParticlePos, 3]} /></bufferGeometry>
+          <pointsMaterial color={CONFIG.green} size={0.014} transparent opacity={0.7} depthWrite={false} blending={THREE.AdditiveBlending} />
+        </points>
+      </group>
+    </group>
+  );
+}
+
+function AmbientParticles() {
+  const ref = useRef<THREE.Points>(null);
+  const pos = useMemo(() => makeAmbientParticlePositions(CONFIG.particleCount), []);
+  useFrame(({ clock }) => { if (!ref.current) return; const t=clock.elapsedTime; ref.current.rotation.y=Math.sin(t*0.11)*0.16; ref.current.rotation.x=Math.cos(t*0.08)*0.08; });
+  return (
+    <points ref={ref} position={[2.6, 0.2, -0.5]}>
+      <bufferGeometry><bufferAttribute attach="attributes-position" args={[pos, 3]} /></bufferGeometry>
+      <pointsMaterial color={CONFIG.green} size={0.009} transparent opacity={0.46} depthWrite={false} blending={THREE.AdditiveBlending} />
     </points>
   );
 }
 
 function BackgroundStars() {
-  const positions = useMemo(() => makeStarPositions(CONFIG.starCount), []);
+  const pos = useMemo(() => makeStarPositions(CONFIG.starCount), []);
   return (
     <points>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial color={CONFIG.tealSoft} size={0.006} transparent opacity={0.28} depthWrite={false} />
+      <bufferGeometry><bufferAttribute attach="attributes-position" args={[pos, 3]} /></bufferGeometry>
+      <pointsMaterial color={CONFIG.greenSoft} size={0.006} transparent opacity={0.25} depthWrite={false} />
     </points>
   );
 }
 
-function Scene() {
+function FloatingHudMarks() {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => { if (!ref.current) return; const t=clock.elapsedTime; ref.current.position.y=Math.sin(t*0.7)*0.025; ref.current.rotation.z=Math.sin(t*0.35)*0.025; });
+  return (
+    <group ref={ref} position={[4.5, 0.8, 0.4]} rotation={[0,-0.28,0]}>
+      {Array.from({length:6},(_,i)=>(
+        <mesh key={i} position={[0,-i*0.07,0]}>
+          <boxGeometry args={[0.38-i*0.035,0.008,0.008]} />
+          <meshBasicMaterial color={CONFIG.green} transparent opacity={0.18} depthWrite={false} blending={THREE.AdditiveBlending} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function Scene({
+  onGameOver,
+  resetKey,
+  mouseRef,
+}: {
+  onGameOver: () => void;
+  resetKey: number;
+  mouseRef: React.RefObject<{ x: number; y: number }>;
+}) {
+  const wrapRef  = useRef<THREE.Group>(null);
+  const smoothed = useRef({ rx: 0, ry: 0 });
+
+  useFrame(() => {
+    const m = mouseRef.current ?? { x: 0, y: 0 };
+    // "move away": rotate OPPOSITE to where cursor is
+    const tRY = -m.x * 0.28;
+    const tRX =  m.y * 0.18;
+    smoothed.current.rx = THREE.MathUtils.lerp(smoothed.current.rx, tRX, 0.055);
+    smoothed.current.ry = THREE.MathUtils.lerp(smoothed.current.ry, tRY, 0.055);
+    if (wrapRef.current) {
+      wrapRef.current.rotation.x = smoothed.current.rx;
+      wrapRef.current.rotation.y = smoothed.current.ry;
+    }
+  });
+
   return (
     <>
       <color attach="background" args={[CONFIG.background]} />
-      <fog attach="fog" args={[CONFIG.background, 4.2, 9]} />
+      <fog attach="fog" args={[CONFIG.background, 4.0, 12.0]} />
       <BackgroundStars />
-      <FlowingMesh />
-      <ParticleCloud />
-      <BrowserPanel />
+      <AmbientParticles />
+      {/* This group reacts to the mouse — everything inside tilts away from the cursor */}
+      <group ref={wrapRef}>
+        <BoxedMeshGrid />
+        <SnakeGameMesh onGameOver={onGameOver} resetKey={resetKey} />
+        <FloatingHudMarks />
+      </group>
     </>
   );
 }
 
 export default function MeshWebDevBackground() {
+  const [gameOverVisible, setGameOverVisible] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
+  const mouseRef = useRef({ x: 0, y: 0 });
+
+  const onMouseMove = useCallback((e: MouseEvent) => {
+    mouseRef.current = {
+      x:  (e.clientX / window.innerWidth)  * 2 - 1,
+      y: -((e.clientY / window.innerHeight) * 2 - 1),
+    };
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("mousemove", onMouseMove);
+    return () => window.removeEventListener("mousemove", onMouseMove);
+  }, [onMouseMove]);
+
+  function handleGameOver() {
+    setGameOverVisible(true);
+    window.setTimeout(() => { setGameOverVisible(false); setResetKey(k => k + 1); }, CONFIG.autoRestartDelay * 1000);
+  }
+
   return (
-    <div className="pointer-events-none fixed inset-0 overflow-hidden bg-[#020807]" style={{ zIndex: 0 }}>
-      <Canvas
-        camera={{ position: [0, 0, 5.2], fov: 43 }}
-        dpr={[1, 1.65]}
-        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-      >
+    // absolute so the fixed parent wrapper in MeshWebDevBackgroundClient controls position
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" style={{ backgroundColor: CONFIG.background }}>
+      <Canvas camera={{ position: [0, 0.5, 7.5], fov: 52 }} dpr={[1,1.65]} gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}>
         <Suspense fallback={null}>
           <AdaptiveDpr pixelated />
-          <Scene />
+          <Scene onGameOver={handleGameOver} resetKey={resetKey} mouseRef={mouseRef} />
         </Suspense>
       </Canvas>
 
-      <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 78% 42%, rgba(19,217,170,0.15), transparent 32%)" }} />
-      <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 6% 8%, rgba(19,217,170,0.14), transparent 22%)" }} />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.78), rgba(0,0,0,0.34), rgba(0,0,0,0.12))" }} />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent, transparent, rgba(0,0,0,0.55))" }} />
+      {gameOverVisible && (
+        <div className="absolute right-[14%] top-[43%] -translate-y-1/2 rounded-2xl border px-6 py-4 text-center backdrop-blur-sm"
+          style={{ borderColor:"rgba(60,190,139,0.55)", background:"rgba(2,8,7,0.54)", boxShadow:"0 0 44px rgba(60,190,139,0.25)" }}>
+          <div className="text-xs uppercase tracking-[0.45em]" style={{ color:"rgba(244,239,228,0.62)" }}>Snake crashed</div>
+          <div className="mt-2 text-4xl font-black uppercase tracking-[0.1em]" style={{ color:CONFIG.green, textShadow:"0 0 24px rgba(60,190,139,0.55)" }}>Game Over</div>
+        </div>
+      )}
+
+      <div className="absolute inset-0" style={{ background:"radial-gradient(circle at 70% 42%, rgba(60,190,139,0.22), transparent 36%)" }} />
+      <div className="absolute inset-0" style={{ background:"radial-gradient(circle at 5% 8%, rgba(60,190,139,0.06), transparent 18%)" }} />
+      {/* Strong left-to-right gradient keeps the text area clean */}
+      <div className="absolute inset-0" style={{ background:"linear-gradient(90deg, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.88) 32%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0) 60%)" }} />
+      <div className="absolute inset-0" style={{ background:"linear-gradient(180deg, transparent, rgba(0,0,0,0.05), rgba(0,0,0,0.58))" }} />
     </div>
   );
 }

@@ -49,7 +49,6 @@ export default function AboutHero() {
   const line1Ref   = useRef<HTMLDivElement>(null);
   const line2Ref   = useRef<HTMLDivElement>(null);
   const line3Ref   = useRef<HTMLDivElement>(null);
-  const statsRef   = useRef<HTMLDivElement>(null);
   const ctaRef     = useRef<HTMLDivElement>(null);
   const rightRef   = useRef<HTMLDivElement>(null);
 
@@ -59,8 +58,7 @@ export default function AboutHero() {
       tl.fromTo(line1Ref.current, {autoAlpha:0,xPercent:-5},{autoAlpha:1,xPercent:0,duration:1.0},0)
         .fromTo(line2Ref.current, {autoAlpha:0,xPercent:-4},{autoAlpha:1,xPercent:0,duration:1.0},0.06)
         .fromTo(line3Ref.current, {autoAlpha:0,x:-30      },{autoAlpha:1,x:0,        duration:0.9},0.14)
-        .fromTo(statsRef.current?.children??[],{autoAlpha:0,y:18},{autoAlpha:1,y:0,stagger:0.09,duration:0.6},0.32)
-        .fromTo(ctaRef.current,   {autoAlpha:0,y:16       },{autoAlpha:1,y:0,        duration:0.7},0.44)
+        .fromTo(ctaRef.current,   {autoAlpha:0,y:16       },{autoAlpha:1,y:0,        duration:0.7},0.32)
         .fromTo(rightRef.current, {autoAlpha:0,scale:0.92 },{autoAlpha:1,scale:1,    duration:1.4},0.10);
     }, sectionRef);
     return ()=>ctx.revert();
@@ -126,20 +124,6 @@ export default function AboutHero() {
                   unforgettable.
                 </h1>
               </div>
-            </div>
-
-            {/* Stats */}
-            <div ref={statsRef} className="mt-8 flex items-end gap-8">
-              {[
-                {value:"14+",label:"projects shipped"},
-                {value:"6",  label:"countries served"},
-                {value:"3yr",label:"since '22"},
-              ].map(s=>(
-                <div key={s.label}>
-                  <p className="hed" style={{fontSize:"clamp(1.4rem,2.2vw,2.2rem)",lineHeight:1,color:"var(--fg)"}}>{s.value}</p>
-                  <p style={{fontFamily:"var(--font-mono-next)",fontSize:"0.48rem",letterSpacing:"0.28em",textTransform:"uppercase",color:"var(--body)",marginTop:"0.25rem"}}>{s.label}</p>
-                </div>
-              ))}
             </div>
 
             {/* CTA */}

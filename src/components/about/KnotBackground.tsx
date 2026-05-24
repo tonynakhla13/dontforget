@@ -228,6 +228,21 @@ export default function KnotBackground() {
     // Knot B — cinquefoil
     const sB = { bX:0.30,bY:0.55,sc:0.00,al:0.00 };
 
+    // Fade the canvas itself in — starts as Our Story enters, completes slowly
+    gsap.fromTo(canvas,
+      { opacity: 0 },
+      {
+        opacity: 0.82,
+        ease: "none",
+        scrollTrigger: {
+          trigger: "#our-story",
+          start: "top 75%",   // begins just before snake is gone
+          end:   "top -60%",  // finishes well after Our Story has scrolled past centre
+          scrub: 2.5,
+        },
+      }
+    );
+
     const tl = gsap.timeline({
       scrollTrigger:{trigger:document.body,start:"top top",end:"bottom bottom",scrub:2.5},
       defaults:{ease:"none"},
@@ -288,6 +303,6 @@ export default function KnotBackground() {
   return (
     <canvas ref={canvasRef} aria-hidden
       className="pointer-events-none fixed inset-0"
-      style={{zIndex:0,opacity:0.82}}/>
+      style={{zIndex:0,opacity:0}}/>
   );
 }
