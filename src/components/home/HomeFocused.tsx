@@ -786,117 +786,103 @@ export default function HomeFocused() {
       </section>
 
       {/* ═══════════════════════════════════════
-          PROCESS  (3D rotating wheel)
+          PROCESS  (5 scattered cards)
       ═══════════════════════════════════════ */}
       <section
         className="kbm-process"
-        style={{ paddingBottom: "clamp(4rem, 8vw, 10rem)" }}
+        style={{ padding: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 10rem)" }}
       >
-        <style>{`
-          @keyframes wheel3d {
-            0%   { transform: rotateY(0deg); }
-            100% { transform: rotateY(-360deg); }
-          }
-          .process-wheel {
-            animation: wheel3d 28s linear infinite;
-            will-change: transform;
-            transform-style: preserve-3d;
-          }
-          .process-wheel:hover { animation-play-state: paused; }
-        `}</style>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", padding: "0 clamp(1.5rem, 4vw, 3.75rem)", marginBottom: "clamp(2rem, 3.5vw, 3.5rem)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "clamp(2rem, 3.5vw, 3.5rem)" }}>
           <SectionTitle>Process</SectionTitle>
           <p style={{ fontFamily: MONO, fontSize: "clamp(0.75rem, 1vw, 1rem)", color: C.ink, opacity: 0.5, paddingBottom: "0.6rem" }}>
-            7 steps · 1–2 months · no surprises
+            5 steps · 1–2 months · no surprises
           </p>
         </div>
 
-        {/* 3D scene */}
-        <div style={{
-          perspective:     "1100px",
-          perspectiveOrigin: "50% 50%",
-          height:          380,
-          position:        "relative",
-        }}>
-          {/* wheel stage — centered */}
-          <div
-            className="process-wheel"
-            style={{
-              position:        "absolute",
-              top:             "50%",
-              left:            "50%",
-              width:           0,
-              height:          0,
-              transformStyle:  "preserve-3d",
-            }}
-          >
-            {PROCESS.map((step, i) => {
-              const PALETTES = [
-                { bg: C.ink,    num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.65)" },
-                { bg: C.green,  num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.7)"  },
-                { bg: C.orange, num: C.cream,  text: C.cream,  body: "rgba(235,222,206,0.78)" },
-                { bg: C.yellow, num: C.ink,    text: C.ink,    body: "rgba(34,31,26,0.6)"     },
-                { bg: C.ink,    num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.65)" },
-                { bg: C.green,  num: C.yellow, text: C.cream,  body: "rgba(235,222,206,0.7)"  },
-                { bg: C.orange, num: C.cream,  text: C.cream,  body: "rgba(235,222,206,0.78)" },
-              ];
-              const p     = PALETTES[i];
-              const angle = (360 / PROCESS.length) * i;
-              const R     = 420; // radius in px — controls wheel size
-              const W     = 260; // card width
-              const H     = 220; // card height
-              return (
-                <div
-                  key={step.n}
-                  style={{
-                    position:      "absolute",
-                    width:         W,
-                    height:        H,
-                    left:          -W / 2,
-                    top:           -H / 2,
-                    background:    p.bg,
-                    borderRadius:  14,
-                    padding:       "1.4rem 1.6rem",
-                    display:       "flex",
-                    flexDirection: "column",
-                    gap:           8,
-                    transform:     `rotateY(${angle}deg) translateZ(${R}px)`,
-                    backfaceVisibility: "hidden",
-                    boxShadow:     "0 8px 40px rgba(0,0,0,0.22)",
-                  }}
-                >
-                  <span style={{
-                    fontFamily:    TEKO,
-                    fontWeight:    700,
-                    fontSize:      "2.8rem",
-                    lineHeight:    1,
-                    color:         p.num,
-                    letterSpacing: "-0.02em",
-                  }}>{step.n}</span>
-                  <h3 style={{
-                    fontFamily:    TEKO,
-                    fontWeight:    700,
-                    fontSize:      "1.5rem",
-                    lineHeight:    1.1,
-                    color:         p.text,
-                    textTransform: "uppercase",
-                    letterSpacing: "-0.01em",
-                    marginTop:     4,
-                  }}>{step.title}</h3>
-                  <p style={{
-                    fontFamily: MONO,
-                    fontSize:   "0.78rem",
-                    lineHeight: 1.55,
-                    color:      p.body,
-                    marginTop:  "auto",
-                    paddingTop: 6,
-                  }}>{step.body}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        {/* scattered pinboard layout */}
+        {(() => {
+          const FIVE = [PROCESS[0], PROCESS[1], PROCESS[2], PROCESS[4], PROCESS[6]];
+          const PALETTES = [
+            { bg: C.ink,    num: C.yellow, text: C.cream, body: "rgba(235,222,206,0.65)" },
+            { bg: C.green,  num: C.yellow, text: C.cream, body: "rgba(235,222,206,0.7)"  },
+            { bg: C.orange, num: C.cream,  text: C.cream, body: "rgba(235,222,206,0.78)" },
+            { bg: C.yellow, num: C.ink,    text: C.ink,   body: "rgba(34,31,26,0.6)"     },
+            { bg: C.ink,    num: C.yellow, text: C.cream, body: "rgba(235,222,206,0.65)" },
+          ];
+          // scatter offsets: [rotate, translateX, translateY]
+          const SCATTER = [
+            [-3,  -18,  12],
+            [ 2.5, 10, -20],
+            [-1.5,  4,  18],
+            [ 4,  -12,  -8],
+            [-2,   16,   6],
+          ];
+          return (
+            <div style={{
+              display:             "grid",
+              gridTemplateColumns: "repeat(5, 1fr)",
+              gap:                 "clamp(0.75rem, 1.5vw, 1.25rem)",
+              alignItems:          "start",
+            }}>
+              {FIVE.map((step, i) => {
+                const p = PALETTES[i];
+                const [rot, tx, ty] = SCATTER[i];
+                return (
+                  <div
+                    key={step.n}
+                    style={{
+                      background:    p.bg,
+                      borderRadius:  14,
+                      padding:       "clamp(1.2rem, 2vw, 1.6rem)",
+                      display:       "flex",
+                      flexDirection: "column",
+                      gap:           8,
+                      minHeight:     "clamp(200px, 22vw, 260px)",
+                      transform:     `rotate(${rot}deg) translate(${tx}px, ${ty}px)`,
+                      boxShadow:     "0 6px 28px rgba(0,0,0,0.13)",
+                      transition:    "transform .25s ease, box-shadow .25s ease",
+                    }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLDivElement).style.transform = "rotate(0deg) translate(0,0) scale(1.04)";
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.22)";
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLDivElement).style.transform = `rotate(${rot}deg) translate(${tx}px, ${ty}px)`;
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 28px rgba(0,0,0,0.13)";
+                    }}
+                  >
+                    <span style={{
+                      fontFamily:    TEKO,
+                      fontWeight:    700,
+                      fontSize:      "clamp(2rem, 3vw, 3rem)",
+                      lineHeight:    1,
+                      color:         p.num,
+                      letterSpacing: "-0.02em",
+                    }}>{step.n}</span>
+                    <h3 style={{
+                      fontFamily:    TEKO,
+                      fontWeight:    700,
+                      fontSize:      "clamp(1.1rem, 1.8vw, 1.5rem)",
+                      lineHeight:    1.1,
+                      color:         p.text,
+                      textTransform: "uppercase",
+                      letterSpacing: "-0.01em",
+                      marginTop:     4,
+                    }}>{step.title}</h3>
+                    <p style={{
+                      fontFamily: MONO,
+                      fontSize:   "clamp(0.68rem, 0.85vw, 0.82rem)",
+                      lineHeight: 1.55,
+                      color:      p.body,
+                      marginTop:  "auto",
+                      paddingTop: 6,
+                    }}>{step.body}</p>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
       </section>
 
       {/* ═══════════════════════════════════════
