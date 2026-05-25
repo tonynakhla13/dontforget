@@ -26,8 +26,9 @@ export default function Availability() {
           </div>
 
           <div className="flex flex-col items-start gap-4 md:items-end">
-            <a href="#contact" className="btn btn-primary">
-              Start a project →
+            <a href="#contact" className="btn-glass">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">Start a project →</span>
             </a>
             <span className="font-mono text-[0.6rem] uppercase tracking-[0.3em] text-[var(--body)]">
               Response within 24h

@@ -470,8 +470,14 @@ function WorkHero({ totalCount }: { totalCount: number }) {
             <span className="text-[var(--fg)]">remember us.</span>
           </p>
           <div ref={ctaRef} className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-            <a href="/immersive/contact" className="btn btn-primary btn-ripple">Start a project</a>
-            <a href="/services" className="btn btn-outline">Our services →</a>
+            <a href="/immersive/contact" className="btn-glass">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">Start a project</span>
+            </a>
+            <a href="/services" className="btn-glass-ghost">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">Our services →</span>
+            </a>
           </div>
           <div
             ref={statsRef}
@@ -803,8 +809,14 @@ function BottomCTA() {
           We&apos;re selective about what we take on. That&apos;s why our work looks like our work.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4">
-          <a href="/#contact" className="btn btn-primary btn-ripple">Start a project →</a>
-          <a href="/services" className="btn btn-outline">Explore services</a>
+          <a href="/#contact" className="btn-glass">
+            <span className="btn-glass-blob" aria-hidden="true" />
+            <span className="btn-glass-face">Start a project →</span>
+          </a>
+          <a href="/services" className="btn-glass-ghost">
+            <span className="btn-glass-blob" aria-hidden="true" />
+            <span className="btn-glass-face">Explore services</span>
+          </a>
         </div>
       </div>
     </section>

@@ -56,8 +56,14 @@ function ServicesHero() {
             Brand systems, digital products, immersive web, and motion identities — built to be impossible to forget.
           </p>
           <div ref={ctaRef} className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-            <Link href="/immersive/contact" className="btn btn-primary btn-ripple">Start a project</Link>
-            <Link href="/immersive/work" className="btn btn-outline">View work →</Link>
+            <Link href="/immersive/contact" className="btn-glass">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">Start a project</span>
+            </Link>
+            <Link href="/immersive/work" className="btn-glass-ghost">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">View work →</span>
+            </Link>
           </div>
         </div>
       </div>

@@ -21,7 +21,7 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-body-next);
+  --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-mono-next);
 }
 
@@ -46,9 +46,9 @@
     min-height: 100vh;
     background: var(--bg);
     color: var(--body);
-    font-family: var(--font-body-next), system-ui, sans-serif;
+    font-family: var(--font-space-grotesk), system-ui, sans-serif;
     font-size: 16px;
-    line-height: 1.65;
+    line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -421,6 +421,146 @@
   50% { transform: translate(4%, -2%); }
   75% { transform: translate(-2%, 4%); }
   100% { transform: translate(0, 0); }
+}
+
+/* ─────────────────────────────────────────
+   GLASS-BLOB BUTTON
+   Outer shell = 2px padding gap → gradient "border"
+   .btn-glass-blob  = absolute teal corner glow (bottom-left)
+   .btn-glass-face  = inner dark face with own padding
+───────────────────────────────────────── */
+
+@layer components {
+  /* ── Outer shell ── */
+  .btn-glass,
+  .btn-glass-ghost {
+    cursor: pointer;
+    border-radius: 16px;
+    border: none;
+    padding: 2px;
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+    text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    font-family: var(--font-display-next), system-ui, sans-serif;
+  }
+
+  /* Primary: white glow top-right bleeds through as border */
+  .btn-glass {
+    background: radial-gradient(circle 80px at 80% -10%, #ffffff, #181b1b);
+  }
+
+  /* Ghost: teal glow top-right */
+  .btn-glass-ghost {
+    background: radial-gradient(circle 80px at 80% -10%, rgba(58,191,138,0.72), #181b1b);
+  }
+
+  /* White specular behind the inner face (both variants) */
+  .btn-glass::after,
+  .btn-glass-ghost::after {
+    content: "";
+    position: absolute;
+    width: 65%;
+    height: 60%;
+    border-radius: 120px;
+    top: 0; right: 0;
+    box-shadow: 0 0 20px rgba(255,255,255,0.24);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Teal corner blob ── */
+  .btn-glass-blob {
+    position: absolute;
+    width: 70px;
+    height: 100%;
+    border-radius: 16px;
+    bottom: 0; left: 0;
+    background: radial-gradient(
+      circle 60px at 0% 100%,
+      #3ABF8A,
+      rgba(29,122,86,0.50),
+      transparent
+    );
+    box-shadow: -10px 10px 30px rgba(58,191,138,0.22);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Inner dark face ── */
+  .btn-glass-face {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.82rem 1.82rem;
+    border-radius: 14px;
+    position: relative;
+    z-index: 3;
+    font-size: 0.95rem;
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    background: radial-gradient(circle 80px at 80% -50%, #777777, #0f1111);
+    color: #fff;
+  }
+
+  /* Subtle teal tint on inner face bottom-left */
+  .btn-glass-face::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: radial-gradient(
+      circle 60px at 0% 100%,
+      rgba(58,191,138,0.12),
+      rgba(29,122,86,0.07),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  /* Ghost face: darker teal tint */
+  .btn-glass-ghost .btn-glass-face {
+    background: radial-gradient(circle 80px at 80% -50%, #2c3a35, #0f1111);
+    color: var(--teal);
+  }
+
+  /* ── Arrow ── */
+  .btn-glass-arrow {
+    font-size: 1rem;
+    display: inline-block;
+    transition: transform 0.28s ease;
+  }
+  .btn-glass-ghost:hover .btn-glass-arrow {
+    transform: translateX(0.4rem);
+  }
+
+  /* ── Hover ── */
+  .btn-glass:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 36px rgba(58,191,138,0.38), 0 10px 36px rgba(58,191,138,0.20);
+  }
+  .btn-glass-ghost:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(58,191,138,0.30), 0 8px 28px rgba(58,191,138,0.16);
+  }
+  .btn-glass:active,
+  .btn-glass-ghost:active {
+    transform: translateY(0);
+  }
+
+  /* ── Disabled ── */
+  .btn-glass:disabled,
+  .btn-glass-ghost:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
 }
 
 /* ─────────────────────────────────────────

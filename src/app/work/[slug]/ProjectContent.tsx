@@ -195,9 +195,10 @@ export default function ProjectContent({ project: p }: { project: ProjectData })
                 href={p.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-primary btn-ripple mt-10 inline-flex"
+                className="btn-glass mt-10 inline-flex"
               >
-                View live site ↗
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">View live site ↗</span>
               </a>
             )}
           </div>
@@ -268,8 +269,9 @@ export default function ProjectContent({ project: p }: { project: ProjectData })
             Back to work
           </a>
 
-          <a href="/#contact" className="btn btn-primary btn-ripple py-2.5 px-6 text-[0.62rem]">
-            Start a project →
+          <a href="/#contact" className="btn-glass">
+            <span className="btn-glass-blob" aria-hidden="true" />
+            <span className="btn-glass-face">Start a project →</span>
           </a>
         </div>
       </section>

@@ -225,8 +225,9 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
             Menu
           </button>
 
-          <Link href={ctaHref} className={`btn btn-primary px-5 text-[0.62rem] transition-[padding,transform] duration-500 ${isImmersive && compact ? "py-2 scale-[0.94]" : "py-2.5"}`}>
-            Let&apos;s talk
+          <Link href={ctaHref} className={`btn-glass transition-[transform] duration-500 ${isImmersive && compact ? "scale-[0.94]" : ""}`}>
+            <span className="btn-glass-blob" aria-hidden="true" />
+            <span className="btn-glass-face" style={{ padding: "0.48rem 1.1rem", fontSize: "0.78rem" }}>Let&apos;s talk</span>
           </Link>
         </div>
       </header>

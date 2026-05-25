@@ -62,15 +62,15 @@ export default function Hero() {
             </p>
 
             <div className="mt-9 flex flex-wrap gap-4" data-anim>
-              <a href="#contact" className="btn btn-primary btn-glitch">
-                <span className="btn-label">Start a project</span>
-                <span className="glitch-layer layer-1">Start a project</span>
-                <span className="glitch-layer layer-2">Start a project</span>
+              <a href="#contact" className="btn-glass">
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">Start a project</span>
               </a>
-              <a href="#work" className="btn btn-tilt">
-                <span className="btn-tilt-inner">
+              <a href="#work" className="btn-glass-ghost">
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">
                   View work
-                  <span className="btn-tilt-arrow">➔</span>
+                  <span className="btn-glass-arrow">➔</span>
                 </span>
               </a>
             </div>

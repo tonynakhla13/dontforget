@@ -309,11 +309,13 @@ export default function ServiceContent({ svc }: { svc: ServiceData }) {
               {svc.body}
             </p>
             <div data-hero-item className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-              <Link href="#contact" className="btn btn-primary btn-ripple">
-                Start this project
+              <Link href="#contact" className="btn-glass">
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">Start this project</span>
               </Link>
-              <Link href="/services" className="btn btn-outline">
-                All services →
+              <Link href="/services" className="btn-glass-ghost">
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">All services →</span>
               </Link>
             </div>
           </div>

@@ -832,9 +832,10 @@ function ContactDetailsModal({
 
             <div className="mt-7 flex justify-end">
               <button type="submit" disabled={!canSubmit}
-                className="btn btn-primary disabled:cursor-not-allowed disabled:opacity-40"
+                className="btn-glass disabled:cursor-not-allowed disabled:opacity-40"
                 style={{ paddingInline: "1.8rem", paddingBlock: "0.78rem", fontSize: "0.82rem" }}>
-                {submitting ? "Sending..." : "Send request ->"}
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">{submitting ? "Sending..." : "Send request ->"}</span>
               </button>
             </div>
           </div>
@@ -1015,7 +1016,10 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
           A real person replies within 24 hours.
         </p>
       </div>
-      <a href="/immersive" className="btn btn-outline">← Back</a>
+      <a href="/immersive" className="btn-glass-ghost">
+        <span className="btn-glass-blob" aria-hidden="true" />
+        <span className="btn-glass-face">← Back</span>
+      </a>
     </section>
   );
 
@@ -1132,14 +1136,15 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
                   }}>
                   <button type="button"
                     onClick={() => setContactModal(true)}
-                    className="btn btn-primary"
+                    className="btn-glass"
                     style={{
                       paddingInline: "clamp(1.45rem,3vw,2rem)",
                       paddingBlock: "0.82rem",
                       fontSize: "0.82rem",
                       boxShadow: "0 0 0 6px rgba(58,191,138,0.08)",
                     }}>
-                    Send →
+                    <span className="btn-glass-blob" aria-hidden="true" />
+                    <span className="btn-glass-face">Send →</span>
                   </button>
                 </div>
               )}

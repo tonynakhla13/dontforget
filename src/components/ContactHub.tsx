@@ -267,7 +267,10 @@ export default function ContactHub() {
           A real person replies within 24 hours.
         </p>
       </div>
-      <a href="/" className="btn btn-outline">← Back to home</a>
+      <a href="/" className="btn-glass-ghost">
+        <span className="btn-glass-blob" aria-hidden="true" />
+        <span className="btn-glass-face">← Back to home</span>
+      </a>
     </section>
   );
 
@@ -379,9 +382,10 @@ export default function ContactHub() {
           <div data-in className="flex items-center gap-4" style={{ opacity: 0, flexShrink: 0 }}>
             <button type="submit"
               disabled={sub || !form.name || !form.email || !form.message}
-              className="btn btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
+              className="btn-glass disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ paddingInline: "2rem", paddingBlock: "0.75rem", fontSize: "0.8rem" }}>
-              {sub ? "Sending…" : voice ? "Send + voice →" : "Send message →"}
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">{sub ? "Sending…" : voice ? "Send + voice →" : "Send message →"}</span>
             </button>
             {voice && (
               <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.40rem",

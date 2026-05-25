@@ -279,8 +279,9 @@ export default function RequestForm({ embedded = false }: { embedded?: boolean }
       {/* ── Navigation ── */}
       {!done && (
         <nav className={`${embedded ? "shrink-0" : "sticky bottom-0"} z-50 flex items-center justify-between border-t border-[var(--border)] bg-[rgba(9,9,9,0.88)] px-6 py-5 backdrop-blur-xl md:px-10`}>
-          <button onClick={goBack} className="btn btn-outline text-[0.63rem]">
-            {step === 1 ? "← Home" : "← Back"}
+          <button onClick={goBack} className="btn-glass-ghost">
+            <span className="btn-glass-blob" aria-hidden="true" />
+            <span className="btn-glass-face">{step === 1 ? "← Home" : "← Back"}</span>
           </button>
 
           <div className="flex items-center gap-4">
@@ -301,11 +302,12 @@ export default function RequestForm({ embedded = false }: { embedded?: boolean }
             <button
               onClick={advance}
               disabled={!canAdvance || submitting}
-              className="btn btn-primary text-[0.63rem] disabled:cursor-not-allowed disabled:opacity-40"
+              className="btn-glass disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {step === 3
-                ? (submitting ? "Sending…" : "Send Request →")
-                : "Continue →"}
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">
+                {step === 3 ? (submitting ? "Sending…" : "Send Request →") : "Continue →"}
+              </span>
             </button>
           </div>
         </nav>
@@ -694,8 +696,9 @@ function SuccessScreen({
         ))}
       </div>
 
-      <Link href="/" className="btn btn-outline inline-flex">
-        ← Back to home
+      <Link href="/" className="btn-glass-ghost inline-flex">
+        <span className="btn-glass-blob" aria-hidden="true" />
+        <span className="btn-glass-face">← Back to home</span>
       </Link>
     </div>
   );

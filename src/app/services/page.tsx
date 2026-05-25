@@ -95,11 +95,13 @@ function ServicesHero() {
             behind work people remember.
           </p>
           <div ref={ctaRef} className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-            <Link href="/#contact" className="btn btn-primary btn-ripple">
-              Start a project
+            <Link href="/#contact" className="btn-glass">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">Start a project</span>
             </Link>
-            <Link href="/#work" className="btn btn-outline">
-              View work →
+            <Link href="/#work" className="btn-glass-ghost">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">View work →</span>
             </Link>
           </div>
 
@@ -163,11 +165,13 @@ function ServicesCTA() {
           We take on a small number of projects at a time — that&apos;s how we keep the craft sharp.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4">
-          <Link href="/#contact" className="btn btn-primary btn-ripple">
-            Start the conversation →
+          <Link href="/#contact" className="btn-glass">
+            <span className="btn-glass-blob" aria-hidden="true" />
+            <span className="btn-glass-face">Start the conversation →</span>
           </Link>
-          <Link href="/work" className="btn btn-outline">
-            See selected work
+          <Link href="/work" className="btn-glass-ghost">
+            <span className="btn-glass-blob" aria-hidden="true" />
+            <span className="btn-glass-face">See selected work</span>
           </Link>
         </div>
       </div>
