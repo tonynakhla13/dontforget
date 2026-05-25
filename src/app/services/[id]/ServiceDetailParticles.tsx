@@ -167,19 +167,22 @@ export default function ServiceDetailParticles() {
     window.addEventListener("mouseleave", leaveMouse);
     window.addEventListener("resize", resize);
 
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer();
+    timer.connect(document);
     let frame = 0;
-    const tick = () => {
+    const tick = (timestamp: number) => {
       frame = requestAnimationFrame(tick);
-      uniforms.uTime.value = clock.getElapsedTime();
+      timer.update(timestamp);
+      uniforms.uTime.value = timer.getElapsed();
       points.rotation.y = Math.sin(uniforms.uTime.value * 0.08) * 0.035;
       points.rotation.x = Math.cos(uniforms.uTime.value * 0.06) * 0.018;
       renderer.render(scene, camera);
     };
-    tick();
+    frame = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(frame);
+      timer.dispose();
       scrollTween.scrollTrigger?.kill();
       window.removeEventListener("mousemove", updateMouse);
       window.removeEventListener("mouseleave", leaveMouse);

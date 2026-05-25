@@ -263,17 +263,20 @@ export default function AltParticles({ mode }: { mode: "helix" | "galaxy" }) {
     };
     window.addEventListener("resize", onResize);
 
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer();
+    timer.connect(document);
     let raf: number;
-    const tick = () => {
+    const tick = (timestamp: number) => {
       raf = requestAnimationFrame(tick);
-      uniforms.uTime.value = clock.getElapsedTime();
+      timer.update(timestamp);
+      uniforms.uTime.value = timer.getElapsed();
       renderer.render(scn, cam);
     };
-    tick();
+    raf = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(raf);
+      timer.dispose();
       st.scrollTrigger?.kill();
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseleave", onLeave);

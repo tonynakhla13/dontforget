@@ -50,6 +50,12 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
     clipsRef.current.forEach(clip => URL.revokeObjectURL(clip.url));
   }, []);
 
+  function commitClips(next: VoiceClip[]) {
+    clipsRef.current = next;
+    setClips(next);
+    onRecorded(next.map(item => item.blob));
+  }
+
   /* Pulse rings animation — idle = slow invite, recording = fast pulse */
   useEffect(() => {
     [ring1, ring2, ring3].forEach((r, i) => {
@@ -97,15 +103,11 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
           url: URL.createObjectURL(blob),
           duration: Math.max(1, secsRef.current),
         };
-        setClips(prev => {
-          if (prev.length >= maxClips) {
-            URL.revokeObjectURL(clip.url);
-            return prev;
-          }
-          const next = [...prev, clip];
-          onRecorded(next.map(item => item.blob));
-          return next;
-        });
+        if (clipsRef.current.length >= maxClips) {
+          URL.revokeObjectURL(clip.url);
+        } else {
+          commitClips([...clipsRef.current, clip]);
+        }
         setState("idle");
         setSecs(0);
         secsRef.current = 0;
@@ -128,11 +130,7 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
     audio?.pause();
     delete audioRefs.current[id];
     setPlayingId(current => current === id ? null : current);
-    setClips(prev => {
-      const next = prev.filter(clip => clip.id !== id);
-      onRecorded(next.map(item => item.blob));
-      return next;
-    });
+    commitClips(clipsRef.current.filter(clip => clip.id !== id));
   }
 
   function togglePlay(id: string) {

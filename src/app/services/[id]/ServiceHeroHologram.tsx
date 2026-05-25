@@ -67,20 +67,23 @@ export default function ServiceHeroHologram({ serviceId }: { serviceId: string }
     window.addEventListener("mousemove", updateMouse);
     window.addEventListener("resize", resize);
 
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer();
+    timer.connect(document);
     let frame = 0;
-    const tick = () => {
+    const tick = (timestamp: number) => {
       frame = requestAnimationFrame(tick);
-      const t = clock.getElapsedTime();
+      timer.update(timestamp);
+      const t = timer.getElapsed();
       group.rotation.x += ((-0.12 + pointer.y * 0.12) - group.rotation.x) * 0.055;
       group.rotation.y += ((-0.42 + pointer.x * 0.18 + Math.sin(t * 0.18) * 0.08) - group.rotation.y) * 0.055;
       group.rotation.z = 0.1 + Math.sin(t * 0.13) * 0.08;
       renderer.render(scene, camera);
     };
-    tick();
+    frame = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(frame);
+      timer.dispose();
       travel.scrollTrigger?.kill();
       window.removeEventListener("mousemove", updateMouse);
       window.removeEventListener("resize", resize);

@@ -271,9 +271,9 @@ export default function Work({ projects }: { projects?: Project[] }) {
                   src={p.coverImage}
                   alt={p.title}
                   fill
-                  priority={isActive}
+                  preload={isActive}
                   className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  sizes="100vw"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1408px) 54vw, 760px"
                 />
               ) : (
                 <div className="absolute inset-0 bg-[var(--surface2)]" />

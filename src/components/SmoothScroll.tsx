@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import Lenis from "@studio-freight/lenis";
+import Lenis from "lenis";
 import { ScrollTrigger } from "@/lib/gsap";
+
+declare global {
+  interface Window {
+    __lenis?: Lenis;
+  }
+}
 
 export default function SmoothScroll() {
   useEffect(() => {
@@ -13,17 +19,22 @@ export default function SmoothScroll() {
     });
 
     // Expose globally so components can call lenis.scrollTo()
-    (window as any).__lenis = lenis;
+    window.__lenis = lenis;
 
     lenis.on("scroll", ScrollTrigger.update);
 
+    let frame = 0;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      frame = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    frame = requestAnimationFrame(raf);
 
-    return () => lenis.destroy();
+    return () => {
+      cancelAnimationFrame(frame);
+      delete window.__lenis;
+      lenis.destroy();
+    };
   }, []);
 
   return null;

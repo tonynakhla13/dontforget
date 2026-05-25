@@ -517,11 +517,13 @@ export default function DFParticles() {
     };
     window.addEventListener("resize", onResize);
 
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer();
+    timer.connect(document);
     let raf: number;
-    const tick = () => {
+    const tick = (timestamp: number) => {
       raf = requestAnimationFrame(tick);
-      const elapsed = clock.getElapsedTime();
+      timer.update(timestamp);
+      const elapsed = timer.getElapsed();
       uniforms.uTime.value = elapsed;
 
       const shapeA = Math.round(uniforms.uShapeA.value);
@@ -577,10 +579,11 @@ export default function DFParticles() {
 
       renderer.render(scene, camera);
     };
-    tick();
+    raf = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(raf);
+      timer.dispose();
       cycleTween?.kill();
       cycleDelay?.kill();
       st1.scrollTrigger?.kill();
