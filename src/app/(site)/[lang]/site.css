@@ -39,23 +39,36 @@
   padding: .56rem .72rem;
   backdrop-filter: blur(14px);
 }
-.canonical-theme .theme-control summary,
-.shell-theme .theme-control summary {
+/* Sidebar (canonical / shell) — vertical single strip, slides left on hover */
+.canonical-theme,
+.shell-theme {
+  inset-inline-end: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.canonical-theme .theme-control-clip,
+.shell-theme .theme-control-clip {
+  border-radius: 12px 0 0 12px;
+}
+.canonical-theme .theme-strip,
+.shell-theme .theme-strip {
+  flex-direction: row; /* horizontal strip slides left */
+}
+.canonical-theme .theme-strip-item,
+.shell-theme .theme-strip-item {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   min-height: 8.5rem;
   padding: 1rem .72rem;
-  gap: .8rem;
   justify-content: center;
-  background: color-mix(in srgb, var(--site-panel) 82%, transparent);
-  border-inline-end: 0;
-  backdrop-filter: blur(15px);
+  gap: .8rem;
 }
-.canonical-theme .theme-control div,
-.shell-theme .theme-control div {
-  inset-inline-end: calc(100% + .5rem);
-  top: 50%;
-  transform: translateY(-50%);
+.canonical-theme .theme-strip-divider,
+.shell-theme .theme-strip-divider {
+  width: unset;
+  height: 1px;
+  align-self: unset;
+  width: 100%;
 }
 
 [lang="ar"] body { font-family: var(--font-arabic), system-ui, sans-serif; text-align: right; }
@@ -80,14 +93,61 @@
 .site-controls { display: flex; align-items: center; gap: 1rem; font-size: .85rem; }
 .locale-control { display: flex; align-items: center; gap: .35rem; direction: ltr; }
 .locale-control button[aria-current="true"] { color: var(--site-accent); font-weight: 700; }
-.theme-control { position: relative; }
-.theme-control summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: .55rem; border: 1px solid color-mix(in srgb, var(--site-fg) 20%, transparent); padding: .45rem .8rem; text-transform: uppercase; transition: border-color .22s, background .22s, color .22s; }
-.theme-control summary::-webkit-details-marker { display: none; }
-.theme-control summary:hover, .theme-control[open] summary { color: var(--site-accent); border-color: var(--site-accent); }
-.theme-control-dot { width: .48rem; height: .48rem; border: 1px solid currentColor; background: var(--site-accent); display: inline-block; }
-.theme-control div { position: absolute; z-index: 1; inset-inline-end: 0; top: calc(100% + .45rem); background: var(--site-panel); border: 1px solid color-mix(in srgb, var(--site-fg) 18%, transparent); min-width: 11.5rem; box-shadow: 0 1.2rem 2.6rem color-mix(in srgb, var(--site-bg, #060908) 45%, transparent); }
-.theme-control div button { display: block; width: 100%; padding: .7rem 1rem; text-align: start; text-transform: uppercase; }
-.theme-control div button:hover, .theme-control div button:focus-visible, .theme-control div button[aria-current="true"] { color: var(--site-accent); background: color-mix(in srgb, var(--site-accent) 8%, transparent); }
+/* ── Theme Control — one shape, slides left to reveal all ── */
+.theme-control { position: relative; direction: ltr; }
+
+/* Clip wrapper — hides the portion that's shifted off to the right */
+.theme-control-clip {
+  overflow: hidden;
+  border-radius: 12px 0 0 12px;
+}
+
+/* The single connected strip */
+.theme-strip {
+  display: flex;
+  align-items: stretch;
+  background: color-mix(in srgb, var(--site-panel) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--site-fg) 18%, transparent);
+  border-inline-end: none;
+  border-radius: 12px 0 0 12px;
+  backdrop-filter: blur(16px);
+  transition: transform .44s cubic-bezier(.16,1,.3,1);
+  white-space: nowrap;
+}
+
+/* Each item inside the strip */
+.theme-strip-item {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .65rem 1.1rem;
+  text-transform: uppercase;
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--site-muted);
+  cursor: pointer;
+  transition: color .2s;
+}
+.theme-strip-item:hover { color: var(--site-fg); }
+.theme-strip-item.current {
+  color: var(--site-accent);
+  cursor: default;
+}
+
+/* Thin divider between others and current */
+.theme-strip-divider {
+  width: 1px;
+  background: color-mix(in srgb, var(--site-fg) 14%, transparent);
+  align-self: stretch;
+}
+
+.theme-control-dot {
+  width: .44rem; height: .44rem;
+  border-radius: 50%;
+  background: var(--site-accent);
+  flex-shrink: 0;
+}
+.theme-option-name { letter-spacing: .06em; }
 
 .site-hero, .page-intro, .detail-page, .article {
   width: min(1320px, calc(100% - clamp(2.5rem, 10vw, 9rem)));
@@ -339,5 +399,5 @@
   .site-header nav { order: 3; width: 100%; overflow-x: auto; padding-top: .5rem; justify-content: space-between; }
   .card-grid, .picker-grid { grid-template-columns: 1fr; }
   .canonical-locale { inset-inline-end: clamp(5rem, 17vw, 6rem); top: 1rem; }
-  .canonical-theme .theme-control summary, .shell-theme .theme-control summary { min-height: 6.8rem; }
+  .canonical-theme .theme-strip-item, .shell-theme .theme-strip-item { min-height: 6.8rem; }
 }
