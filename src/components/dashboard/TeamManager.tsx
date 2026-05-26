@@ -8,8 +8,11 @@ type MemberForm = Omit<TeamMember, "id" | "createdAt" | "updatedAt">;
 
 const emptyMember: MemberForm = {
   name: "",
+  nameAr: "",
   role: "",
+  roleAr: "",
   bio: "",
+  bioAr: "",
   photo: "",
   linkedinUrl: "",
   twitterUrl: "",
@@ -129,6 +132,23 @@ export default function TeamManager({ initial }: { initial: TeamMember[] }) {
               value={form.bio ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
             />
+          </div>
+          <div className="border-t border-white/5 pt-4 space-y-4">
+            <h3 className="text-xs uppercase tracking-widest text-white/40">Arabic Content</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Arabic Name</label>
+                <input dir="rtl" className={inputClass} value={form.nameAr ?? ""} onChange={(e) => setForm((f) => ({ ...f, nameAr: e.target.value }))} />
+              </div>
+              <div>
+                <label className={labelClass}>Arabic Role</label>
+                <input dir="rtl" className={inputClass} value={form.roleAr ?? ""} onChange={(e) => setForm((f) => ({ ...f, roleAr: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <label className={labelClass}>Arabic Bio</label>
+              <textarea dir="rtl" className={`${inputClass} h-24 resize-none`} value={form.bioAr ?? ""} onChange={(e) => setForm((f) => ({ ...f, bioAr: e.target.value }))} />
+            </div>
           </div>
 
           <div>

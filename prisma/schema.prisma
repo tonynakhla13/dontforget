@@ -27,11 +27,16 @@ model Project {
   id            String        @id @default(cuid())
   slug          String        @unique
   title         String
+  titleAr       String?
   description   String?       @db.Text
+  descriptionAr String?       @db.Text
   client        String?
+  clientAr      String?
   year          String?
   category      String?
+  categoryAr    String?
   tags          String[]
+  tagsAr        String[]      @default([])
   coverImage    String?
   images        String[]
   videoUrl      String?
@@ -49,8 +54,11 @@ model Project {
 model TeamMember {
   id          String   @id @default(cuid())
   name        String
+  nameAr      String?
   role        String
+  roleAr      String?
   bio         String?  @db.Text
+  bioAr       String?  @db.Text
   photo       String?
   linkedinUrl String?
   twitterUrl  String?
@@ -64,7 +72,9 @@ model TeamMember {
 model Service {
   id          String   @id @default(cuid())
   title       String
+  titleAr     String?
   description String?  @db.Text
+  descriptionAr String? @db.Text
   icon        String?
   order       Int      @default(0)
   active      Boolean  @default(true)
@@ -75,10 +85,13 @@ model Service {
 model ContactPage {
   id           Int      @id @default(autoincrement())
   headline     String?
+  headlineAr   String?
   subheadline  String?
+  subheadlineAr String?
   email        String?
   phone        String?
   address      String?
+  addressAr    String?
   socialLinks  Json     @default("{}")
   updatedAt    DateTime @updatedAt
 }
@@ -95,10 +108,14 @@ model Post {
   id          String     @id @default(cuid())
   slug        String     @unique
   title       String
+  titleAr     String?
   excerpt     String?    @db.Text
+  excerptAr   String?    @db.Text
   content     String     @default("") @db.Text
+  contentAr   String?    @db.Text
   coverImage  String?
   tags        String[]
+  tagsAr      String[]   @default([])
   status      PostStatus @default(DRAFT)
   publishedAt DateTime?
   order       Int        @default(0)

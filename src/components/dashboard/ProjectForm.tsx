@@ -6,12 +6,17 @@ import { useRouter } from "next/navigation";
 interface ProjectData {
   id?: string;
   title?: string;
+  titleAr?: string;
   slug?: string;
   description?: string;
+  descriptionAr?: string;
   client?: string;
+  clientAr?: string;
   year?: string;
   category?: string;
+  categoryAr?: string;
   tags?: string[];
+  tagsAr?: string[];
   coverImage?: string;
   images?: string[];
   videoUrl?: string;
@@ -39,12 +44,17 @@ export default function ProjectForm({ initial }: { initial?: ProjectData }) {
 
   const [form, setForm] = useState<ProjectData>({
     title: "",
+    titleAr: "",
     slug: "",
     description: "",
+    descriptionAr: "",
     client: "",
+    clientAr: "",
     year: new Date().getFullYear().toString(),
     category: "",
+    categoryAr: "",
     tags: [],
+    tagsAr: [],
     coverImage: "",
     images: [],
     videoUrl: "",
@@ -61,6 +71,7 @@ export default function ProjectForm({ initial }: { initial?: ProjectData }) {
   const [tagsInput, setTagsInput] = useState(
     (initial?.tags ?? []).join(", ")
   );
+  const [tagsArInput, setTagsArInput] = useState((initial?.tagsAr ?? []).join(", "));
   const [imagesInput, setImagesInput] = useState(
     (initial?.images ?? []).join("\n")
   );
@@ -94,6 +105,7 @@ export default function ProjectForm({ initial }: { initial?: ProjectData }) {
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean),
+      tagsAr: tagsArInput.split(",").map((tag) => tag.trim()).filter(Boolean),
       images: imagesInput.split("\n").map((u) => u.trim()).filter(Boolean),
     };
 
@@ -205,6 +217,34 @@ export default function ProjectForm({ initial }: { initial?: ProjectData }) {
             onChange={(e) => set("description", e.target.value)}
             placeholder="A brief case study overview…"
           />
+        </div>
+      </section>
+
+      <section className="bg-zinc-900 border border-white/5 rounded-xl p-6 space-y-5">
+        <h2 className="text-sm font-medium text-white/60 uppercase tracking-widest">
+          Arabic Content
+        </h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Arabic Title</label>
+            <input dir="rtl" className={inputClass} value={form.titleAr} onChange={(e) => set("titleAr", e.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>Arabic Client</label>
+            <input dir="rtl" className={inputClass} value={form.clientAr} onChange={(e) => set("clientAr", e.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>Arabic Category</label>
+            <input dir="rtl" className={inputClass} value={form.categoryAr} onChange={(e) => set("categoryAr", e.target.value)} />
+          </div>
+          <div>
+            <label className={labelClass}>Arabic Tags (comma separated)</label>
+            <input dir="rtl" className={inputClass} value={tagsArInput} onChange={(e) => setTagsArInput(e.target.value)} />
+          </div>
+        </div>
+        <div>
+          <label className={labelClass}>Arabic Description</label>
+          <textarea dir="rtl" className={`${inputClass} h-32 resize-none`} value={form.descriptionAr} onChange={(e) => set("descriptionAr", e.target.value)} />
         </div>
       </section>
 

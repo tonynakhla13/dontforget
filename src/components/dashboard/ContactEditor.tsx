@@ -20,10 +20,13 @@ export default function ContactEditor({
 }) {
   const [form, setForm] = useState({
     headline: initial?.headline ?? "",
+    headlineAr: initial?.headlineAr ?? "",
     subheadline: initial?.subheadline ?? "",
+    subheadlineAr: initial?.subheadlineAr ?? "",
     email: initial?.email ?? "",
     phone: initial?.phone ?? "",
     address: initial?.address ?? "",
+    addressAr: initial?.addressAr ?? "",
   });
 
   const initSocials = (initial?.socialLinks ?? {}) as SocialLinks;
@@ -74,6 +77,24 @@ export default function ContactEditor({
             }
             placeholder="Tell us about your project"
           />
+        </div>
+      </section>
+
+      <section className="bg-zinc-900 border border-white/5 rounded-xl p-6 space-y-4">
+        <h2 className="text-sm font-medium text-white/60 uppercase tracking-widest">
+          Arabic Content
+        </h2>
+        <div>
+          <label className={labelClass}>Arabic Headline</label>
+          <input dir="rtl" className={inputClass} value={form.headlineAr} onChange={(e) => setForm((f) => ({ ...f, headlineAr: e.target.value }))} />
+        </div>
+        <div>
+          <label className={labelClass}>Arabic Subheadline</label>
+          <input dir="rtl" className={inputClass} value={form.subheadlineAr} onChange={(e) => setForm((f) => ({ ...f, subheadlineAr: e.target.value }))} />
+        </div>
+        <div>
+          <label className={labelClass}>Arabic Address</label>
+          <input dir="rtl" className={inputClass} value={form.addressAr} onChange={(e) => setForm((f) => ({ ...f, addressAr: e.target.value }))} />
         </div>
       </section>
 

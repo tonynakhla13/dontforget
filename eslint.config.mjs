@@ -12,6 +12,18 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Source retained from public routes removed by the canonical site renderer.
+    "src/components/*.tsx",
+    "src/components/about/**",
+    "src/components/blog/**",
+    "src/components/creative/**",
+    "src/components/focused/**",
+    "src/components/home/**",
+    "src/components/immersive/**",
+    "src/components/services/**",
+    "src/components/three/**",
+    "src/components/ui/**",
+    "src/app/_legacy/**",
   ]),
 ]);
 

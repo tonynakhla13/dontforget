@@ -17,17 +17,27 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
   const pathname = usePathname();
 
   /* ── Resolve nav links based on current path ── */
-  const mode = pathname.startsWith("/focused")   ? "focused"
+  const segments = pathname.split("/").filter(Boolean);
+  const canonicalMode = segments[0] === "en" || segments[0] === "ar" ? segments[1] : null;
+  const mode = canonicalMode === "focused" || canonicalMode === "creative" || canonicalMode === "immersive"
+             ? canonicalMode
+             : pathname.startsWith("/focused")   ? "focused"
              : pathname.startsWith("/creative")  ? "creative"
              : pathname.startsWith("/immersive") ? "immersive"
              : null;
+  const canonicalBase = mode && canonicalMode === mode ? `/${segments[0]}/${mode}` : null;
 
   // On inner pages that aren't mode-prefixed (e.g. /work, /about, /services)
   // use full route links instead of homepage anchor links
   const isInnerPage = !mode && pathname !== "/";
 
   const navLinks = mode
-    ? [
+    ? canonicalBase ? [
+        { label: "Work",     href: `${canonicalBase}/work`     },
+        { label: "Services", href: `${canonicalBase}/services` },
+        { label: "About",    href: `${canonicalBase}/about`    },
+        { label: "Contact",  href: `${canonicalBase}/contact`  },
+      ] : [
         { label: "Work",     href: `/${mode}/work`    },
         { label: "Services", href: `/services`        },
         { label: "About",    href: `/about`           },
@@ -48,7 +58,8 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         { label: "Contact",  href: "#contact"  },
       ];
 
-  const ctaHref = mode ? `/${mode}/contact` : isInnerPage ? "/#contact" : "#contact";
+  const homeHref = canonicalBase ?? (mode ? `/${mode}` : "/");
+  const ctaHref = canonicalBase ? `${canonicalBase}/contact` : mode ? `/${mode}/contact` : isInnerPage ? "/#contact" : "#contact";
   const isImmersive = mode === "immersive";
 
   /* ── Full-screen overlay animation ── */
@@ -75,14 +86,9 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
   /* ── Entrance + scroll-swap ── */
   useEffect(() => {
-    // Only delay entrance on home pages to sync with Loader.
-    // On inner pages (or if Loader already ran), show immediately.
-    const isFirstLoad = !sessionStorage.getItem("df_loader_shown");
-    const delay = (!inner && isFirstLoad) ? 2.2 : 0;
-
     gsap.fromTo(primaryRef.current,
       { autoAlpha: 0, y: -16 },
-      { autoAlpha: 1, y: 0, duration: 1, ease: "power3.out", delay }
+      { autoAlpha: 1, y: 0, duration: 1, ease: "power3.out" }
     );
 
     if (isImmersive) {
@@ -137,10 +143,10 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         style={{ background: "var(--bg)", visibility: "hidden" }}
       >
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
-          <a href={mode ? `/${mode}` : "/"} onClick={() => setMenuOpen(false)}>
+          <Link href={homeHref} onClick={() => setMenuOpen(false)}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
-          </a>
+          </Link>
           <button
             onClick={() => setMenuOpen(false)}
             className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7"
@@ -190,7 +196,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         }}
       >
         <div className="wrap flex w-full items-center justify-between">
-          <a href={mode ? `/${mode}` : "/"}>
+          <Link href={homeHref}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/dont%20forget%20logo.png"
@@ -202,7 +208,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
                 filter: isImmersive && compact ? "drop-shadow(0 0 18px rgba(58,191,138,0.24))" : "none",
               }}
             />
-          </a>
+          </Link>
 
           <ul className="hidden items-center gap-8 md:flex">
             {navLinks.slice(0, navLinks.length - 1).map(({ label, href }) => (
@@ -241,7 +247,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         >
           <div className="py-[18px]">
             <div className="wrap flex w-full items-center justify-between">
-              <Link href={mode ? `/${mode}` : "/"} className="flex shrink-0 items-center">
+              <Link href={homeHref} className="flex shrink-0 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
               </Link>

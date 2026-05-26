@@ -4,7 +4,7 @@ import Image from "next/image";
 import { PointerEvent, WheelEvent, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 
-interface Project {
+export interface Project {
   id: string;
   slug?: string | null;
   title: string;
@@ -241,6 +241,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
             <a
               key={p.carouselKey}
               href={projectHref(p)}
+              suppressHydrationWarning
               className="group absolute left-1/2 top-[52%] block w-[min(760px,54vw)] overflow-hidden border border-white/10 bg-black shadow-[0_45px_120px_rgba(0,0,0,0.62)] transition-[transform,opacity,border-radius,filter] duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
               style={{
                 aspectRatio: "16 / 9",
@@ -253,14 +254,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
                 opacity: abs > 3 ? 0.18 : isActive ? 1 : 0.78,
                 pointerEvents: abs > 2.2 ? "none" : "auto",
                 zIndex: Math.round(80 - abs * 8 + (isActive ? 30 : 0)),
-                transform: `
-                  translate(-50%, -50%)
-                  translateX(${orbitX}px)
-                  translateZ(${orbitZ}px)
-                  rotateY(${-angle}deg)
-                  rotateZ(${isActive ? -2.8 : offset * 4.8}deg)
-                  scale(${isActive ? 1 : 0.98})
-                `,
+                transform: `translate(-50%, -50%) translateX(${orbitX}px) translateZ(${orbitZ}px) rotateY(${-angle}deg) rotateZ(${isActive ? -2.8 : offset * 4.8}deg) scale(${isActive ? 1 : 0.98})`,
                 transformStyle: "preserve-3d",
                 transformOrigin: "50% 50%",
                 backfaceVisibility: "visible",
