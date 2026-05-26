@@ -3,9 +3,9 @@ import { prisma } from "@/lib/prisma";
 import BlogFocused, { type FocusedPost } from "@/components/focused/BlogFocused";
 
 export const metadata: Metadata = {
-  title: "Blog — DON'T FORGET",
+  title: "Blog — NOX Studio",
   description:
-    "Insights on branding, web performance, design systems, SEO, and conversion from the DON'T FORGET studio.",
+    "Insights on branding, web performance, design systems, SEO, and conversion from the NOX Studio team.",
 };
 
 export const dynamic = "force-dynamic";

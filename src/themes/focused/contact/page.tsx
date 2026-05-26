@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
-import SmoothScroll from "@/components/SmoothScroll";
-import Navbar from "@/components/Navbar";
-import ContactHub from "@/components/ContactHub";
+import ContactFocused from "@/components/focused/ContactFocused";
 
 export const metadata: Metadata = {
-  title: "Contact — DON'T FORGET",
+  title: "Contact — NOX Studio",
   description: "Have a project in mind? Tell us what you need.",
 };
 
 export default function FocusedContactPage() {
-  return (
-    <>
-      <SmoothScroll />
-      <Navbar inner />
-      <ContactHub />
-    </>
-  );
+  return <ContactFocused />;
 }

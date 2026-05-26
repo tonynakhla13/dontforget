@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
-import { ScrollTrigger } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 declare global {
   interface Window {
@@ -18,20 +18,16 @@ export default function SmoothScroll() {
       smoothWheel: true,
     });
 
-    // Expose globally so components can call lenis.scrollTo()
     window.__lenis = lenis;
 
     lenis.on("scroll", ScrollTrigger.update);
 
-    let frame = 0;
-    function raf(time: number) {
-      lenis.raf(time);
-      frame = requestAnimationFrame(raf);
-    }
-    frame = requestAnimationFrame(raf);
+    // Drive Lenis from GSAP's ticker so both are perfectly in sync
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
 
     return () => {
-      cancelAnimationFrame(frame);
+      gsap.ticker.remove((time) => lenis.raf(time * 1000));
       delete window.__lenis;
       lenis.destroy();
     };

@@ -1,93 +1,153 @@
 "use client";
 
-import FocusedLayout, { C, TEKO, MONO } from "./FocusedLayout";
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Link from "next/link";
+import { NoxNavbar, NoxFooter, NoxPageIntro, NoxCTABar, TK, SANS } from "./NoxShared";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export type FocusedProject = {
-  id: string;
-  slug: string;
-  title: string;
-  category: string | null;
+  id:          string;
+  slug:        string;
+  title:       string;
+  category:    string | null;
   description: string | null;
-  coverImage: string | null;
+  coverImage:  string | null;
 };
 
 const FALLBACK: FocusedProject[] = [
-  { id: "1", slug: "elia-clinic",    title: "Elia Clinic",       category: "Healthcare",    description: null, coverImage: null },
-  { id: "2", slug: "montgab",        title: "Montgab",           category: "E-Commerce",    description: null, coverImage: null },
-  { id: "3", slug: "180-degrees",    title: "180 Degrees",       category: "Branding",      description: null, coverImage: null },
-  { id: "4", slug: "launchpad",      title: "Launchpad",         category: "SaaS",          description: null, coverImage: null },
-  { id: "5", slug: "nova-foods",     title: "Nova Foods",        category: "Developing",    description: null, coverImage: null },
-  { id: "6", slug: "studio-drift",   title: "Studio Drift",      category: "Branding",      description: null, coverImage: null },
+  { id: "1", slug: "elia-clinic",  title: "Elia Clinic",  category: "Healthcare",    description: "Brand identity and digital experience for a modern healthcare clinic.", coverImage: null },
+  { id: "2", slug: "montgab",      title: "Montgab",      category: "E-Commerce",    description: "Full e-commerce build - product, UX, and conversion strategy.", coverImage: null },
+  { id: "3", slug: "180-degrees",  title: "180 Degrees",  category: "Agency / Brand", description: "Campaign concept and creative direction for a bold agency rebrand.", coverImage: null },
+  { id: "4", slug: "launchpad",    title: "Launchpad",    category: "SaaS Platform", description: "Product launch and digital experience for a B2B SaaS tool.", coverImage: null },
 ];
 
-function ThumbPlaceholder() {
-  return (
-    <svg width="40%" viewBox="0 0 120 80" fill="none">
-      <rect width="120" height="80" rx="8" fill={C.cream} />
-      <rect x="10" y="18" width="100" height="44" rx="6" stroke={C.green} strokeWidth="1.5" fill="none" />
-      <circle cx="36" cy="40" r="10" fill={C.green} opacity="0.3" />
-      <path d="M60 52 l20-20 14 14" stroke={C.green} strokeWidth="1.5" />
-    </svg>
-  );
-}
+const FILTERS = ["all", "identity", "website", "campaign", "e-commerce", "saas"];
 
-export default function ProjectsFocused({ projects = FALLBACK }: { projects?: FocusedProject[] }) {
-  return (
-    <FocusedLayout title="Our Projects" activeNav="work" animationClass="kbm-proj-content">
+export default function ProjectsFocused({ projects }: { projects?: FocusedProject[] }) {
+  const rootRef  = useRef<HTMLDivElement>(null);
+  const list     = projects?.length ? projects : FALLBACK;
 
-      <section className="kbm-proj-content" style={{
-        margin: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 8rem)",
-        display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
-        gap: "clamp(2rem, 4vw, 4rem) clamp(1rem, 2vw, 2rem)",
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(".tk-work-card", {
+        y: 40, opacity: 0, stagger: 0.1, duration: 0.85, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-work-grid", start: "top 78%" },
+      });
+    }, rootRef);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <div ref={rootRef} style={{ background: TK.ink, color: TK.green, fontFamily: SANS }}>
+      <NoxNavbar active="our work" />
+
+      <NoxPageIntro
+        eyebrow="/ our work"
+        title="things we"
+        italic="made."
+        lede="A sampler - for the full case studies, get in touch. Some of our favourite stuff is still under NDA."
+      />
+
+      {/* ── Filters ── */}
+      <nav style={{
+        display:        "flex",
+        gap:            "clamp(0.5rem, 1vw, 0.75rem)",
+        justifyContent: "center",
+        flexWrap:       "wrap",
+        padding:        "clamp(1.5rem, 3vw, 3rem) clamp(1.5rem, 4vw, 3.5rem)",
+        borderTop:      `1px solid ${TK.line}`,
+        borderBottom:   `1px solid ${TK.line}`,
       }}>
-        {projects.map((p, i) => (
-          <a key={p.id} href={`/work/${p.slug}`} style={{
-            display: "flex", flexDirection: "column", gap: 14,
-            textDecoration: "none",
-          }}>
-            {/* thumb */}
-            <div style={{
-              height: "clamp(160px, 22vw, 360px)",
-              borderRadius: 40,
-              backgroundColor: p.coverImage ? undefined : C.ph,
-              backgroundImage: p.coverImage ? `url(${p.coverImage})` : undefined,
-              backgroundSize: "cover", backgroundPosition: "center",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              overflow: "hidden",
-              transition: "transform .25s ease",
-            }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = "translateY(-6px)")}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = "translateY(0)")}
-            >
-              {!p.coverImage && <ThumbPlaceholder />}
-            </div>
-
-            <div style={{ fontFamily: TEKO, fontWeight: 500, fontSize: "clamp(0.85rem, 1.2vw, 1.1rem)", color: C.ink, paddingTop: 6, letterSpacing: "0.04em" }}>
-              {p.category ?? "Project"}
-            </div>
-            <div style={{ fontFamily: TEKO, fontWeight: 700, fontSize: "clamp(1rem, 1.8vw, 1.7rem)", lineHeight: 1, color: C.ink }}>
-              {p.title}
-            </div>
-
-            <button
-              style={{
-                alignSelf: "flex-start", marginTop: 8,
-                padding: "10px 28px", border: `2px solid ${C.ink}`,
-                borderRadius: 40, fontFamily: TEKO, fontWeight: 500,
-                fontSize: "clamp(0.85rem, 1.2vw, 1.1rem)", color: C.ink,
-                background: "transparent", cursor: "pointer",
-                transition: "background .2s, color .2s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = C.ink; e.currentTarget.style.color = C.yellow; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.ink; }}
-            >
-              View Project
-            </button>
-          </a>
+        {FILTERS.map((f, i) => (
+          <button key={f} style={{
+            background:  i === 0 ? TK.green : "transparent",
+            border:      `1px solid ${i === 0 ? TK.green : "rgba(70,174,34,0.4)"}`,
+            color:       i === 0 ? TK.paper : TK.green,
+            padding:     "clamp(6px, 1vw, 10px) clamp(12px, 2vw, 22px)",
+            fontFamily:  SANS,
+            fontSize:    "clamp(0.72rem, 0.9vw, 0.9rem)",
+            cursor:      "pointer",
+            transition:  "background 150ms ease, color 150ms ease",
+          }}
+          onMouseEnter={e => {
+            if (i !== 0) {
+              e.currentTarget.style.background = "rgba(70,174,34,0.1)";
+            }
+          }}
+          onMouseLeave={e => {
+            if (i !== 0) {
+              e.currentTarget.style.background = "transparent";
+            }
+          }}
+          >{f}</button>
         ))}
+      </nav>
+
+      {/* ── Work grid ── */}
+      <section className="tk-work-grid" style={{
+        padding: "clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3.5rem) clamp(5rem, 9vw, 10rem)",
+        display: "grid",
+        gridTemplateColumns: "repeat(6, 1fr)",
+        gap:     "clamp(1.5rem, 3vw, 2.5rem)",
+      }}>
+        {list.map((p, i) => {
+          const isLarge = i === 0 || i === list.length - 1;
+          return (
+            <Link key={p.id}
+              href={`/en/focused/work/${p.slug}`}
+              className="tk-work-card"
+              style={{
+                gridColumn:    isLarge ? "span 6" : "span 3",
+                textDecoration:"none",
+                display:       "block",
+              }}
+            >
+              {/* Photo placeholder */}
+              <div style={{
+                background:  TK.green,
+                aspectRatio: isLarge ? "16 / 10" : "4 / 3",
+                marginBottom: 16,
+                transition:  "filter 200ms ease",
+                overflow:    "hidden",
+              }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.filter = "brightness(1.1)")}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.filter = "brightness(1)")}
+              >
+                {p.coverImage && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.coverImage} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                )}
+              </div>
+
+              {/* Meta row */}
+              <div style={{
+                display:             "grid",
+                gridTemplateColumns: "clamp(36px, 4vw, 52px) 1fr auto",
+                alignItems:          "baseline",
+                gap:                 "clamp(0.8rem, 1.5vw, 1.5rem)",
+                padding:             "clamp(0.5rem, 1vw, 1rem) 0 clamp(1rem, 2vw, 2rem)",
+                borderTop:           `1px solid rgba(70,174,34,0.2)`,
+              }}>
+                <span style={{ fontFamily: SANS, fontSize: "clamp(0.65rem, 0.82vw, 0.82rem)", letterSpacing: "0.18em", color: TK.green, opacity: 0.6 }}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <strong style={{ fontFamily: SANS, fontWeight: 600, fontSize: "clamp(1.1rem, 2.2vw, 2rem)", color: TK.paper, textTransform: "lowercase" }}>
+                  {p.title}
+                </strong>
+                <span style={{ fontFamily: SANS, fontSize: "clamp(0.72rem, 0.9vw, 0.9rem)", color: TK.green }}>
+                  {p.category}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
       </section>
 
-    </FocusedLayout>
+      <NoxCTABar label="Got a project? →" />
+      <NoxFooter />
+    </div>
   );
 }

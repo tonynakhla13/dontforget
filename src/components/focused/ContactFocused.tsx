@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import FocusedLayout, { C, TEKO, MONO } from "./FocusedLayout";
+import { useState, useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { NoxNavbar, NoxFooter, NoxPageIntro, TK, SANS, DISPLAY } from "./NoxShared";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export type ContactInfo = {
   email?: string | null;
@@ -10,69 +14,46 @@ export type ContactInfo = {
   socialLinks?: Record<string, string> | null;
 };
 
-const SOCIAL_ICONS: { key: string; label: string; svg: React.ReactNode }[] = [
-  {
-    key: "instagram",
-    label: "Instagram",
-    svg: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="3" width="18" height="18" rx="5" />
-        <circle cx="12" cy="12" r="4" />
-        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    key: "twitter",
-    label: "Twitter",
-    svg: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M22 5.8a8.6 8.6 0 0 1-2.4.7 4.2 4.2 0 0 0 1.8-2.3 8.3 8.3 0 0 1-2.6 1 4.2 4.2 0 0 0-7.1 3.8A11.9 11.9 0 0 1 3 4.7a4.2 4.2 0 0 0 1.3 5.6 4.1 4.1 0 0 1-1.9-.5v.1c0 2 1.4 3.7 3.4 4.1a4.3 4.3 0 0 1-1.9.1 4.2 4.2 0 0 0 3.9 2.9 8.4 8.4 0 0 1-6.2 1.7A11.9 11.9 0 0 0 8 20.4c7.7 0 11.9-6.4 11.9-11.9v-.5A8.5 8.5 0 0 0 22 5.8z" />
-      </svg>
-    ),
-  },
-  {
-    key: "linkedin",
-    label: "LinkedIn",
-    svg: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" />
-        <circle cx="4" cy="4" r="2" />
-      </svg>
-    ),
-  },
-  {
-    key: "pinterest",
-    label: "Pinterest",
-    svg: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2a10 10 0 0 0-3.6 19.3c-.1-.8-.2-2 0-2.9.2-.8 1.3-5.4 1.3-5.4s-.3-.7-.3-1.7c0-1.6.9-2.7 2-2.7 1 0 1.5.7 1.5 1.6 0 1-.6 2.5-.9 3.9-.3 1.2.6 2.1 1.7 2.1 2.1 0 3.7-2.2 3.7-5.4 0-2.8-2-4.8-4.9-4.8a5.1 5.1 0 0 0-5.3 5.1c0 1 .4 2.1.9 2.7.1.1.1.2.1.3l-.3 1.3c-.1.2-.2.3-.4.2-1.5-.7-2.5-2.9-2.5-4.7 0-3.8 2.8-7.3 8-7.3 4.2 0 7.5 3 7.5 7 0 4.2-2.7 7.6-6.4 7.6-1.2 0-2.4-.7-2.8-1.4l-.8 2.9c-.3 1-1 2.4-1.5 3.2A10 10 0 1 0 12 2z" />
-      </svg>
-    ),
-  },
+const inputBase: React.CSSProperties = {
+  width:       "100%",
+  background:  "transparent",
+  border:      `1px solid rgba(70,174,34,0.4)`,
+  padding:     "clamp(12px, 1.5vw, 18px) clamp(16px, 2vw, 24px)",
+  fontFamily:  SANS,
+  fontSize:    "clamp(0.88rem, 1.1vw, 1.05rem)",
+  color:       TK.paper,
+  outline:     "none",
+  transition:  "border-color 150ms ease",
+  boxSizing:   "border-box",
+};
+
+const WAYS = [
+  { label: "email us",    value: "hello@noxstudio.co",   href: "mailto:hello@noxstudio.co" },
+  { label: "call us",     value: "+1 (312) 555-0173",    href: "tel:+13125550173" },
+  { label: "find us",     value: "Chicago, IL — Remote", href: null },
 ];
 
 export default function ContactFocused({ contactInfo }: { contactInfo?: ContactInfo }) {
+  const rootRef   = useRef<HTMLDivElement>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState<string | null>(null);
 
-  const email   = contactInfo?.email   ?? "hello@dontforget.studio";
-  const phone   = contactInfo?.phone   ?? "+1 (312) 555-0173";
-  const socials = contactInfo?.socialLinks ?? {};
+  const email = contactInfo?.email ?? "hello@noxstudio.co";
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    border: `2px solid ${C.ink}`,
-    background: "transparent",
-    borderRadius: 40,
-    padding: "14px 22px",
-    fontFamily: MONO,
-    fontWeight: 500,
-    fontSize: "clamp(0.82rem, 1vw, 1rem)",
-    color: C.ink,
-    outline: "none",
-  };
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(".tk-contact-way", {
+        y: 30, opacity: 0, stagger: 0.1, duration: 0.75, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-contact-ways", start: "top 82%" },
+      });
+      gsap.from(".tk-contact-form", {
+        y: 40, opacity: 0, duration: 0.9, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-contact-form", start: "top 80%" },
+      });
+    }, rootRef);
+    return () => ctx.revert();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -81,11 +62,12 @@ export default function ContactFocused({ contactInfo }: { contactInfo?: ContactI
     const fd = new FormData(e.currentTarget);
     try {
       const res = await fetch("/api/inquiries", {
-        method: "POST",
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body:    JSON.stringify({
           name:    fd.get("name"),
           email:   fd.get("email"),
+          budget:  fd.get("budget"),
           message: fd.get("message"),
         }),
       });
@@ -99,159 +81,206 @@ export default function ContactFocused({ contactInfo }: { contactInfo?: ContactI
   }
 
   return (
-    <FocusedLayout title="Contact Us" activeNav="contact" animationClass="kbm-contact-content">
+    <div ref={rootRef} style={{ background: TK.ink, color: TK.green, fontFamily: SANS }}>
+      <NoxNavbar active="contact" />
 
-      <section className="kbm-contact-content" style={{
-        margin: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 8rem)",
-        display: "grid",
-        gridTemplateColumns: "clamp(200px, 22vw, 380px) 1fr clamp(200px, 22vw, 380px)",
-        gap: "clamp(1.5rem, 3vw, 4rem)",
-        alignItems: "start",
+      <NoxPageIntro
+        eyebrow="/ contact"
+        title="let's make"
+        italic="something."
+        lede="We work with founders, marketers, and brand teams. If you have a project that needs to be impossible to forget, we'd like to hear about it."
+      />
+
+      {/* ── Ways to reach us ── */}
+      <section className="tk-contact-ways" style={{
+        display:   "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        borderTop:    `1px solid ${TK.line}`,
+        borderBottom: `1px solid ${TK.line}`,
       }}>
-
-        {/* ── Left: info cards ─────────────────────────────── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "clamp(1rem, 1.5vw, 1.5rem)" }}>
-          {/* Email */}
-          <div style={{
-            backgroundColor: C.yellow, borderRadius: 40,
-            padding: "clamp(1.5rem, 2.5vw, 2.5rem)",
-            display: "flex", flexDirection: "column", gap: 10,
+        {WAYS.map((w, i) => (
+          <div key={i} className="tk-contact-way" style={{
+            padding:     "clamp(2rem, 4vw, 4.5rem) clamp(1.5rem, 3vw, 3rem)",
+            borderRight: i < 2 ? `1px solid ${TK.line}` : "none",
+            display:     "flex",
+            flexDirection: "column",
+            gap:         12,
           }}>
-            <span style={{ fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.ink }}>
-              Email:
-            </span>
-            <a href={`mailto:${email}`} style={{
-              fontFamily: MONO, fontWeight: 500,
-              fontSize: "clamp(0.85rem, 1.2vw, 1.2rem)", color: C.ink,
-              textDecoration: "none", wordBreak: "break-all",
-            }}>
-              {email}
-            </a>
-          </div>
-
-          {/* Phone */}
-          <div style={{
-            backgroundColor: C.orange, borderRadius: 40,
-            padding: "clamp(1.5rem, 2.5vw, 2.5rem)",
-            display: "flex", flexDirection: "column", gap: 10,
-          }}>
-            <span style={{ fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.white }}>
-              Phone:
-            </span>
-            <a href={`tel:${phone.replace(/\s|\(|\)|-/g, "")}`} style={{
-              fontFamily: MONO, fontWeight: 500,
-              fontSize: "clamp(0.85rem, 1.2vw, 1.2rem)", color: C.white,
-              textDecoration: "none",
-            }}>
-              {phone}
-            </a>
-          </div>
-
-          {/* Socials */}
-          <div style={{
-            backgroundColor: C.ink, borderRadius: 40,
-            padding: "clamp(1.2rem, 2vw, 2rem) clamp(1.5rem, 2.5vw, 2.5rem)",
-            display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center",
-          }}>
-            {SOCIAL_ICONS.map(({ key, label, svg }) => (
-              <a key={label}
-                href={socials[key] ?? "#"}
-                aria-label={label}
-                target={socials[key] ? "_blank" : undefined}
-                rel="noopener noreferrer"
-                style={{ color: C.white, transition: "color .2s" }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = C.yellow)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = C.white)}
-              >{svg}</a>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Middle: contact form ──────────────────────────── */}
-        {submitted ? (
-          <div role="alert" style={{
-            display: "flex", flexDirection: "column", alignItems: "center",
-            justifyContent: "center", gap: 24, minHeight: 400,
-            backgroundColor: C.green, borderRadius: 40,
-            padding: "clamp(2rem, 4vw, 4rem)",
-          }}>
-            <div style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>✓</div>
-            <h3 style={{ fontFamily: TEKO, fontWeight: 700, fontSize: "clamp(1.5rem, 3vw, 2.5rem)", color: C.yellow, textAlign: "center" }}>
-              Message sent!
-            </h3>
-            <p style={{ fontFamily: MONO, fontSize: "clamp(0.8rem, 1.1vw, 1rem)", color: C.cream, textAlign: "center", maxWidth: 320 }}>
-              We&apos;ll get back to you within one business day.
-            </p>
-          </div>
-        ) : (
-          <form
-            style={{ display: "flex", flexDirection: "column", gap: "clamp(1rem, 2vw, 1.5rem)" }}
-            onSubmit={handleSubmit}
-          >
-            <label style={{ display: "flex", flexDirection: "column", gap: 8, fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.ink }}>
-              Name
-              <input name="name" type="text" placeholder="Your full name" required style={inputStyle}
-                onFocus={e => (e.currentTarget.style.borderColor = C.orange)}
-                onBlur={e => (e.currentTarget.style.borderColor = C.ink)}
-              />
-            </label>
-            <label style={{ display: "flex", flexDirection: "column", gap: 8, fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.ink }}>
-              Email
-              <input name="email" type="email" placeholder="you@example.com" required style={inputStyle}
-                onFocus={e => (e.currentTarget.style.borderColor = C.orange)}
-                onBlur={e => (e.currentTarget.style.borderColor = C.ink)}
-              />
-            </label>
-            <label style={{ display: "flex", flexDirection: "column", gap: 8, fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)", color: C.ink }}>
-              Message
-              <textarea name="message" placeholder="Tell us about your project…" required rows={6}
-                style={{ ...inputStyle, borderRadius: 28, resize: "vertical" }}
-                onFocus={e => (e.currentTarget.style.borderColor = C.orange)}
-                onBlur={e => (e.currentTarget.style.borderColor = C.ink)}
-              />
-            </label>
-
-            {error && (
-              <p style={{ fontFamily: MONO, fontSize: "clamp(0.78rem, 1vw, 0.95rem)", color: C.orange, margin: 0 }}>
-                {error}
-              </p>
+            <span style={{
+              fontFamily:    SANS,
+              fontSize:      "clamp(0.65rem, 0.82vw, 0.82rem)",
+              letterSpacing: "0.18em",
+              color:         TK.green,
+              textTransform: "uppercase",
+              opacity:       0.65,
+            }}>{w.label}</span>
+            {w.href ? (
+              <a href={w.href} style={{
+                fontFamily:    DISPLAY,
+                fontStyle:     "italic",
+                fontWeight:    600,
+                fontSize:      "clamp(1.4rem, 2.5vw, 2.5rem)",
+                lineHeight:    1.1,
+                color:         TK.paper,
+                textDecoration:"none",
+                transition:    "color 150ms ease",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = TK.green)}
+              onMouseLeave={e => (e.currentTarget.style.color = TK.paper)}
+              >{w.value}</a>
+            ) : (
+              <span style={{
+                fontFamily: DISPLAY,
+                fontStyle:  "italic",
+                fontWeight: 600,
+                fontSize:   "clamp(1.4rem, 2.5vw, 2.5rem)",
+                lineHeight: 1.1,
+                color:      TK.paper,
+              }}>{w.value}</span>
             )}
-
-            <button type="submit" disabled={loading} style={{
-              alignSelf: "flex-start",
-              padding: "clamp(12px, 1.5vw, 18px) clamp(28px, 4vw, 48px)",
-              border: `2px solid ${C.ink}`, background: "transparent",
-              borderRadius: 40, fontFamily: TEKO, fontWeight: 700,
-              fontSize: "clamp(1rem, 1.5vw, 1.5rem)", color: C.ink,
-              cursor: loading ? "wait" : "pointer",
-              transition: "background .2s, color .2s",
-              opacity: loading ? 0.6 : 1,
-            }}
-              onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = C.ink; e.currentTarget.style.color = C.yellow; } }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.ink; }}
-            >
-              {loading ? "Sending…" : "Submit"}
-            </button>
-          </form>
-        )}
-
-        {/* ── Right: map ────────────────────────────────────── */}
-        <div style={{
-          height: "clamp(300px, 40vw, 600px)",
-          backgroundColor: C.ph, borderRadius: 40,
-          overflow: "hidden", position: "relative",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <iframe
-            loading="lazy"
-            allowFullScreen
-            src="https://www.openstreetmap.org/export/embed.html?bbox=-87.65%2C41.87%2C-87.60%2C41.90&layer=mapnik&marker=41.885%2C-87.625"
-            title="Map of Chicago, IL"
-            style={{ width: "100%", height: "100%", border: 0, borderRadius: 40 }}
-          />
-        </div>
-
+          </div>
+        ))}
       </section>
-    </FocusedLayout>
+
+      {/* ── Contact form ── */}
+      <section style={{
+        padding: "clamp(4rem, 8vw, 9rem) clamp(1.5rem, 4vw, 3.5rem) clamp(6rem, 10vw, 11rem)",
+      }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <h2 style={{
+            fontFamily:    SANS,
+            fontWeight:    700,
+            fontSize:      "clamp(2rem, 5vw, 5rem)",
+            lineHeight:    1,
+            color:         TK.paper,
+            textTransform: "uppercase",
+            margin:        "0 0 clamp(3rem, 5vw, 5rem)",
+          }}>tell us about your project</h2>
+
+          {submitted ? (
+            <div style={{
+              padding:      "clamp(3rem, 6vw, 6rem)",
+              border:       `1px solid ${TK.line}`,
+              textAlign:    "center",
+              display:      "flex",
+              flexDirection:"column",
+              alignItems:   "center",
+              gap:          24,
+            }}>
+              <span style={{
+                fontFamily: DISPLAY,
+                fontStyle:  "italic",
+                fontWeight: 600,
+                fontSize:   "clamp(3rem, 7vw, 7rem)",
+                lineHeight: 1,
+                color:      TK.green,
+              }}>✓</span>
+              <p style={{ fontFamily: SANS, fontSize: "clamp(1rem, 1.6vw, 1.5rem)", color: TK.paper, margin: 0 }}>
+                Message received. We&apos;ll be in touch within one business day.
+              </p>
+            </div>
+          ) : (
+            <form className="tk-contact-form" onSubmit={handleSubmit} style={{
+              display:       "flex",
+              flexDirection: "column",
+              gap:           "clamp(1.5rem, 2.5vw, 2.5rem)",
+            }}>
+              {/* Name + Email row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(1rem, 2vw, 2rem)" }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <span style={{ fontFamily: SANS, fontSize: "clamp(0.7rem, 0.88vw, 0.88rem)", letterSpacing: "0.14em", color: TK.green, opacity: 0.75, textTransform: "uppercase" }}>Name</span>
+                  <input
+                    name="name"
+                    type="text"
+                    placeholder="Your name"
+                    required
+                    style={inputBase}
+                    onFocus={e => (e.currentTarget.style.borderColor = TK.green)}
+                    onBlur={e  => (e.currentTarget.style.borderColor = "rgba(70,174,34,0.4)")}
+                  />
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <span style={{ fontFamily: SANS, fontSize: "clamp(0.7rem, 0.88vw, 0.88rem)", letterSpacing: "0.14em", color: TK.green, opacity: 0.75, textTransform: "uppercase" }}>Email</span>
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="you@company.com"
+                    required
+                    style={inputBase}
+                    onFocus={e => (e.currentTarget.style.borderColor = TK.green)}
+                    onBlur={e  => (e.currentTarget.style.borderColor = "rgba(70,174,34,0.4)")}
+                  />
+                </label>
+              </div>
+
+              {/* Budget */}
+              <label style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <span style={{ fontFamily: SANS, fontSize: "clamp(0.7rem, 0.88vw, 0.88rem)", letterSpacing: "0.14em", color: TK.green, opacity: 0.75, textTransform: "uppercase" }}>Budget range</span>
+                <select
+                  name="budget"
+                  style={{ ...inputBase, cursor: "pointer", appearance: "none" }}
+                  onFocus={e => (e.currentTarget.style.borderColor = TK.green)}
+                  onBlur={e  => (e.currentTarget.style.borderColor = "rgba(70,174,34,0.4)")}
+                >
+                  <option value="" style={{ background: TK.ink }}>Select a range</option>
+                  <option value="<5k"   style={{ background: TK.ink }}>Under $5k</option>
+                  <option value="5-15k" style={{ background: TK.ink }}>$5k – $15k</option>
+                  <option value="15-50k"style={{ background: TK.ink }}>$15k – $50k</option>
+                  <option value="50k+"  style={{ background: TK.ink }}>$50k+</option>
+                  <option value="tbd"   style={{ background: TK.ink }}>Let's talk</option>
+                </select>
+              </label>
+
+              {/* Message */}
+              <label style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <span style={{ fontFamily: SANS, fontSize: "clamp(0.7rem, 0.88vw, 0.88rem)", letterSpacing: "0.14em", color: TK.green, opacity: 0.75, textTransform: "uppercase" }}>Tell us about your project</span>
+                <textarea
+                  name="message"
+                  placeholder="What are you building? What's broken? What needs to change?"
+                  required
+                  rows={7}
+                  style={{ ...inputBase, resize: "vertical" }}
+                  onFocus={e => (e.currentTarget.style.borderColor = TK.green)}
+                  onBlur={e  => (e.currentTarget.style.borderColor = "rgba(70,174,34,0.4)")}
+                />
+              </label>
+
+              {error && (
+                <p style={{ fontFamily: SANS, fontSize: "clamp(0.8rem, 1vw, 0.95rem)", color: "#e55", margin: 0 }}>{error}</p>
+              )}
+
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    padding:    "clamp(14px, 1.8vw, 20px) clamp(32px, 5vw, 56px)",
+                    border:     `1px solid ${TK.green}`,
+                    background: TK.green,
+                    fontFamily: SANS,
+                    fontWeight: 700,
+                    fontSize:   "clamp(0.88rem, 1.1vw, 1.05rem)",
+                    color:      TK.ink,
+                    cursor:     loading ? "wait" : "pointer",
+                    transition: "background 150ms ease, color 150ms ease",
+                    opacity:    loading ? 0.6 : 1,
+                    letterSpacing: "0.04em",
+                  }}
+                  onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = TK.green; } }}
+                  onMouseLeave={e => { e.currentTarget.style.background = TK.green; e.currentTarget.style.color = TK.ink; }}
+                >
+                  {loading ? "Sending…" : "Send message →"}
+                </button>
+                <span style={{ fontFamily: SANS, fontSize: "clamp(0.75rem, 0.9vw, 0.88rem)", color: TK.green, opacity: 0.6 }}>
+                  We respond within 24 hours.
+                </span>
+              </div>
+            </form>
+          )}
+        </div>
+      </section>
+
+      <NoxFooter />
+    </div>
   );
 }
