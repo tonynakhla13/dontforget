@@ -32,7 +32,7 @@ export default function Hero() {
           className="pointer-events-none absolute inset-x-0 bottom-0 h-80"
           style={{
             background:
-              "linear-gradient(to top, rgba(9,9,9,0.34) 0%, rgba(9,9,9,0.14) 46%, transparent 100%)",
+              "linear-gradient(to top, rgba(var(--bg-rgb),0.34) 0%, rgba(var(--bg-rgb),0.14) 46%, transparent 100%)",
           }}
         />
 
@@ -44,8 +44,8 @@ export default function Hero() {
             </p>
 
             <h1
-              className="hed text-[3.8rem] leading-[0.95] text-[#F8F5EE]"
-              style={{ color: "#F8F5EE" }}
+              className="hed text-[3.8rem] leading-[0.95] text-[var(--fg)]"
+              style={{ color: "var(--fg)" }}
               data-anim
             >
               We build things<br />

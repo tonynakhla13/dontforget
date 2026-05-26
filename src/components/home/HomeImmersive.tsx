@@ -6,6 +6,7 @@ import About from "@/components/About";
 import ClientsMarquee from "@/components/about/ClientsMarquee";
 import AmbientGlow from "@/components/AmbientGlow";
 import ImmersiveContact from "@/components/immersive/ImmersiveContact";
+import ImmersiveGlobalsPanel from "@/components/immersive/ImmersiveGlobalsPanel";
 import Hero from "@/components/Hero";
 import Marquee from "@/components/Marquee";
 import Navbar from "@/components/Navbar";
@@ -13,7 +14,8 @@ import Principles from "@/components/Principles";
 import Process from "@/components/Process";
 import Services from "@/components/Services";
 import SmoothScroll from "@/components/SmoothScroll";
-import Work, { type Project } from "@/components/Work";
+import type { Project } from "@/components/Work";
+import ImmersiveWorkCarousel from "@/components/immersive/ImmersiveWorkCarousel";
 import ParticleLayer from "@/components/ParticleLayer";
 import ImmersiveFooter from "@/components/immersive/ImmersiveFooter";
 
@@ -28,9 +30,10 @@ export default function HomeImmersive({ projects }: { projects?: Project[] }) {
   return (
     <>
       <SmoothScroll />
+      <ImmersiveGlobalsPanel />
       {/* ParticleLayer must live OUTSIDE <main> to avoid stacking context trapping z-index:-1 */}
       <ParticleLayer />
-      <main className="relative z-[1] overflow-x-clip">
+      <main className="immersive-mode relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
         <Navbar />
@@ -39,7 +42,7 @@ export default function HomeImmersive({ projects }: { projects?: Project[] }) {
         <Marquee />
         <Services />
         <Process />
-        <Work projects={projects} />
+        <ImmersiveWorkCarousel projects={projects} />
         <Principles />
         <ClientsMarquee />
         <ImmersiveContact embedded />

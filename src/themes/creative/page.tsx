@@ -7,9 +7,8 @@ import CreativePortfolio, { type CreativeHomeProject } from "@/components/creati
 import CreativeProcess from "@/components/creative/CreativeProcess";
 import CreativeMusts from "@/components/creative/CreativeMusts";
 import CreativeCTA1 from "@/components/creative/CreativeCTA1";
-import CreativeTestimonials from "@/components/creative/CreativeTestimonials";
 import CreativeFAQ from "@/components/creative/CreativeFAQ";
-import CreativeCTA2 from "@/components/creative/CreativeCTA2";
+import CreativeContactHome from "@/components/creative/CreativeContactHome";
 import CreativeFooter from "@/components/creative/CreativeFooter";
 import CreativeHomeMotion from "@/components/creative/CreativeHomeMotion";
 
@@ -75,9 +74,8 @@ export default async function CreativePage() {
       <CreativeProcess />
       <CreativeMusts />
       <CreativeCTA1 />
-      <CreativeTestimonials />
       <CreativeFAQ />
-      <CreativeCTA2 />
+      <CreativeContactHome />
       <CreativeFooter />
     </>
   );

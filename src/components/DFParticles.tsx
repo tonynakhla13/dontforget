@@ -11,6 +11,23 @@ function smoothstepValue(value: number) {
   return x * x * (3 - 2 * x);
 }
 
+function cssVar(name: string, fallback: string) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+}
+
+function colorToVec3(color: string) {
+  const parsed = new THREE.Color(color);
+  return new THREE.Vector3(parsed.r, parsed.g, parsed.b);
+}
+
+function particleThemeSignature() {
+  return [
+    cssVar("--immersive-particles", "#46D12A"),
+    cssVar("--immersive-deep", "#46AE22"),
+    cssVar("--immersive-surface2", "#161616"),
+  ].join("|");
+}
+
 // ── canvas helpers ────────────────────────────────────────────────────
 function makeCtx(CW: number, CH: number): CanvasRenderingContext2D {
   const cv = document.createElement("canvas");
@@ -70,9 +87,9 @@ function buildWebsitesPos(): Float32Array {
   const CW = 1000, CH = 480;
   const ctx = makeCtx(CW, CH);
   ctx.fillStyle = "#fff";
-  ctx.font = `900 154px 'Arial Black', Impact, sans-serif`;
+  ctx.font = `900 132px 'Arial Black', Impact, sans-serif`;
   ctx.textBaseline = "middle";
-  drawTracked(ctx, "WEBSITES", 405, CH / 2, 8);
+  drawTracked(ctx, "WEBSITES", CW / 2, CH / 2, 4);
   return sampleCanvas(ctx, CW, CH, 6);
 }
 
@@ -247,6 +264,10 @@ const VERT = /* glsl */`
 const FRAG = /* glsl */`
   uniform float uScene;
   uniform float uDotOpacity;
+  uniform vec3  uAccent;
+  uniform vec3  uScatter;
+  uniform vec3  uBlobFg;
+  uniform vec3  uBlobBg;
   varying float vDepth;
 
   void main() {
@@ -254,16 +275,11 @@ const FRAG = /* glsl */`
     if (d > 0.5) discard;
     float alpha = 1.0 - smoothstep(0.36, 0.5, d);
 
-    vec3 teal    = vec3(0.227, 0.749, 0.541);
-    vec3 scatter = vec3(0.11,  0.34,  0.27);
-    vec3 blobFg  = vec3(0.16,  0.55,  0.40);
-    vec3 blobBg  = vec3(0.05,  0.05,  0.06);
-
     float t2     = clamp(uScene - 1.0, 0.0, 1.0);
     float blobD  = vDepth * 0.5 + 0.5;
-    vec3  blobCol = mix(blobBg, blobFg, pow(blobD, 1.8));
+    vec3  blobCol = mix(uBlobBg, uBlobFg, pow(blobD, 1.8));
 
-    vec3  col    = mix(teal, scatter, clamp(uScene, 0.0, 1.0));
+    vec3  col    = mix(uAccent, uScatter, clamp(uScene, 0.0, 1.0));
     col          = mix(col, blobCol, t2);
     float bright = mix(1.0, 0.62, clamp(uScene, 0.0, 1.0));
     bright       = mix(bright, 1.08, t2 * 0.95);
@@ -317,6 +333,10 @@ export default function DFParticles() {
       uSize:       { value: window.devicePixelRatio * 1.65 },
       uTime:       { value: 0 },
       uDotOpacity: { value: 0.82 },
+      uAccent:     { value: colorToVec3(cssVar("--immersive-particles", "#46D12A")) },
+      uScatter:    { value: colorToVec3(cssVar("--immersive-deep", "#46AE22")) },
+      uBlobFg:     { value: colorToVec3(cssVar("--immersive-particles", "#46D12A")) },
+      uBlobBg:     { value: colorToVec3(cssVar("--immersive-surface2", "#161616")) },
     };
 
     const mat = new THREE.ShaderMaterial({
@@ -328,8 +348,8 @@ export default function DFParticles() {
 
     const applyHeroLayout = (width: number) => {
       const compact = width < 1180;
-      const scale = compact ? 0.92 : 1.26;
-      const offsetX = compact ? -0.08 : 0.08;
+      const scale = compact ? 0.86 : 1.06;
+      const offsetX = compact ? -0.04 : 0;
 
       points.scale.setScalar(scale);
       points.position.x = offsetX;
@@ -337,7 +357,7 @@ export default function DFParticles() {
     applyHeroLayout(W);
 
     const aboutShapeMaterial = new THREE.MeshBasicMaterial({
-      color: 0x5de7b4,
+      color: cssVar("--immersive-accent", "#46AE22"),
       wireframe: true,
       transparent: true,
       opacity: 0,
@@ -351,7 +371,7 @@ export default function DFParticles() {
     aboutShape.scale.setScalar(1.75);
     scene.add(aboutShape);
     const serviceShapeMaterial = new THREE.MeshBasicMaterial({
-      color: 0x5de7b4,
+      color: cssVar("--immersive-accent", "#46AE22"),
       wireframe: true,
       transparent: true,
       opacity: 0,
@@ -517,6 +537,27 @@ export default function DFParticles() {
     };
     window.addEventListener("resize", onResize);
 
+    let currentThemeSignature = "";
+    const onThemeChange = () => {
+      const nextSignature = particleThemeSignature();
+      if (nextSignature === currentThemeSignature) return;
+      currentThemeSignature = nextSignature;
+
+      const particles = cssVar("--immersive-particles", "#46D12A");
+      const accent = cssVar("--immersive-accent", "#46AE22");
+      uniforms.uAccent.value.copy(colorToVec3(particles));
+      uniforms.uScatter.value.copy(colorToVec3(cssVar("--immersive-deep", "#46AE22")));
+      uniforms.uBlobFg.value.copy(colorToVec3(particles));
+      uniforms.uBlobBg.value.copy(colorToVec3(cssVar("--immersive-surface2", "#161616")));
+      aboutShapeMaterial.color.set(accent);
+      serviceShapeMaterial.color.set(accent);
+      mat.needsUpdate = true;
+    };
+    onThemeChange();
+    window.addEventListener("immersive-theme-change", onThemeChange);
+    const themeObserver = new MutationObserver(onThemeChange);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
+
     const timer = new THREE.Timer();
     timer.connect(document);
     let raf: number;
@@ -525,6 +566,7 @@ export default function DFParticles() {
       timer.update(timestamp);
       const elapsed = timer.getElapsed();
       uniforms.uTime.value = elapsed;
+      onThemeChange();
 
       const shapeA = Math.round(uniforms.uShapeA.value);
       const shapeB = Math.round(uniforms.uShapeB.value);
@@ -593,6 +635,8 @@ export default function DFParticles() {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("immersive-theme-change", onThemeChange);
+      themeObserver.disconnect();
       renderer.dispose(); geo.dispose(); mat.dispose();
       aboutShape.geometry.dispose();
       aboutShapeMaterial.dispose();

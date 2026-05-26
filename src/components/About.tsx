@@ -55,15 +55,15 @@ export default function About() {
             autoAlpha: 0,
             y: 46,
             scale: 0.88,
-            boxShadow: "0 0 0 rgba(58,191,138,0)",
-            borderColor: "rgba(58,191,138,0.16)",
+            boxShadow: "0 0 0 rgba(var(--teal-rgb),0)",
+            borderColor: "rgba(var(--teal-rgb),0.16)",
           },
           {
             autoAlpha: 1,
             y: 0,
             scale: 1,
-            boxShadow: "0 0 48px rgba(58,191,138,0.38), 0 0 96px rgba(58,191,138,0.14)",
-            borderColor: "rgba(58,191,138,0.72)",
+            boxShadow: "0 0 48px rgba(var(--teal-rgb),0.38), 0 0 96px rgba(var(--teal-rgb),0.14)",
+            borderColor: "rgba(var(--teal-rgb),0.72)",
             stagger: 0.18,
             duration: 0.22,
             ease: "none",
@@ -92,7 +92,7 @@ export default function About() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 66% 62% at 50% 48%, transparent 0%, rgba(9,9,9,0.2) 76%, rgba(9,9,9,0.46) 100%)",
+            "radial-gradient(ellipse 66% 62% at 50% 48%, transparent 0%, rgba(var(--bg-rgb),0.2) 76%, rgba(var(--bg-rgb),0.46) 100%)",
         }}
       />
 
@@ -107,10 +107,10 @@ export default function About() {
         {stats.map((s) => (
           <div
             key={s.value}
-            className={`absolute flex min-w-[180px] flex-col gap-2 rounded-[1.2rem] border bg-[rgba(9,9,9,0.72)] px-6 py-5 backdrop-blur-md ${
+            className={`absolute flex min-w-[180px] flex-col gap-2 rounded-[1.2rem] border bg-[rgba(var(--bg-rgb),0.72)] px-6 py-5 backdrop-blur-md ${
               s.featured
-                ? "min-w-[200px] border-[var(--teal)] bg-[rgba(58,191,138,0.96)] px-7 py-6 shadow-[0_0_48px_rgba(58,191,138,0.55),0_0_96px_rgba(58,191,138,0.22)]"
-                : "border-[rgba(58,191,138,0.38)] shadow-[0_0_36px_rgba(58,191,138,0.28),0_0_72px_rgba(58,191,138,0.10),0_12px_40px_rgba(0,0,0,0.5)]"
+                ? "min-w-[200px] border-[var(--teal)] bg-[rgba(var(--teal-rgb),0.96)] px-7 py-6 shadow-[0_0_48px_rgba(var(--teal-rgb),0.55),0_0_96px_rgba(var(--teal-rgb),0.22)]"
+                : "border-[rgba(var(--teal-rgb),0.38)] shadow-[0_0_36px_rgba(var(--teal-rgb),0.28),0_0_72px_rgba(var(--teal-rgb),0.10),0_12px_40px_rgba(var(--bg-rgb),0.5)]"
             }`}
             style={
               s.value === "14+"

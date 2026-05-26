@@ -129,6 +129,12 @@ model Inquiry {
   email       String
   projectType String?
   message     String        @db.Text
+  contactMethod String?
+  contactValue  String?
+  source      String?
+  audioUrls   String[]      @default([])
+  assetNames  String[]      @default([])
+  metadata    Json          @default("{}")
   status      InquiryStatus @default(NEW)
   notes       String?       @db.Text
   createdAt   DateTime      @default(now())

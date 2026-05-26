@@ -254,7 +254,7 @@ export default function Principles() {
       ref={sectionRef}
       className="relative h-screen overflow-hidden border-t border-[var(--border)]"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_70%_at_56%_52%,rgba(58,191,138,0.06),transparent_68%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_70%_at_56%_52%,rgba(var(--teal-rgb),0.06),transparent_68%)]" />
 
       {/* ── OUR MUSTS slide (full-viewport, exits on scroll) ── */}
       <div ref={mustsRef} className="absolute inset-0 z-20 flex items-center px-[var(--gutter)]">
@@ -279,13 +279,13 @@ export default function Principles() {
             <article
               key={rule.n}
               ref={el => { cardRefs.current[index] = el; }}
-              className="group relative overflow-hidden rounded-[1.5rem] border border-[rgba(58,191,138,0.14)] bg-[rgba(6,9,8,0.55)] shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[border-color,box-shadow] duration-500 hover:border-[rgba(58,191,138,0.38)] hover:shadow-[0_24px_80px_rgba(0,0,0,0.35),0_0_60px_rgba(58,191,138,0.14),inset_0_0_0_1px_rgba(58,191,138,0.08)]"
+              className="group relative overflow-hidden rounded-[1.5rem] border border-[rgba(var(--teal-rgb),0.14)] bg-[rgba(var(--bg-rgb),0.55)] shadow-[0_24px_80px_rgba(var(--bg-rgb),0.35)] backdrop-blur-md transition-[border-color,box-shadow] duration-500 hover:border-[rgba(var(--teal-rgb),0.38)] hover:shadow-[0_24px_80px_rgba(var(--bg-rgb),0.35),0_0_60px_rgba(var(--teal-rgb),0.14),inset_0_0_0_1px_rgba(var(--teal-rgb),0.08)]"
             >
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(58,191,138,0.08),transparent_46%,rgba(248,245,238,0.015))]" />
-              <div className="absolute inset-0 [background-image:linear-gradient(90deg,rgba(58,191,138,0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(58,191,138,0.04)_1px,transparent_1px)] [background-size:36px_36px] opacity-30" />
+              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(var(--teal-rgb),0.08),transparent_46%,rgba(248,245,238,0.015))]" />
+              <div className="absolute inset-0 [background-image:linear-gradient(90deg,rgba(var(--teal-rgb),0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(var(--teal-rgb),0.04)_1px,transparent_1px)] [background-size:36px_36px] opacity-30" />
               {/* Hover glow */}
-              <div className="pointer-events-none absolute inset-0 rounded-[1.5rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(58,191,138,0.13) 0%, transparent 68%)" }} />
+              <div className="pointer-events-none absolute inset-0 rounded-[1.5rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(var(--teal-rgb),0.13) 0%, transparent 68%)" }} />
 
               <div className="relative h-full grid grid-cols-[1fr_0.72fr] p-5 gap-3">
                 {/* ── Left: text ── */}
@@ -304,7 +304,7 @@ export default function Principles() {
                     <p className="mt-3 text-[clamp(0.72rem,0.9vw,0.88rem)] leading-[1.8] text-[var(--body)] max-w-[34ch]">
                       {typedLines[index]}
                       {typedLines[index].length > 0 && typedLines[index].length < rule.line.length && (
-                        <span className="ml-0.5 inline-block h-[0.75em] w-[0.06em] translate-y-[0.08em] bg-[var(--teal)] shadow-[0_0_10px_rgba(58,191,138,0.8)]" />
+                        <span className="ml-0.5 inline-block h-[0.75em] w-[0.06em] translate-y-[0.08em] bg-[var(--teal)] shadow-[0_0_10px_rgba(var(--teal-rgb),0.8)]" />
                       )}
                     </p>
                   </div>

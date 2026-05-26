@@ -49,6 +49,8 @@ const SERVICES = [
   },
 ];
 
+const SHOW_CENTER_SERVICE_HOLOGRAM = false;
+
 function MiniIcon({ index }: { index: number }) {
   const common = {
     className: "h-5 w-5",
@@ -74,13 +76,13 @@ function MiniIcon({ index }: { index: number }) {
 function Card({ num, title, tall }: { num: string; title: string; tall?: boolean }) {
   return (
     <div
-      className="relative overflow-hidden rounded-[1.1rem] border border-[rgba(58,191,138,0.18)]"
+      className="relative overflow-hidden rounded-[1.1rem] border border-[rgba(var(--teal-rgb),0.18)]"
       style={{
         width:  tall ? 220 : 260,
         height: tall ? 300 : 190,
         background:
-          "linear-gradient(145deg,rgba(10,27,21,0.9) 0%,rgba(12,38,27,0.72) 52%,rgba(7,12,10,0.88) 100%)",
-        boxShadow: "0 22px 80px rgba(0,0,0,0.34), inset 0 0 38px rgba(58,191,138,0.05)",
+          "linear-gradient(145deg,rgba(var(--surface-rgb),0.9) 0%,rgba(var(--surface2-rgb),0.72) 52%,rgba(var(--bg-rgb),0.88) 100%)",
+        boxShadow: "0 22px 80px rgba(var(--bg-rgb),0.34), inset 0 0 38px rgba(var(--teal-rgb),0.05)",
       }}
     >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--teal)] to-transparent opacity-25" />
@@ -114,7 +116,10 @@ export default function Services() {
     /* Initial states */
     gsap.set(panels, { autoAlpha: 0 });
     panels.forEach(panel => {
-      gsap.set(panel.querySelector("[data-sketch-shell]"), { autoAlpha: 0, scale: 0.88 });
+      const sketchShell = panel.querySelector<HTMLElement>("[data-sketch-shell]");
+      if (sketchShell) {
+        gsap.set(sketchShell, { autoAlpha: 0, scale: 0.88 });
+      }
     });
 
     const ctx = gsap.context(() => {
@@ -140,14 +145,16 @@ export default function Services() {
         const cardR  = panel.querySelector<HTMLElement>("[data-card-r]")!;
         const desc   = panel.querySelector<HTMLElement>("[data-desc]")!;
         const pills  = panel.querySelectorAll<HTMLElement>("[data-pill]");
-        const sketchShell = panel.querySelector<HTMLElement>("[data-sketch-shell]")!;
+        const sketchShell = panel.querySelector<HTMLElement>("[data-sketch-shell]");
         const isLast = i === panels.length - 1;
         tl.to({}, { duration: 0.12 });
 
         /* Panel enter */
         tl.set(panel,  { autoAlpha: 1 }, "<");
         tl.fromTo(title, { yPercent: 55, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.42, ease: "none" }, "<0.04");
-        tl.fromTo(sketchShell, { autoAlpha: 0, scale: 0.88 }, { autoAlpha: 1, scale: 1, duration: 0.5, ease: "none" }, "<0.04");
+        if (sketchShell) {
+          tl.fromTo(sketchShell, { autoAlpha: 0, scale: 0.88 }, { autoAlpha: 1, scale: 1, duration: 0.5, ease: "none" }, "<0.04");
+        }
         tl.fromTo(cardL, { x: -70, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.36, ease: "none" }, "<0.04");
         tl.fromTo(cardR, { x:  70, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.36, ease: "none" }, "<");
         tl.fromTo(
@@ -164,7 +171,7 @@ export default function Services() {
         /* Panel exit */
         if (!isLast) {
           tl.to(title,           { yPercent: -70, autoAlpha: 0, duration: 0.38, ease: "none" });
-          tl.to([cardL, cardR, desc, sketchShell], { autoAlpha: 0, duration: 0.28, ease: "none" }, "<");
+          tl.to(sketchShell ? [cardL, cardR, desc, sketchShell] : [cardL, cardR, desc], { autoAlpha: 0, duration: 0.28, ease: "none" }, "<");
           tl.set(panel, { autoAlpha: 0 });
         }
       });
@@ -213,18 +220,20 @@ export default function Services() {
               <Card num={svc.num} title={svc.title} tall />
             </div>
 
-            <div
-              data-sketch-shell
-              className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full"
-              style={{
-                width:  "min(54vh, 500px)",
-                height: "min(54vh, 500px)",
-                background: "radial-gradient(circle, rgba(58,191,138,0.05) 0%, transparent 68%)",
-                boxShadow: "0 0 90px rgba(58,191,138,0.10), 0 0 200px rgba(58,191,138,0.05)",
-              }}
-            >
-              <ServicePipeCardHologram shape={servicePipeShapes[svc.id]} />
-            </div>
+            {SHOW_CENTER_SERVICE_HOLOGRAM && (
+              <div
+                data-sketch-shell
+                className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                style={{
+                  width:  "min(54vh, 500px)",
+                  height: "min(54vh, 500px)",
+                  background: "radial-gradient(circle, rgba(var(--teal-rgb),0.05) 0%, transparent 68%)",
+                  boxShadow: "0 0 90px rgba(var(--teal-rgb),0.10), 0 0 200px rgba(var(--teal-rgb),0.05)",
+                }}
+              >
+                <ServicePipeCardHologram shape={servicePipeShapes[svc.id]} />
+              </div>
+            )}
 
             {/* Giant title — upper zone */}
             <div
@@ -246,9 +255,9 @@ export default function Services() {
                   <div
                     key={example}
                     data-pill
-                    className="flex w-full flex-col items-center justify-center gap-3 rounded-2xl border border-[rgba(58,191,138,0.26)] bg-[rgba(9,9,9,0.78)] px-4 py-5 text-center shadow-[0_8px_32px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
+                    className="flex w-full flex-col items-center justify-center gap-3 rounded-2xl border border-[rgba(var(--teal-rgb),0.26)] bg-[rgba(var(--bg-rgb),0.78)] px-4 py-5 text-center shadow-[0_8px_32px_rgba(var(--bg-rgb),0.32),inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
                   >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-[rgba(58,191,138,0.12)] text-[var(--teal)] shadow-[0_0_18px_rgba(58,191,138,0.22),inset_0_1px_0_rgba(58,191,138,0.18)] ring-1 ring-[rgba(58,191,138,0.20)]">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-[rgba(var(--teal-rgb),0.12)] text-[var(--teal)] shadow-[0_0_18px_rgba(var(--teal-rgb),0.22),inset_0_1px_0_rgba(var(--teal-rgb),0.18)] ring-1 ring-[rgba(var(--teal-rgb),0.20)]">
                       <MiniIcon index={exampleIndex} />
                     </span>
                     <span className="text-[0.72rem] font-semibold leading-tight tracking-wide text-[rgba(240,236,227,0.88)]">
@@ -259,7 +268,7 @@ export default function Services() {
               </div>
 
               {/* Description sits with the boxes instead of drifting away from them. */}
-              <div data-desc className="mt-8 w-[min(680px,86vw)] rounded-2xl bg-[rgba(9,9,9,0.72)] px-8 py-6 text-center backdrop-blur-md" style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+              <div data-desc className="mt-8 w-[min(680px,86vw)] rounded-2xl bg-[rgba(var(--bg-rgb),0.72)] px-8 py-6 text-center backdrop-blur-md" style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)" }}>
                 <p className="text-[clamp(0.84rem,1.3vw,1rem)] leading-[1.8] text-[var(--fg)]">{svc.body}</p>
                 <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
                   <a href="#contact" className="btn-glass inline-flex">

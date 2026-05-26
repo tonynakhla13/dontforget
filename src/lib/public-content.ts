@@ -4,7 +4,7 @@ import type { Locale } from "@/i18n/config";
 
 export type PublicProject = {
   id: string; slug: string; title: string; description: string | null; client: string | null;
-  category: string | null; tags: string[]; year: string | null; coverImage: string | null; liveUrl: string | null;
+  category: string | null; tags: string[]; year: string | null; coverImage: string | null; gifUrl?: string | null; liveUrl: string | null;
 };
 export type PublicService = { id: string; title: string; description: string | null; icon: string | null };
 export type PublicPost = { id: string; slug: string; title: string; excerpt: string | null; content: string; tags: string[]; coverImage: string | null; publishedAt: Date | null };

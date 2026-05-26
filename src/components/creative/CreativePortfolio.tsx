@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import type { CSSProperties, WheelEvent } from "react";
 import { useRef, useState, useEffect, useCallback, type RefObject } from "react";
 
 export type CreativeHomeProject = {
@@ -56,11 +56,24 @@ const ITEMS: CreativeHomeProject[] = [
 const RIBBON_WORDS = ["Creative", "Services", "Agency", "Studio", "Design", "Creative", "Services", "Agency"];
 const PROJECT_ROW_HEIGHT = 146;
 
+function repeatProjects(projects: CreativeHomeProject[], minimumCount = 10) {
+  if (!projects.length) return [];
+  const repeats = Math.ceil(minimumCount / projects.length);
+  return Array.from({ length: repeats }, () => projects).flat();
+}
+
 const FALLBACK_GIFS: Record<string, string> = {
   "elia-clinic": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdnFjZDY1ZWN2OGNqM2c1MWgzY2tnNmtxNmJ4OW5yZnY2eXJraG9veiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oKIPEqDGUULpEU0aQ/giphy.gif",
   montgab: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGRzOG44OGt4OHNmOGw5MmxoaHZqYXR4Z3pvdjM3YmI1ajRzY3NpbCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT9IgzoKnwFNmISR8I/giphy.gif",
   "180-degrees": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWRiM2RreDNrYjM4dHR6eTNhaDRyeGYybnBmZjkwamJ5MmZvdnF6eSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26tn33aiTi1jkl6H6/giphy.gif",
   launchpad: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWJ6emhhZTk4Z2NhZWNvcDBjZGNmcG80eGFlN21zZnY0aWUyem0xNyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oKIPwoeGErMmaI43S/giphy.gif",
+};
+
+const PROJECT_DESCRIPTIONS: Record<string, string> = {
+  "elia-clinic": "A calm healthcare identity and booking experience built around trust, clarity, and fast patient decisions.",
+  montgab: "A retail storefront direction with strong merchandising, sharp product discovery, and a premium shopping rhythm.",
+  "180-degrees": "A brand system and digital presence shaped for a creative team that needs bold work to feel organized.",
+  launchpad: "A SaaS dashboard concept focused on performance data, onboarding clarity, and high-signal product moments.",
 };
 
 function formatProjectDate(project: CreativeHomeProject) {
@@ -87,6 +100,10 @@ function projectPreviewStyle(project: CreativeHomeProject): CSSProperties | unde
 function projectCoverStyle(project: CreativeHomeProject): CSSProperties | undefined {
   if (!project.coverImage) return undefined;
   return { backgroundImage: `url("${project.coverImage}")`, backgroundSize: "cover", backgroundPosition: "center" };
+}
+
+function getProjectDescription(project: CreativeHomeProject) {
+  return PROJECT_DESCRIPTIONS[project.slug] ?? "A selected project shaped around strategy, design craft, and a clear digital experience.";
 }
 
 function ThinkingBadge({ sectionRef }: { sectionRef: RefObject<HTMLElement | null> }) {
@@ -139,16 +156,83 @@ function ThinkingBadge({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
 }
 
 export default function CreativePortfolio({ projects = ITEMS }: { projects?: CreativeHomeProject[] }) {
-  const items = projects.length ? projects.slice(0, 4) : ITEMS;
+  const sourceItems = projects.length ? projects : ITEMS;
+  const items = repeatProjects(sourceItems);
   const [hovered, setHovered] = useState<number | null>(null);
-  const viewportRef = useRef<HTMLDivElement>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const wheelDeltaRef = useRef(0);
+  const activeIndexRef = useRef(0);
+  const maxIndexRef = useRef(0);
   const sectionRef = useRef<HTMLElement>(null);
-  const goTo = (nextIndex: number) => {
-    viewportRef.current?.scrollBy({
-      top: nextIndex * PROJECT_ROW_HEIGHT,
-      behavior: "smooth",
-    });
+  const visibleRows = 3;
+  const maxIndex = Math.max(0, items.length - visibleRows);
+  const goTo = useCallback((direction: number) => {
+    setActiveIndex((current) => Math.min(maxIndex, Math.max(0, current + direction)));
+  }, [maxIndex]);
+
+  useEffect(() => {
+    setActiveIndex((current) => Math.min(current, maxIndex));
+    setSelectedIndex((current) => Math.min(current, items.length - 1));
+  }, [maxIndex]);
+
+  useEffect(() => {
+    activeIndexRef.current = activeIndex;
+    maxIndexRef.current = maxIndex;
+  }, [activeIndex, maxIndex]);
+
+  const isCarouselCentered = useCallback(() => {
+    const section = sectionRef.current;
+    if (!section) return false;
+    const carousel = section.querySelector(".c-portfolio-carousel");
+    const rect = (carousel ?? section).getBoundingClientRect();
+    const viewportMiddle = window.innerHeight / 2;
+    const carouselMiddle = rect.top + rect.height / 2;
+    return Math.abs(carouselMiddle - viewportMiddle) <= 90;
+  }, []);
+
+  const onPortfolioWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
+    if (!maxIndex) return;
+    if (!isCarouselCentered()) return;
+    event.preventDefault();
+    wheelDeltaRef.current += event.deltaY;
+    if (Math.abs(wheelDeltaRef.current) < 80) return;
+    goTo(wheelDeltaRef.current > 0 ? 1 : -1);
+    wheelDeltaRef.current = 0;
+  }, [goTo, isCarouselCentered, maxIndex]);
+
+  const trackStyle: CSSProperties = {
+    transform: `translate3d(0, -${activeIndex * PROJECT_ROW_HEIGHT}px, 0)`,
   };
+  const previewIndex = hovered ?? selectedIndex;
+  const previewProject = items[previewIndex] ?? items[0];
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const onWindowWheel = (event: globalThis.WheelEvent) => {
+      if (event.defaultPrevented || !maxIndexRef.current) return;
+
+      if (!isCarouselCentered()) return;
+
+      const direction = event.deltaY > 0 ? 1 : -1;
+      const current = activeIndexRef.current;
+      const atStart = current === 0;
+      const atEnd = current === maxIndexRef.current;
+      const shouldRelease = (direction < 0 && atStart) || (direction > 0 && atEnd);
+      if (shouldRelease) return;
+
+      event.preventDefault();
+      wheelDeltaRef.current += event.deltaY;
+      if (Math.abs(wheelDeltaRef.current) < 80) return;
+      goTo(direction);
+      wheelDeltaRef.current = 0;
+    };
+
+    window.addEventListener("wheel", onWindowWheel, { passive: false });
+    return () => window.removeEventListener("wheel", onWindowWheel);
+  }, [goTo, isCarouselCentered]);
 
   return (
     <section id="portfolio" className="c-portfolio" ref={sectionRef as RefObject<HTMLElement>}>
@@ -176,28 +260,38 @@ export default function CreativePortfolio({ projects = ITEMS }: { projects?: Cre
 
           <div className="c-carousel c-portfolio-carousel">
             <div
-              ref={viewportRef}
               className="c-carousel__viewport"
               aria-label="Scrollable project list"
-              onWheel={(event) => {
-                if (!viewportRef.current) return;
-                event.preventDefault();
-                viewportRef.current.scrollBy({ top: event.deltaY, behavior: "auto" });
-              }}
+              onWheel={onPortfolioWheel}
             >
-              <div className="c-portfolio__list c-carousel__track">
+              <div className="c-portfolio__list c-carousel__track" style={trackStyle}>
                 {items.map((project, index) => (
                   <Link
-                    key={project.id}
+                    key={`${project.id}-${index}`}
                     href={`/work/${project.slug}`}
                     className="c-pf"
-                    onMouseEnter={() => setHovered(index)}
-                    onMouseMove={() => setHovered(index)}
+                    onMouseEnter={() => {
+                      setHovered(index);
+                      setSelectedIndex(index);
+                    }}
+                    onMouseMove={() => {
+                      setHovered(index);
+                      setSelectedIndex(index);
+                    }}
                     onMouseLeave={() => setHovered(null)}
-                    onPointerEnter={() => setHovered(index)}
-                    onPointerMove={() => setHovered(index)}
+                    onPointerEnter={() => {
+                      setHovered(index);
+                      setSelectedIndex(index);
+                    }}
+                    onPointerMove={() => {
+                      setHovered(index);
+                      setSelectedIndex(index);
+                    }}
                     onPointerLeave={() => setHovered(null)}
-                    onFocus={() => setHovered(index)}
+                    onFocus={() => {
+                      setHovered(index);
+                      setSelectedIndex(index);
+                    }}
                     onBlur={() => setHovered(null)}
                   >
                     <div className="c-pf__date" style={{ whiteSpace: "pre-line" }}>{formatProjectDate(project)}</div>
@@ -218,27 +312,27 @@ export default function CreativePortfolio({ projects = ITEMS }: { projects?: Cre
                       )}
                     </div>
                     <div className="c-pf__img c-checker" style={projectCoverStyle(project)}>
-                      <span className={`c-pf__gif${hovered === index ? " active" : ""}`} style={projectPreviewStyle(project)} />
                     </div>
                   </Link>
                 ))}
               </div>
             </div>
-            <div className="c-carousel__controls c-carousel__controls--portfolio">
-              <button className="c-iconbtn" type="button" onClick={() => goTo(-1)} aria-label="Previous project">
-                <svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 15 L12 8 L19 15" />
-                </svg>
-              </button>
-              <div className="c-carousel__count">
-                {String(items.length).padStart(2, "0")}
-              </div>
-              <button className="c-iconbtn" type="button" onClick={() => goTo(1)} aria-label="Next project">
-                <svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 9 L12 16 L19 9" />
-                </svg>
-              </button>
-            </div>
+            {previewProject && (
+              <aside className="c-pf-preview" aria-live="polite">
+                <div className="c-pf-preview__media c-checker" style={projectPreviewStyle(previewProject)} />
+                <div className="c-pf-preview__meta">
+                  <div className="c-pf-preview__kicker">
+                    {previewProject.category ?? "Selected work"}
+                  </div>
+                  <h3 className="c-pf-preview__title">{previewProject.title}</h3>
+                  <p className="c-pf-preview__desc">{getProjectDescription(previewProject)}</p>
+                  <div className="c-pf-preview__foot">
+                    <span>{previewProject.year ?? "Project"}</span>
+                    <span>{String(previewIndex + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}</span>
+                  </div>
+                </div>
+              </aside>
+            )}
           </div>
         </div>
       </div>

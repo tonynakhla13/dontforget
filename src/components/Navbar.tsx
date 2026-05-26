@@ -149,7 +149,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
           </Link>
           <button
             onClick={() => setMenuOpen(false)}
-            className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7"
+            className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(var(--surface2-rgb),0.96)] px-7"
           >
             <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">Close</span>
             <span className="flex flex-col gap-[5px]" aria-hidden="true">
@@ -190,8 +190,8 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         style={{
           height: isImmersive ? (compact ? 66 : NAV_H) : NAV_H,
           visibility: "hidden",
-          background: isImmersive && compact ? "rgba(4,10,8,0.72)" : "transparent",
-          borderBottom: isImmersive && compact ? "1px solid rgba(58,191,138,0.16)" : "1px solid transparent",
+          background: isImmersive && compact ? "rgba(var(--bg-rgb),0.72)" : "transparent",
+          borderBottom: isImmersive && compact ? "1px solid rgba(var(--teal-rgb),0.16)" : "1px solid transparent",
           backdropFilter: isImmersive && compact ? "blur(16px)" : "blur(0px)",
         }}
       >
@@ -205,7 +205,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
               style={{
                 height: isImmersive ? (compact ? 64 : 134) : 134,
                 width: "auto",
-                filter: isImmersive && compact ? "drop-shadow(0 0 18px rgba(58,191,138,0.24))" : "none",
+                filter: isImmersive && compact ? "drop-shadow(0 0 18px rgba(var(--teal-rgb),0.24))" : "none",
               }}
             />
           </Link>
@@ -226,7 +226,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className={`${isImmersive ? "md:hidden" : "hidden"} h-11 items-center gap-3 rounded-[8px] border border-[rgba(58,191,138,0.2)] bg-[rgba(8,14,11,0.7)] px-5 font-mono text-[0.58rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] backdrop-blur-xl`}
+            className={`${isImmersive ? "md:hidden" : "hidden"} h-11 items-center gap-3 rounded-[8px] border border-[rgba(var(--teal-rgb),0.2)] bg-[rgba(var(--surface-rgb),0.7)] px-5 font-mono text-[0.58rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] backdrop-blur-xl`}
           >
             Menu
           </button>
@@ -254,7 +254,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
               <button
                 onClick={() => setMenuOpen(o => !o)}
-                className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
+                className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(var(--surface2-rgb),0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
               >
                 <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">
                   Menu
@@ -269,7 +269,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
               <Link
                 href={ctaHref}
-                className="flex h-[54px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
+                className="flex h-[54px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(var(--surface2-rgb),0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
               >
                 Let&apos;s talk
               </Link>

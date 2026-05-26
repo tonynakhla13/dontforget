@@ -102,7 +102,58 @@ interface FormData {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function RequestForm({ embedded = false }: { embedded?: boolean } = {}) {
+type GuidedVoiceClip = {
+  id: string;
+  blob: Blob;
+  duration: number;
+};
+
+async function uploadVoiceClip(blob: Blob, index: number) {
+  const formData = new FormData();
+  formData.append("file", blob, `guided-voice-note-${index + 1}.webm`);
+
+  try {
+    const response = await fetch("/api/inquiries/audio", {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) return null;
+    const data = await response.json() as { url?: string };
+    return data.url ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function uploadInquiryFile(file: File) {
+  const formData = new FormData();
+  formData.append("file", file, file.name);
+
+  try {
+    const response = await fetch("/api/inquiries/files", {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) return null;
+    const data = await response.json() as { name?: string; url?: string };
+    return data.name && data.url ? { name: data.name, url: data.url } : null;
+  } catch {
+    return null;
+  }
+}
+
+type RequestFormHeaderMeta = {
+  counter: string;
+  label: string;
+};
+
+export default function RequestForm({
+  embedded = false,
+  onHeaderMetaChange,
+}: {
+  embedded?: boolean;
+  onHeaderMetaChange?: (meta: RequestFormHeaderMeta) => void;
+} = {}) {
   const [step, setStep]     = useState(1);
   const [dir,  setDir]      = useState<1 | -1>(1);
   const [data, setData]     = useState<FormData>({
@@ -111,11 +162,28 @@ export default function RequestForm({ embedded = false }: { embedded?: boolean }
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [done, setDone]     = useState(false);
+  const [assetFiles, setAssetFiles] = useState<File[]>([]);
+  const [voiceClips, setVoiceClips] = useState<GuidedVoiceClip[]>([]);
 
   const contentRef  = useRef<HTMLDivElement>(null);
   const barRef      = useRef<HTMLDivElement>(null);
 
   const selectedServices = SERVICES.filter(s => data.serviceIds.includes(s.id));
+  const selectedServiceTitle = selectedServices.map(service => service.title).join(" + ");
+
+  useEffect(() => {
+    if (!embedded || !onHeaderMetaChange) return;
+    onHeaderMetaChange({
+      counter: done ? "Complete" : `0${step} / 03`,
+      label: done
+        ? "Complete"
+        : step === 1
+          ? "Start a project"
+          : step === 2
+            ? selectedServiceTitle || "Scope"
+            : "Almost there",
+    });
+  }, [done, embedded, onHeaderMetaChange, selectedServiceTitle, step]);
 
   // ── Animate step enter ──────────────────────────────────────────────────
   useEffect(() => {
@@ -200,12 +268,49 @@ export default function RequestForm({ embedded = false }: { embedded?: boolean }
     setSubmitError(false);
     const serviceTitles = selectedServices.map(item => item.title).join(", ");
     const projectType = `${serviceTitles} — ${data.subServices.join(", ")}`;
-    const message     = `Timeline: ${data.timeline} | Budget: ${data.budget}${data.note ? `\n\n${data.note}` : ""}`;
     try {
+      const audioUploads = voiceClips.length
+        ? await Promise.all(voiceClips.map((clip, index) => uploadVoiceClip(clip.blob, index)))
+        : [];
+      const audioUrls = audioUploads.filter((url): url is string => Boolean(url));
+      const failedAudioCount = voiceClips.length - audioUrls.length;
+      const fileUploads = assetFiles.length
+        ? await Promise.all(assetFiles.map(file => uploadInquiryFile(file)))
+        : [];
+      const uploadedFiles = fileUploads.filter((file): file is { name: string; url: string } => Boolean(file));
+      const failedFileCount = assetFiles.length - uploadedFiles.length;
+      const assetNames = uploadedFiles.map(file => file.name);
+      const assetLine = uploadedFiles.length
+        ? `\n\nShared files:\n${uploadedFiles.map(file => `- ${file.name}: ${file.url}`).join("\n")}`
+        : "";
+      const voiceLine = voiceClips.length
+        ? `\n\nVoice notes: ${audioUrls.length} uploaded${failedAudioCount ? `, ${failedAudioCount} failed to upload` : ""}`
+        : "";
+      const message = `Timeline: ${data.timeline} | Budget: ${data.budget}${data.note ? `\n\n${data.note}` : ""}${voiceLine}${assetLine}`;
       const res = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: data.name, email: data.email, projectType, message }),
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          projectType,
+          message,
+          source: "guided-request",
+          audioUrls,
+          assetNames,
+          metadata: {
+            serviceIds: data.serviceIds,
+            services: selectedServices.map(item => item.title),
+            subServices: data.subServices,
+            timeline: data.timeline,
+            budget: data.budget,
+            assetCount: uploadedFiles.length,
+            failedFileCount,
+            assetUrls: uploadedFiles,
+            voiceCount: audioUrls.length,
+            failedAudioCount,
+          },
+        }),
       });
       if (res.ok) {
         setDir(1);
@@ -235,7 +340,7 @@ export default function RequestForm({ embedded = false }: { embedded?: boolean }
   // ════════════════════════════════════════════════════════════════════════
   return (
     <div className={embedded
-      ? "relative flex h-full min-h-0 flex-col overflow-hidden bg-transparent"
+      ? "relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-transparent"
       : "relative flex min-h-screen flex-col overflow-x-hidden bg-[var(--bg)]"}>
       <div className="noise" />
 
@@ -245,7 +350,7 @@ export default function RequestForm({ embedded = false }: { embedded?: boolean }
       </div>
 
       {/* ── Step counter (hidden on step 1) ── */}
-      <div className={`${embedded ? "absolute top-3" : "fixed top-[80px] pt-4"} left-0 right-0 z-40 flex justify-center transition-opacity duration-500 ${step === 1 && !done ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+      <div className={`${embedded ? "hidden" : "fixed top-[80px] flex pt-4"} left-0 right-0 z-40 justify-center transition-opacity duration-500 ${step === 1 && !done ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
         <span className="font-mono text-[0.58rem] uppercase tracking-[0.38em] text-[var(--teal)]">
           {done ? "Complete" : `0${step} / 03`}
         </span>
@@ -253,7 +358,7 @@ export default function RequestForm({ embedded = false }: { embedded?: boolean }
 
       {/* ── Main content ── */}
       <main className={embedded
-        ? "flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-5 pb-8 pt-14"
+        ? "flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-5 pb-4 pt-7"
         : "flex flex-1 flex-col items-center justify-center px-5 pb-10 pt-36"}>
         <div className="w-full max-w-[940px]">
           <div ref={contentRef}>
@@ -270,7 +375,17 @@ export default function RequestForm({ embedded = false }: { embedded?: boolean }
                 onToggleAll={toggleAll}
               />
             ) : (
-              <Step3 data={data} setData={setData} field={field} label={label} submitError={submitError} />
+              <Step3
+                data={data}
+                setData={setData}
+                field={field}
+                label={label}
+                submitError={submitError}
+                assetFiles={assetFiles}
+                setAssetFiles={setAssetFiles}
+                voiceClips={voiceClips}
+                setVoiceClips={setVoiceClips}
+              />
             )}
           </div>
         </div>
@@ -327,15 +442,14 @@ function Step1({
 }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="eyebrow mb-4">Start a project</p>
-      <h1 className="hed mb-4 whitespace-nowrap text-[clamp(2rem,4.4vw,3.9rem)] leading-[0.92]">
+      <h1 className="hed mb-3 whitespace-nowrap text-[clamp(2rem,4.2vw,3.45rem)] leading-[0.92]">
         What are you <span className="text-[var(--teal)]">building?</span>
       </h1>
-      <p className="mb-9 max-w-sm text-[0.9375rem] leading-[1.85] text-[var(--body)]">
+      <p className="mb-6 max-w-sm text-[0.9rem] leading-[1.65] text-[var(--body)]">
         Pick every service that belongs in the project.
       </p>
 
-      <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-3">
+      <div className="grid w-full grid-cols-2 gap-2.5 md:grid-cols-3">
         {SERVICES.map(svc => {
           const selected = data.serviceIds.includes(svc.id);
           return (
@@ -348,7 +462,7 @@ function Step1({
                   : [...d.serviceIds, svc.id],
                 subServices: [],
               }))}
-              className="group relative overflow-hidden rounded-2xl border p-6 text-left transition-all duration-200 hover:scale-[1.02]"
+              className="group relative overflow-hidden rounded-xl border px-5 py-4 text-left transition-all duration-200 hover:scale-[1.015]"
               style={{
                 borderColor: selected ? "var(--teal)" : "rgba(58,191,138,0.18)",
                 background: selected
@@ -375,7 +489,7 @@ function Step1({
 
               {/* Content */}
               <div
-                className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl transition-colors duration-200"
+                className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200"
                 style={{
                   background: selected ? "rgba(58,191,138,0.2)" : "rgba(58,191,138,0.1)",
                   color: "var(--teal)",
@@ -387,10 +501,10 @@ function Step1({
               <span className="mb-0.5 block font-mono text-[0.46rem] uppercase tracking-[0.42em] text-[var(--teal)] opacity-70">
                 {svc.num}
               </span>
-              <span className="block font-mono text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[var(--fg)]">
+              <span className="block font-mono text-[0.74rem] font-bold uppercase tracking-[0.08em] text-[var(--fg)]">
                 {svc.title}
               </span>
-              <span className="mt-1 block text-[0.75rem] leading-[1.55] text-[var(--body)]">
+              <span className="mt-1 block text-[0.72rem] leading-[1.45] text-[var(--body)]">
                 {svc.tagline}
               </span>
             </button>
@@ -418,16 +532,13 @@ function Step2({
 }) {
   const examples = Array.from(new Set(services.flatMap(service => service.examples)));
   const allSelected = data.subServices.length === examples.length;
-  const serviceTitle = services.map(service => service.title).join(" + ");
-
   return (
-    <div className="mx-auto max-w-[780px]">
-      <div className="mb-10 text-center">
-        <p className="eyebrow mb-4">{serviceTitle}</p>
-        <h2 className="hed mb-4 text-[clamp(2.2rem,5vw,4rem)] leading-[0.92]">
+    <div className="w-full">
+      <div className="mb-6 text-center">
+        <h2 className="hed mb-3 text-[clamp(2.2rem,5vw,3.65rem)] leading-[0.92]">
           What do you need?
         </h2>
-        <p className="text-[0.9375rem] leading-[1.85] text-[var(--body)]">
+        <p className="text-[0.9rem] leading-[1.6] text-[var(--body)]">
           Select everything that applies.
         </p>
       </div>
@@ -445,14 +556,14 @@ function Step2({
         </button>
       </div>
 
-      <div className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {examples.map(ex => {
           const on = data.subServices.includes(ex);
           return (
             <button
               key={ex}
               onClick={() => onToggleSub(ex)}
-              className="flex items-center gap-2.5 rounded-xl border px-4 py-3.5 text-left transition-all duration-150"
+              className="flex items-center gap-2.5 rounded-xl border px-4 py-3 text-left transition-all duration-150"
               style={{
                 borderColor:  on ? "var(--teal)"        : "var(--border)",
                 background:   on ? "rgba(58,191,138,0.08)" : "var(--surface2)",
@@ -478,8 +589,8 @@ function Step2({
       </div>
 
       {/* Timeline */}
-      <div className="mb-6">
-        <p className="mb-3 font-mono text-[0.58rem] uppercase tracking-[0.32em] text-[var(--body)]">
+      <div className="mb-5">
+        <p className="mb-2 font-mono text-[0.56rem] uppercase tracking-[0.32em] text-[var(--body)]">
           Timeline
         </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -489,7 +600,7 @@ function Step2({
               <button
                 key={t}
                 onClick={() => setData(d => ({ ...d, timeline: t }))}
-                className="rounded-xl border py-3.5 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.1em] transition-all duration-150"
+                className="rounded-xl border py-3 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.1em] transition-all duration-150"
                 style={{
                   borderColor: on ? "var(--teal)"           : "var(--border)",
                   background:  on ? "var(--teal)"           : "var(--surface2)",
@@ -505,7 +616,7 @@ function Step2({
 
       {/* Budget */}
       <div>
-        <p className="mb-3 font-mono text-[0.58rem] uppercase tracking-[0.32em] text-[var(--body)]">
+        <p className="mb-2 font-mono text-[0.56rem] uppercase tracking-[0.32em] text-[var(--body)]">
           Budget range
         </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -515,7 +626,7 @@ function Step2({
               <button
                 key={b}
                 onClick={() => setData(d => ({ ...d, budget: b }))}
-                className="rounded-xl border py-3.5 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.1em] transition-all duration-150"
+                className="rounded-xl border py-3 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.1em] transition-all duration-150"
                 style={{
                   borderColor: on ? "var(--teal)"           : "var(--border)",
                   background:  on ? "var(--teal)"           : "var(--surface2)",
@@ -534,18 +645,240 @@ function Step2({
 
 // ─── Step 3: Contact details ──────────────────────────────────────────────────
 
+function GuidedVoiceRecorder({
+  clips,
+  setClips,
+}: {
+  clips: GuidedVoiceClip[];
+  setClips: React.Dispatch<React.SetStateAction<GuidedVoiceClip[]>>;
+}) {
+  const [recording, setRecording] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [error, setError] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const secondsRef = useRef(0);
+
+  useEffect(() => () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    recorderRef.current?.stream.getTracks().forEach(track => track.stop());
+  }, []);
+
+  const fmt = (value: number) =>
+    `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
+
+  async function startRecording() {
+    setError(false);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+      secondsRef.current = 0;
+      setSeconds(0);
+
+      recorder.ondataavailable = event => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        stream.getTracks().forEach(track => track.stop());
+        setRecording(false);
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (!blob.size) return;
+        setClips(current => [
+          ...current,
+          {
+            id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            blob,
+            duration: Math.max(1, secondsRef.current),
+          },
+        ]);
+      };
+
+      recorder.start();
+      setRecording(true);
+      timerRef.current = setInterval(() => {
+        secondsRef.current += 1;
+        setSeconds(secondsRef.current);
+      }, 1000);
+    } catch {
+      setError(true);
+    }
+  }
+
+  function stopRecording() {
+    recorderRef.current?.stop();
+  }
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={recording ? stopRecording : startRecording}
+        className="flex w-full items-center justify-between rounded-xl border border-[rgba(58,191,138,0.18)] bg-[rgba(58,191,138,0.045)] px-4 py-3 text-left transition-colors hover:border-[rgba(58,191,138,0.42)]"
+      >
+        <span>
+          <span className="block font-mono text-[0.52rem] uppercase tracking-[0.28em] text-[var(--teal)]">
+            {recording ? "Recording" : "Voice note"}
+          </span>
+          <span className="mt-1 block text-[0.76rem] text-[rgba(240,236,227,0.58)]">
+            {recording ? fmt(seconds) : clips.length ? `${clips.length} attached` : "Record a short brief"}
+          </span>
+        </span>
+        <span className={`grid h-9 w-9 place-items-center rounded-full border ${recording ? "border-red-400/50 text-red-300" : "border-[rgba(58,191,138,0.35)] text-[var(--teal)]"}`}>
+          {recording ? (
+            <span className="h-3 w-3 rounded-[0.2rem] bg-red-300" />
+          ) : (
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <path d="M12 19v3" />
+            </svg>
+          )}
+        </span>
+      </button>
+
+      {clips.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {clips.map((clip, index) => (
+            <span key={clip.id} className="inline-flex max-w-full items-center gap-2 rounded-full border border-[rgba(58,191,138,0.16)] bg-[rgba(58,191,138,0.055)] px-3 py-1.5 text-[0.72rem] text-[rgba(240,236,227,0.64)]">
+              Voice {index + 1} - {fmt(clip.duration)}
+              <button
+                type="button"
+                aria-label={`Remove voice note ${index + 1}`}
+                className="text-[rgba(240,236,227,0.38)] transition-colors hover:text-[var(--teal)]"
+                onClick={() => setClips(current => current.filter(item => item.id !== clip.id))}
+              >
+                x
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {error && <p className="mt-2 text-xs text-red-400">Mic access failed. Check browser permission and try again.</p>}
+    </div>
+  );
+}
+
+function GuidedVoiceRecorderInline({
+  clips,
+  setClips,
+}: {
+  clips: GuidedVoiceClip[];
+  setClips: React.Dispatch<React.SetStateAction<GuidedVoiceClip[]>>;
+}) {
+  const [recording, setRecording] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [error, setError] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const secondsRef = useRef(0);
+
+  useEffect(() => () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    recorderRef.current?.stream.getTracks().forEach(track => track.stop());
+  }, []);
+
+  const fmt = (value: number) =>
+    `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
+
+  async function startRecording() {
+    setError(false);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+      secondsRef.current = 0;
+      setSeconds(0);
+      recorder.ondataavailable = event => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        stream.getTracks().forEach(track => track.stop());
+        setRecording(false);
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (!blob.size) return;
+        setClips(current => [
+          ...current,
+          {
+            id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            blob,
+            duration: Math.max(1, secondsRef.current),
+          },
+        ]);
+      };
+      recorder.start();
+      setRecording(true);
+      timerRef.current = setInterval(() => {
+        secondsRef.current += 1;
+        setSeconds(secondsRef.current);
+      }, 1000);
+    } catch {
+      setError(true);
+    }
+  }
+
+  function stopRecording() {
+    recorderRef.current?.stop();
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={recording ? stopRecording : startRecording}
+        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors ${
+          recording
+            ? "bg-[rgba(239,68,68,0.08)] text-red-300"
+            : "text-[rgba(240,236,227,0.45)] hover:bg-[rgba(58,191,138,0.06)] hover:text-[var(--teal)]"
+        }`}
+      >
+        {recording ? (
+          <>
+            <span className="h-2.5 w-2.5 rounded-sm bg-red-400" />
+            <span className="font-mono text-[0.44rem] uppercase tracking-[0.18em]">{fmt(seconds)}</span>
+          </>
+        ) : (
+          <>
+            <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            </svg>
+            <span className="font-mono text-[0.44rem] uppercase tracking-[0.18em]">Voice</span>
+          </>
+        )}
+      </button>
+      {error && <span className="text-[0.6rem] text-red-400">Mic denied</span>}
+    </>
+  );
+}
+
 function Step3({
   data,
   setData,
   field,
   label,
   submitError,
+  assetFiles,
+  setAssetFiles,
+  voiceClips,
+  setVoiceClips,
 }: {
   data: FormData;
   setData: React.Dispatch<React.SetStateAction<FormData>>;
   field: string;
   label: string;
   submitError: boolean;
+  assetFiles: File[];
+  setAssetFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  voiceClips: GuidedVoiceClip[];
+  setVoiceClips: React.Dispatch<React.SetStateAction<GuidedVoiceClip[]>>;
 }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestions = [
@@ -555,18 +888,17 @@ function Step3({
   ];
 
   return (
-    <div className="mx-auto max-w-[600px]">
-      <div className="mb-10 text-center">
-        <p className="eyebrow mb-4">Almost there</p>
-        <h2 className="hed mb-4 text-[clamp(2.2rem,5vw,4rem)] leading-[0.92]">
+    <div className="mx-auto w-full max-w-[600px]">
+      <div className="mb-7 text-center">
+        <h2 className="hed mb-3 text-[clamp(2.2rem,5vw,3.65rem)] leading-[0.92]">
           Last few details.
         </h2>
-        <p className="text-[0.9375rem] leading-[1.85] text-[var(--body)]">
+        <p className="text-[0.9rem] leading-[1.6] text-[var(--body)]">
           We promise, that&apos;s it.
         </p>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={label}>Your name</label>
@@ -592,27 +924,101 @@ function Step3({
           </div>
         </div>
 
+        {/* Message box with voice + attachments embedded inside */}
         <div>
           <label className={label}>
-            Anything else we should know?{" "}
+            Anything else?{" "}
             <span className="opacity-50">(optional)</span>
           </label>
-          <textarea
-            rows={5}
-            placeholder="Context, references, goals, timelines, dreams…"
-            className={`${field} resize-none`}
-            value={data.note}
-            onFocus={() => setShowSuggestions(true)}
-            onClick={() => setShowSuggestions(true)}
-            onChange={e => setData(d => ({ ...d, note: e.target.value }))}
-          />
-          {showSuggestions && (
-            <div className="mt-3 flex flex-wrap gap-2">
+          <div
+            className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface2)] transition-all duration-200 focus-within:border-[var(--teal-mid)] focus-within:bg-[var(--teal-faint)]"
+          >
+            <textarea
+              rows={3}
+              placeholder="Context, references, goals, timelines, dreams…"
+              className="w-full resize-none border-none bg-transparent px-4 pt-3 pb-2 text-[var(--fg)] outline-none placeholder:text-[#444]"
+              style={{ fontSize: "0.875rem", fontFamily: "inherit", lineHeight: 1.65 }}
+              value={data.note}
+              onFocus={() => setShowSuggestions(true)}
+              onClick={() => setShowSuggestions(true)}
+              onChange={e => setData(d => ({ ...d, note: e.target.value }))}
+            />
+
+            {/* Attachments inside the box */}
+            {(assetFiles.length > 0 || voiceClips.length > 0) && (
+              <div className="flex flex-wrap gap-1.5 px-3 pb-2">
+                {assetFiles.map(file => (
+                  <span key={`${file.name}:${file.size}`} className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-[rgba(58,191,138,0.18)] bg-[rgba(58,191,138,0.06)] px-2.5 py-1 text-[0.68rem] text-[rgba(240,236,227,0.6)]">
+                    <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+                      <path d="M14 2v6h6" />
+                    </svg>
+                    <span className="max-w-[120px] truncate">{file.name}</span>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${file.name}`}
+                      className="ml-0.5 text-[rgba(240,236,227,0.35)] transition-colors hover:text-red-400"
+                      onClick={() => setAssetFiles(current => current.filter(item => item !== file))}
+                    >
+                      <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                    </button>
+                  </span>
+                ))}
+                {voiceClips.map((clip, index) => (
+                  <span key={clip.id} className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-[rgba(58,191,138,0.18)] bg-[rgba(58,191,138,0.06)] px-2.5 py-1 text-[0.68rem] text-[rgba(240,236,227,0.6)]">
+                    <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    </svg>
+                    Voice {index + 1} — {`${String(Math.floor(clip.duration / 60)).padStart(2, "0")}:${String(clip.duration % 60).padStart(2, "0")}`}
+                    <button
+                      type="button"
+                      aria-label={`Remove voice note ${index + 1}`}
+                      className="ml-0.5 text-[rgba(240,236,227,0.35)] transition-colors hover:text-red-400"
+                      onClick={() => setVoiceClips(current => current.filter(item => item.id !== clip.id))}
+                    >
+                      <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Bottom toolbar: attach + voice */}
+            <div className="flex items-center gap-1 border-t border-[rgba(255,255,255,0.04)] px-2 py-1.5">
+              <label className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[rgba(240,236,227,0.45)] transition-colors hover:bg-[rgba(58,191,138,0.06)] hover:text-[var(--teal)]">
+                <input
+                  type="file"
+                  multiple
+                  className="sr-only"
+                  accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.key,.zip"
+                  onChange={event => {
+                    const nextFiles = Array.from(event.target.files ?? []);
+                    setAssetFiles(current => {
+                      const byKey = new Map(current.map(file => [`${file.name}:${file.size}`, file]));
+                      nextFiles.forEach(file => byKey.set(`${file.name}:${file.size}`, file));
+                      return Array.from(byKey.values()).slice(0, 8);
+                    });
+                    event.currentTarget.value = "";
+                  }}
+                />
+                <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+                <span className="font-mono text-[0.44rem] uppercase tracking-[0.18em]">Attach</span>
+              </label>
+
+              <GuidedVoiceRecorderInline clips={voiceClips} setClips={setVoiceClips} />
+            </div>
+          </div>
+
+          {showSuggestions && !data.note && (
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
               {suggestions.map(sentence => (
                 <button key={sentence} type="button"
                   onMouseDown={e => e.preventDefault()}
                   onClick={() => setData(d => ({ ...d, note: d.note ? `${d.note}\n${sentence}` : sentence }))}
-                  className="rounded-full border border-[rgba(58,191,138,0.18)] bg-[rgba(58,191,138,0.045)] px-3 py-2 text-left text-[0.72rem] leading-snug text-[rgba(240,236,227,0.62)] transition-colors hover:border-[rgba(58,191,138,0.42)] hover:text-[var(--teal)]"
+                  className="rounded-full border border-[rgba(58,191,138,0.14)] bg-[rgba(58,191,138,0.035)] px-2.5 py-1.5 text-left text-[0.68rem] leading-snug text-[rgba(240,236,227,0.5)] transition-colors hover:border-[rgba(58,191,138,0.38)] hover:text-[var(--teal)]"
                 >
                   {sentence}
                 </button>

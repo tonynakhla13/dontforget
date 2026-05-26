@@ -138,28 +138,28 @@ export default function ImmersiveFooter() {
   }, []);
 
   return (
-    <footer className="relative z-10 overflow-hidden border-t border-[rgba(58,191,138,0.2)] bg-[#020505] py-16 text-[#F8F5EE]">
-      <div className="pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(83,230,178,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(83,230,178,0.06)_1px,transparent_1px)] [background-size:44px_44px]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#53E6B2] to-transparent" />
+    <footer className="relative z-10 overflow-hidden border-t border-[rgba(var(--teal-rgb),0.2)] bg-[var(--bg)] py-16 text-[var(--fg)]">
+      <div className="pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(var(--teal-rgb),0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(var(--teal-rgb),0.06)_1px,transparent_1px)] [background-size:44px_44px]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--teal)] to-transparent" />
       <div className="wrap relative">
         <div className="mb-7 grid gap-4 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 border border-[#53E6B2]/25 bg-[#53E6B2]/8 px-3 py-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.28em] text-[#9CFBDD]">
-              <span aria-hidden="true" className="h-2 w-2 bg-[#53E6B2] shadow-[0_0_18px_rgba(83,230,178,0.9)]" />
+            <div className="mb-4 inline-flex items-center gap-2 border border-[rgba(var(--teal-rgb),0.25)] bg-[rgba(var(--teal-rgb),0.08)] px-3 py-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.28em] text-[var(--immersive-mint)]">
+              <span aria-hidden="true" className="h-2 w-2 bg-[var(--teal)] shadow-[0_0_18px_rgba(var(--teal-rgb),0.9)]" />
               Signal locked
             </div>
             <h2 className="hed max-w-[820px] text-[clamp(2.6rem,8vw,7.5rem)] leading-[0.86]">
               Build the future. Keep the humans.
             </h2>
           </div>
-          <p className="max-w-[520px] font-mono text-xs uppercase leading-7 tracking-[0.2em] text-[#F8F5EE]/62 lg:justify-self-end">
+          <p className="max-w-[520px] font-mono text-xs uppercase leading-7 tracking-[0.2em] text-[rgba(var(--fg-rgb),0.62)] lg:justify-self-end">
             Digital systems, launch-ready sites, and interfaces with enough polish to make the robots ask who your designer is.
           </p>
         </div>
 
         <canvas
           ref={canvasRef}
-          className="h-[220px] w-full border border-[rgba(58,191,138,0.16)] bg-[rgba(5,15,12,0.54)] shadow-[0_0_80px_rgba(58,191,138,0.08)]"
+          className="h-[220px] w-full border border-[rgba(var(--teal-rgb),0.16)] bg-[rgba(var(--surface-rgb),0.54)] shadow-[0_0_80px_rgba(var(--teal-rgb),0.08)]"
           aria-hidden="true"
         />
 
@@ -167,29 +167,29 @@ export default function ImmersiveFooter() {
           {signalPanels.map((panel) => (
             <div
               key={panel.label}
-              className="border border-[#53E6B2]/16 bg-[#07110F]/78 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+              className="border border-[rgba(var(--teal-rgb),0.16)] bg-[rgba(var(--teal-rgb),0.055)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
             >
-              <p className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.3em] text-[#53E6B2]">
+              <p className="font-mono text-[0.55rem] font-bold uppercase tracking-[0.3em] text-[var(--teal)]">
                 {panel.label}
               </p>
-              <p className="mt-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#F8F5EE]">
+              <p className="mt-3 text-sm font-semibold uppercase tracking-[0.08em] text-[var(--fg)]">
                 {panel.value}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="mt-8 grid gap-8 border-y border-[rgba(58,191,138,0.14)] py-8 lg:grid-cols-[0.8fr_1fr_0.8fr] lg:items-center">
-          <Link href="/immersive" className="group font-mono text-[0.7rem] font-bold uppercase tracking-[0.34em] text-[#F8F5EE]">
+        <div className="mt-8 grid gap-8 border-y border-[rgba(var(--teal-rgb),0.14)] py-8 lg:grid-cols-[0.8fr_1fr_0.8fr] lg:items-center">
+          <Link href="/immersive" className="group font-mono text-[0.7rem] font-bold uppercase tracking-[0.34em] text-[var(--fg)]">
             Don&apos;t Forget
-            <span className="mt-2 block text-[0.56rem] tracking-[0.26em] text-[#F5B85E] transition group-hover:text-[#53E6B2]">
+            <span className="mt-2 block text-[0.56rem] tracking-[0.26em] text-[var(--immersive-warm)] transition group-hover:text-[var(--teal)]">
               web development agency
             </span>
           </Link>
 
-          <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-8 gap-y-4 font-mono text-[0.58rem] uppercase tracking-[0.26em] text-[#F8F5EE]/62 lg:justify-center">
+          <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-8 gap-y-4 font-mono text-[0.58rem] uppercase tracking-[0.26em] text-[rgba(var(--fg-rgb),0.62)] lg:justify-center">
             {footerLinks.map((item) => (
-              <Link key={item.href} href={item.href} className="transition hover:text-[#53E6B2]">
+              <Link key={item.href} href={item.href} className="transition hover:text-[var(--teal)]">
                 {item.label}
               </Link>
             ))}
@@ -198,13 +198,13 @@ export default function ImmersiveFooter() {
           <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
             <Link
               href="/immersive/contact"
-              className="inline-flex min-h-11 items-center justify-center gap-2 border border-[#53E6B2]/35 bg-[#53E6B2] px-5 font-mono text-[0.62rem] font-black uppercase tracking-[0.18em] text-[#03100C] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(83,230,178,0.24)]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 border border-[rgba(var(--teal-rgb),0.35)] bg-[var(--teal)] px-5 font-mono text-[0.62rem] font-black uppercase tracking-[0.18em] text-[var(--bg)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(var(--teal-rgb),0.24)]"
             >
               Start
             </Link>
             <Link
               href="/immersive/work"
-              className="inline-flex min-h-11 items-center justify-center gap-2 border border-[#F8F5EE]/16 px-5 font-mono text-[0.62rem] font-bold uppercase tracking-[0.18em] text-[#F8F5EE] transition hover:border-[#F5B85E]/50 hover:text-[#F5B85E]"
+              className="inline-flex min-h-11 items-center justify-center gap-2 border border-[rgba(var(--fg-rgb),0.16)] px-5 font-mono text-[0.62rem] font-bold uppercase tracking-[0.18em] text-[var(--fg)] transition hover:border-[var(--immersive-warm)] hover:text-[var(--immersive-warm)]"
             >
               Proof
               <span aria-hidden="true">↗</span>
@@ -212,9 +212,9 @@ export default function ImmersiveFooter() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 font-mono text-[0.58rem] uppercase tracking-[0.24em] text-[#F8F5EE]/45 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 font-mono text-[0.58rem] uppercase tracking-[0.24em] text-[rgba(var(--fg-rgb),0.45)] md:flex-row md:items-center md:justify-between">
           <span>© {new Date().getFullYear()} Don&apos;t Forget. Future-resistant pixels.</span>
-          <span className="text-[#F5B85E]/85">
+          <span className="text-[var(--immersive-warm)] opacity-85">
             Punch line: if the footer starts floating, it&apos;s not a bug. It&apos;s applying for NASA.
           </span>
         </div>

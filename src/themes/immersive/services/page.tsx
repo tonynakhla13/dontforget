@@ -18,7 +18,7 @@ function ServicesBackground() {
   return (
     <div className="pointer-events-none fixed inset-0 z-0">
       <div className="absolute inset-0" style={{
-        background: "radial-gradient(ellipse 72% 54% at 70% 46%, rgba(58,191,138,0.07), transparent 58%), linear-gradient(180deg, rgba(9,9,9,0.96) 0%, rgba(9,9,9,1) 48%, rgba(9,9,9,0.96) 100%)",
+        background: "radial-gradient(ellipse 72% 54% at 70% 46%, rgba(var(--teal-rgb),0.07), transparent 58%), linear-gradient(180deg, rgba(var(--bg-rgb),0.96) 0%, rgba(var(--bg-rgb),1) 48%, rgba(var(--bg-rgb),0.96) 100%)",
       }} />
     </div>
   );
@@ -48,7 +48,7 @@ function ServicesHero() {
       </div>
       <div className="relative z-10 wrap flex items-center pt-32 pb-20">
         <div className="max-w-[760px]">
-          <h1 ref={headRef} className="hed text-[clamp(4.2rem,10vw,9.6rem)] leading-[0.84] text-[#F8F5EE]" style={{ visibility: "hidden" }}>
+          <h1 ref={headRef} className="hed text-[clamp(4.2rem,10vw,9.6rem)] leading-[0.84] text-[var(--fg)]" style={{ visibility: "hidden" }}>
             Our<br /><span className="text-[var(--teal)]">Services</span>
           </h1>
           <p ref={bodyRef} className="mt-8 max-w-[520px] text-[clamp(0.92rem,1.3vw,1.04rem)] leading-[1.9] text-[var(--body)]" style={{ visibility: "hidden" }}>

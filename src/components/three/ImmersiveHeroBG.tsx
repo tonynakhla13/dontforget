@@ -5,10 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Sparkles } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
-
-const TEAL  = "#3ABF8A";
-const TEAL2 = "#1D7A56";
-const MINT  = "#B8FFE0";
+import { useImmersiveTheme, type ImmersiveTheme } from "./useImmersiveTheme";
 
 // ─── Animated Wireframe Wave ──────────────────────────────────────────────────
 
@@ -70,11 +67,13 @@ function GlassSphere({
   r,
   spd,
   fi,
+  theme,
 }: {
   pos: [number, number, number];
   r: number;
   spd: number;
   fi: number;
+  theme: ImmersiveTheme;
 }) {
   return (
     <Float speed={spd} rotationIntensity={0.15} floatIntensity={fi}>
@@ -83,8 +82,8 @@ function GlassSphere({
         <mesh>
           <sphereGeometry args={[r, 36, 36]} />
           <meshStandardMaterial
-            color={TEAL}
-            emissive={TEAL}
+            color={theme.accent}
+            emissive={theme.accent}
             emissiveIntensity={0.5}
             transparent
             opacity={0.06}
@@ -97,14 +96,14 @@ function GlassSphere({
         {/* wireframe shell */}
         <mesh>
           <sphereGeometry args={[r * 1.012, 18, 18]} />
-          <meshBasicMaterial color={TEAL} wireframe transparent opacity={0.16} />
+          <meshBasicMaterial color={theme.accent} wireframe transparent opacity={0.16} />
         </mesh>
         {/* bright inner glow core — blooms strongly */}
         <mesh>
           <sphereGeometry args={[r * 0.28, 10, 10]} />
           <meshStandardMaterial
-            color={MINT}
-            emissive={MINT}
+            color={theme.mint}
+            emissive={theme.mint}
             emissiveIntensity={3.5}
             toneMapped={false}
           />
@@ -146,22 +145,22 @@ function CameraRig() {
 
 // ─── Full Scene ───────────────────────────────────────────────────────────────
 
-function Scene() {
+function Scene({ theme }: { theme: ImmersiveTheme }) {
   return (
     <>
-      <color attach="background" args={["#090909"]} />
+      <color attach="background" args={[theme.bg]} />
 
       {/* Atmosphere lights */}
-      <ambientLight intensity={0.35} color="#071510" />
-      <pointLight position={[-7,  4,  3]} intensity={14} color={TEAL}  distance={24} decay={2} />
-      <pointLight position={[ 7, -3,  2]} intensity={9}  color={TEAL2} distance={22} decay={2} />
-      <pointLight position={[ 0,  2,  5]} intensity={5}  color={MINT}  distance={16} decay={2} />
+      <ambientLight intensity={0.35} color={theme.surface} />
+      <pointLight position={[-7,  4,  3]} intensity={14} color={theme.accent} distance={24} decay={2} />
+      <pointLight position={[ 7, -3,  2]} intensity={9} color={theme.deep} distance={22} decay={2} />
+      <pointLight position={[ 0,  2,  5]} intensity={5} color={theme.mint} distance={16} decay={2} />
 
       {/* Wireframe wave planes at different depths / tilts */}
       <WireWave
         pos={[0, -2.2, -6]}
         rot={[-0.22, 0, 0]}
-        color={TEAL}
+        color={theme.accent}
         opacity={0.082}
         spd={0.72}
         amp={0.65}
@@ -169,18 +168,18 @@ function Scene() {
       <WireWave
         pos={[0, -1, -9.5]}
         rot={[-0.12, 0.05, 0]}
-        color={TEAL2}
+        color={theme.deep}
         opacity={0.052}
         spd={0.44}
         amp={0.44}
       />
 
       {/* Floating glass spheres */}
-      <GlassSphere pos={[-4.3,  1.9, -3.5]} r={0.74} spd={1.1} fi={1.4} />
-      <GlassSphere pos={[ 4.6, -1.3, -2.8]} r={0.50} spd={1.7} fi={1.2} />
-      <GlassSphere pos={[ 2.3,  2.5, -4.6]} r={1.10} spd={0.85} fi={0.9} />
-      <GlassSphere pos={[-3.1, -2.3, -3.9]} r={0.37} spd={2.2} fi={1.8} />
-      <GlassSphere pos={[ 5.6,  1.6, -5.6]} r={0.62} spd={1.35} fi={1.1} />
+      <GlassSphere theme={theme} pos={[-4.3,  1.9, -3.5]} r={0.74} spd={1.1} fi={1.4} />
+      <GlassSphere theme={theme} pos={[ 4.6, -1.3, -2.8]} r={0.50} spd={1.7} fi={1.2} />
+      <GlassSphere theme={theme} pos={[ 2.3,  2.5, -4.6]} r={1.10} spd={0.85} fi={0.9} />
+      <GlassSphere theme={theme} pos={[-3.1, -2.3, -3.9]} r={0.37} spd={2.2} fi={1.8} />
+      <GlassSphere theme={theme} pos={[ 5.6,  1.6, -5.6]} r={0.62} spd={1.35} fi={1.1} />
 
       {/* Glowing particle clouds */}
       <Sparkles
@@ -189,7 +188,7 @@ function Scene() {
         size={2.2}
         speed={0.28}
         opacity={0.55}
-        color={TEAL}
+        color={theme.accent}
       />
       <Sparkles
         count={45}
@@ -197,7 +196,7 @@ function Scene() {
         size={3.8}
         speed={0.14}
         opacity={0.28}
-        color={MINT}
+        color={theme.mint}
       />
 
       <CameraRig />
@@ -219,14 +218,18 @@ function Scene() {
 // ─── Canvas ───────────────────────────────────────────────────────────────────
 
 export default function ImmersiveHeroBG() {
+  const theme = useImmersiveTheme();
+  const themeKey = `${theme.bg}-${theme.surface}-${theme.accent}-${theme.deep}-${theme.mint}`;
+
   return (
     <Canvas
+      key={themeKey}
       camera={{ position: [0, 0.1, 6.8], fov: 52 }}
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%" }}
     >
-      <Scene />
+      <Scene theme={theme} />
     </Canvas>
   );
 }

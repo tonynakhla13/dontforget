@@ -4,13 +4,11 @@ import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
 const steps = [
-  { n: "01", title: "Intake", body: "We ask the right questions before the brief exists." },
-  { n: "02", title: "Discovery", body: "We define the real job, audience, and constraints." },
-  { n: "03", title: "Research", body: "We study the market and choose the strongest route." },
-  { n: "04", title: "Proposal", body: "You get clear options, scope, trade-offs, and timing." },
-  { n: "05", title: "Strategy", body: "We shape the UX, structure, references, and plan." },
-  { n: "06", title: "Build", body: "We make the system work, then make it unforgettable." },
-  { n: "07", title: "Launch", body: "We test, refine, ship, and support what comes next." },
+  { n: "01", title: "Intake", body: "We ask the right questions and shape the brief before work starts." },
+  { n: "02", title: "Discovery", body: "We define the real job, audience, constraints, and strongest route." },
+  { n: "03", title: "Strategy", body: "We map the UX, structure, references, scope, trade-offs, and timing." },
+  { n: "04", title: "Build", body: "We make the system work, then refine it until it feels unforgettable." },
+  { n: "05", title: "Launch", body: "We test, ship, support, and keep the next improvements visible." },
 ];
 
 export default function Process() {
@@ -73,17 +71,17 @@ export default function Process() {
         <div ref={cardsRef} className="relative mx-auto mt-14 w-full max-w-[1500px]">
           <div
             data-line
-            className="pointer-events-none absolute left-4 right-4 top-1/2 hidden h-px origin-left bg-gradient-to-r from-transparent via-[rgba(58,191,138,0.62)] to-transparent lg:block"
+            className="pointer-events-none absolute left-4 right-4 top-1/2 hidden h-px origin-left bg-gradient-to-r from-transparent via-[rgba(var(--teal-rgb),0.62)] to-transparent lg:block"
           />
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {steps.map((step) => (
               <article
                 key={step.n}
                 data-step
-                className="relative min-h-[230px] overflow-hidden rounded-[1.35rem] border border-[rgba(58,191,138,0.34)] bg-[rgba(9,9,9,0.88)] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.36)] backdrop-blur-md"
+                className="relative min-h-[230px] overflow-hidden rounded-[1.35rem] border border-[rgba(var(--teal-rgb),0.34)] bg-[rgba(var(--bg-rgb),0.88)] p-5 shadow-[0_18px_60px_rgba(var(--bg-rgb),0.36)] backdrop-blur-md"
               >
-                <span className="absolute -right-2 -top-3 font-mono text-[4.5rem] font-black leading-none tracking-[-0.1em] text-[rgba(58,191,138,0.12)]">
+                <span className="absolute -right-2 -top-3 font-mono text-[4.5rem] font-black leading-none tracking-[-0.1em] text-[rgba(var(--teal-rgb),0.12)]">
                   {step.n}
                 </span>
                 <span className="font-mono text-[0.68rem] uppercase tracking-[0.32em] text-[var(--teal)]">
