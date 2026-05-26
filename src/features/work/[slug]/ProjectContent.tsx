@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { gsap } from "@/lib/gsap";
@@ -261,18 +262,18 @@ export default function ProjectContent({ project: p }: { project: ProjectData })
         style={{ background: "var(--bg)" }}
       >
         <div className="wrap flex items-center justify-between">
-          <a
+          <Link
             href="/#work"
             className="inline-flex items-center gap-3 font-mono text-[0.6rem] uppercase tracking-[0.3em] text-[var(--body)] transition-colors hover:text-[var(--teal)]"
           >
             <span className="h-px w-8 bg-current" />
             Back to work
-          </a>
+          </Link>
 
-          <a href="/#contact" className="btn-glass">
+          <Link href="/#contact" className="btn-glass">
             <span className="btn-glass-blob" aria-hidden="true" />
             <span className="btn-glass-face">Start a project →</span>
-          </a>
+          </Link>
         </div>
       </section>
     </>

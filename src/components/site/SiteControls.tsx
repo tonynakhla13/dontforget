@@ -1,8 +1,9 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { selectLocale, selectTheme } from "@/app/(site)/[lang]/actions";
 import { replaceLocale, replaceTheme, type Locale, type Theme, THEMES } from "@/lib/site-routing";
+import { useThemeTransition } from "./ThemeLoadingExperience";
 
 type Props = { locale: Locale; theme: Theme; labels: { theme: string; language: string; current: string } };
 
@@ -11,11 +12,12 @@ type ThemeProps = Pick<Props, "locale" | "theme" | "labels">;
 
 export function LocaleControl({ locale, theme, labels }: LocaleProps) {
   const pathname = usePathname();
-  const router = useRouter();
+  const { navigateWithTransition } = useThemeTransition();
 
-  async function changeLocale(next: Locale) {
-    await selectLocale(next);
-    router.push(replaceLocale(pathname, next));
+  function changeLocale(next: Locale) {
+    navigateWithTransition(replaceLocale(pathname, next), {
+      beforeNavigate: () => selectLocale(next),
+    });
   }
 
   return (
@@ -29,11 +31,12 @@ export function LocaleControl({ locale, theme, labels }: LocaleProps) {
 
 export function ThemeControl({ locale, theme, labels }: ThemeProps) {
   const pathname = usePathname();
-  const router = useRouter();
+  const { navigateWithTransition } = useThemeTransition();
 
-  async function changeTheme(next: Theme) {
-    await selectTheme(next, locale);
-    router.push(replaceTheme(pathname, next));
+  function changeTheme(next: Theme) {
+    navigateWithTransition(replaceTheme(pathname, next), {
+      beforeNavigate: () => selectTheme(next, locale),
+    });
   }
 
   return (

@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { selectTheme } from "@/app/(site)/[lang]/actions";
 import { themeHome, THEMES, type Locale, type Theme } from "@/lib/site-routing";
+import { useThemeTransition } from "./ThemeLoadingExperience";
 
 type Props = {
   locale: Locale;
@@ -10,11 +10,12 @@ type Props = {
 };
 
 export default function ThemePicker({ locale, copy }: Props) {
-  const router = useRouter();
+  const { navigateWithTransition } = useThemeTransition();
 
-  async function choose(theme: Theme) {
-    await selectTheme(theme, locale);
-    router.push(themeHome(locale, theme));
+  function choose(theme: Theme) {
+    navigateWithTransition(themeHome(locale, theme), {
+      beforeNavigate: () => selectTheme(theme, locale),
+    });
   }
 
   return (

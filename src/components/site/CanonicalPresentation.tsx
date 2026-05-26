@@ -2,13 +2,15 @@
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { pagePath, postPath, projectPath, servicePath, themeHome, type CorePage, type Locale, type Theme } from "@/lib/site-routing";
+import { isLocale, isTheme, pagePath, postPath, projectPath, servicePath, themeHome, type CorePage, type Locale, type Theme } from "@/lib/site-routing";
 
 function rewriteHref(href: string, locale: Locale, theme: Theme) {
   if (!href.startsWith("/") || href.startsWith("/api") || href.startsWith("/dashboard") || href.startsWith("/login") || href.startsWith("/setup")) return href;
   const url = new URL(href, "http://canonical.local");
   const segments = url.pathname.split("/").filter(Boolean);
+  if (segments[0] && isLocale(segments[0])) segments.shift();
   if (segments[0] === "focused" || segments[0] === "creative" || segments[0] === "immersive") segments.shift();
+  else if (segments[0] && isTheme(segments[0])) segments.shift();
   let next = themeHome(locale, theme);
   if (segments[0] === "about" || segments[0] === "work" || segments[0] === "services" || segments[0] === "blog" || segments[0] === "contact" || segments[0] === "request") {
     if (segments[0] === "work" && segments[1]) next = projectPath(locale, theme, segments[1]);

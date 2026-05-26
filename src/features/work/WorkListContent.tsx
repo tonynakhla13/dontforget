@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -237,7 +238,7 @@ function ProjectInfoPanel({ project }: { project: WorkProject }) {
           style={{ borderTop: "1px solid var(--border)" }}
         >
           {/* View project — outline */}
-          <a
+          <Link
             href={`/work/${project.slug ?? project.id}`}
             className="flex items-center justify-center gap-2 rounded-full font-mono uppercase transition-all duration-200"
             style={{
@@ -254,10 +255,10 @@ function ProjectInfoPanel({ project }: { project: WorkProject }) {
             <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M3 13L13 3M13 3H6M13 3V10" />
             </svg>
-          </a>
+          </Link>
 
           {/* Start a project — filled */}
-          <a
+          <Link
             href="/immersive/contact"
             className="flex items-center justify-center rounded-full font-mono uppercase transition-opacity duration-200 hover:opacity-85"
             style={{
@@ -270,7 +271,7 @@ function ProjectInfoPanel({ project }: { project: WorkProject }) {
             }}
           >
             Start a project →
-          </a>
+          </Link>
         </div>
       </div>
     </div>
@@ -313,7 +314,7 @@ function ProjectCard({
   }, []);
 
   return (
-    <a
+    <Link
       href={`/work/${project.slug ?? project.id}`}
       data-card
       className="group relative block"
@@ -402,7 +403,7 @@ function ProjectCard({
           </div>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
 
@@ -470,14 +471,14 @@ function WorkHero({ totalCount }: { totalCount: number }) {
             <span className="text-[var(--fg)]">remember us.</span>
           </p>
           <div ref={ctaRef} className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-            <a href="/immersive/contact" className="btn-glass">
+            <Link href="/immersive/contact" className="btn-glass">
               <span className="btn-glass-blob" aria-hidden="true" />
               <span className="btn-glass-face">Start a project</span>
-            </a>
-            <a href="/services" className="btn-glass-ghost">
+            </Link>
+            <Link href="/services" className="btn-glass-ghost">
               <span className="btn-glass-blob" aria-hidden="true" />
               <span className="btn-glass-face">Our services →</span>
-            </a>
+            </Link>
           </div>
           <div
             ref={statsRef}
@@ -809,14 +810,14 @@ function BottomCTA() {
           We&apos;re selective about what we take on. That&apos;s why our work looks like our work.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4">
-          <a href="/#contact" className="btn-glass">
+          <Link href="/#contact" className="btn-glass">
             <span className="btn-glass-blob" aria-hidden="true" />
             <span className="btn-glass-face">Start a project →</span>
-          </a>
-          <a href="/services" className="btn-glass-ghost">
+          </Link>
+          <Link href="/services" className="btn-glass-ghost">
             <span className="btn-glass-blob" aria-hidden="true" />
             <span className="btn-glass-face">Explore services</span>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

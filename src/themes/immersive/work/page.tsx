@@ -5,8 +5,8 @@ import KnotOnly from "@/components/KnotOnly";
 import MeshGrid from "@/components/MeshGrid";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
-import WorkListContent from "@/app/_legacy/work/WorkListContent";
-import type { WorkProject } from "@/app/_legacy/work/page";
+import WorkListContent from "@/features/work/WorkListContent";
+import type { WorkProject } from "@/features/work/page";
 
 export const metadata: Metadata = {
   title: "Work — DON'T FORGET",
