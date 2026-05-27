@@ -113,13 +113,15 @@ function ServiceCard({ s }: { s: typeof SERVICES[0] }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background:    hov ? "var(--nox-svc-card-hov)" : "var(--nox-svc-card-bg)",
-        border:        `1px solid ${hov ? "var(--nox-svc-border-hov)" : "var(--nox-svc-border)"}`,
-        transition:    "background 320ms ease, border-color 320ms ease",
-        padding:       "clamp(1.8rem, 2.6vw, 2.4rem)",
-        display:       "flex",
-        flexDirection: "column",
-        gap:           "clamp(1.2rem, 2vw, 1.8rem)",
+        background:      hov ? "var(--nox-svc-card-hov)" : "var(--nox-svc-card-bg)",
+        backgroundImage: `linear-gradient(rgba(70,209,42,${hov ? "0.09" : "0.045"}) 1px, transparent 1px), linear-gradient(90deg, rgba(70,209,42,${hov ? "0.09" : "0.045"}) 1px, transparent 1px)`,
+        backgroundSize:  "22px 22px",
+        border:          `1px solid ${hov ? "var(--nox-svc-border-hov)" : "var(--nox-svc-border)"}`,
+        transition:      "background 320ms ease, border-color 320ms ease, background-image 320ms ease",
+        padding:         "clamp(1.8rem, 2.6vw, 2.4rem)",
+        display:         "flex",
+        flexDirection:   "column",
+        gap:             "clamp(1.2rem, 2vw, 1.8rem)",
       }}
     >
       {/* ── Top: icon + number ── */}
@@ -230,69 +232,63 @@ function ServiceCard({ s }: { s: typeof SERVICES[0] }) {
         </div>
       </div>
 
-      {/* ── Divider ── */}
-      <div style={{ height: 1, background: "rgba(70,174,34,0.14)", flexShrink: 0 }} />
-
       {/* ── Buttons ── */}
-      <div style={{ display: "flex", gap: "0.6rem", marginTop: "auto" }}>
-        {/* Start a project — solid on card hover */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: "0.1rem", flexWrap: "nowrap", gap: "0.5rem" }}>
+        {/* Start a project — compact pill */}
         <a
           href="/en/focused/contact"
           onMouseEnter={() => setBtnHov(true)}
           onMouseLeave={() => setBtnHov(false)}
           style={{
-            flex:           1,
-            display:        "flex",
+            display:        "inline-flex",
             alignItems:     "center",
-            justifyContent: "center",
-            gap:            7,
-            padding:        "0.7rem 1rem",
-            background:     btnHov || hov ? "var(--nox-btn-start-hov)" : "var(--nox-btn-start-bg)",
-            border:         `1px solid ${btnHov || hov ? "var(--nox-btn-start-hov)" : "rgba(70,174,34,0.3)"}`,
-            color:          btnHov || hov ? "var(--nox-btn-start-ch)" : "var(--nox-btn-start-c)",
+            gap:            6,
+            padding:        "0.38rem 0.85rem",
+            background:     btnHov ? TK.greenHot : TK.green,
+            color:          "#000",
             fontFamily:     SANS,
             fontWeight:     700,
-            fontSize:       "clamp(0.6rem, 0.72vw, 0.72rem)",
-            letterSpacing:  "0.12em",
+            fontSize:       "clamp(0.58rem, 0.68vw, 0.68rem)",
+            letterSpacing:  "0.1em",
             textTransform:  "uppercase",
             textDecoration: "none",
-            transition:     "background 260ms ease, color 260ms ease, border-color 260ms ease",
+            transition:     "background 200ms ease",
             cursor:         "pointer",
             whiteSpace:     "nowrap",
+            flexShrink:     0,
           }}
         >
           Start a project
-          <svg width={10} height={10} viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+          <svg width={9} height={9} viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
             <path d="M2 8L8 2M8 2H4M8 2v4"/>
           </svg>
         </a>
 
-        {/* Learn more — outline */}
+        {/* Learn more — text link */}
         <a
-          href="/en/focused/contact"
+          href="/en/focused/services"
           style={{
-            flex:           1,
-            display:        "flex",
+            display:        "inline-flex",
             alignItems:     "center",
-            justifyContent: "center",
-            padding:        "0.7rem 1rem",
-            background:     "transparent",
-            border:         `1px solid rgba(70,174,34,${hov ? "0.45" : "0.18"})`,
-            color:          TK.green,
+            gap:            5,
             fontFamily:     SANS,
-            fontWeight:     600,
-            fontSize:       "clamp(0.6rem, 0.72vw, 0.72rem)",
-            letterSpacing:  "0.12em",
+            fontSize:       "clamp(0.58rem, 0.68vw, 0.68rem)",
+            letterSpacing:  "0.1em",
             textTransform:  "uppercase",
+            color:          TK.green,
+            opacity:        0.55,
             textDecoration: "none",
-            transition:     "border-color 280ms ease, background 280ms ease",
+            transition:     "opacity 200ms ease",
             cursor:         "pointer",
             whiteSpace:     "nowrap",
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(70,174,34,0.07)"; e.currentTarget.style.borderColor = "rgba(70,174,34,0.5)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = `rgba(70,174,34,${hov ? "0.45" : "0.18"})`; }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "0.55")}
         >
           Learn more
+          <svg width={8} height={8} viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 5h6M5 2l3 3-3 3"/>
+          </svg>
         </a>
       </div>
     </div>

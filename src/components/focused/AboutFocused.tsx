@@ -206,11 +206,13 @@ export default function AboutFocused({ team }: { team?: FocusedTeamMember[] }) {
       }}>
         {STATS.map((s, i) => (
           <div key={i} className="tk-stat" style={{
-            padding:      "clamp(2rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem)",
-            borderRight:  i < 3 ? `1px solid ${TK.line}` : "none",
-            display:      "flex",
-            flexDirection:"column",
-            gap:          8,
+            padding:        "clamp(2rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem)",
+            borderRight:    i < 3 ? `1px solid ${TK.line}` : "none",
+            display:        "flex",
+            flexDirection:  "column",
+            alignItems:     "center",
+            textAlign:      "center",
+            gap:            8,
           }}>
             <span style={{
               fontFamily:  DISPLAY,
@@ -383,6 +385,8 @@ export default function AboutFocused({ team }: { team?: FocusedTeamMember[] }) {
               padding:       "clamp(1.8rem, 3vw, 3rem) clamp(1.2rem, 2vw, 2rem)",
               display:       "flex",
               flexDirection: "column",
+              alignItems:    "center",
+              textAlign:     "center",
               gap:           "clamp(1rem, 1.8vw, 1.8rem)",
             }}>
               <span style={{

@@ -3,50 +3,59 @@
 import { useEffect, useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import Link from "next/link";
-import { NoxNavbar, NoxFooter, NoxClients, NoxMusts, TK, SANS, DISPLAY } from "@/components/focused/NoxShared";
+import { NoxNavbar, NoxFooter, NoxClients, NoxMusts, NoxLogo, TK, SANS, DISPLAY } from "@/components/focused/NoxShared";
 import NoxContactHome from "@/components/focused/NoxContactHome";
 
 /* ── data ─────────────────────────────────────────────────────────── */
 // lp = left%, tp = top% — positions across the full section width
 const TAGS = [
-  { text: "craft",     cls: "wg", lp:  22, tp:  4, rot: -4 },
-  { text: "bold",      cls: "wg", lp:  66, tp:  7, rot:  4 },
-  { text: "instinct",  cls: "gw", lp:   2, tp: 20, rot: -3 },
-  { text: "precision", cls: "gw", lp:  44, tp: 22, rot:  2 },
-  { text: "edge",      cls: "wg", lp:  79, tp: 18, rot: -2 },
-  { text: "raw",       cls: "gw", lp:  11, tp: 40, rot: -5 },
-  { text: "culture",   cls: "gw", lp:  61, tp: 43, rot: -7 },
-  { text: "clarity",   cls: "wg", lp:   3, tp: 58, rot: -6 },
-  { text: "sharp",     cls: "wg", lp:  37, tp: 61, rot:  6 },
-  { text: "velocity",  cls: "gw", lp:  72, tp: 56, rot:  3 },
-  { text: "grit",      cls: "gw", lp:  18, tp: 77, rot: -3 },
-  { text: "form",      cls: "wg", lp:  52, tp: 80, rot:  2 },
+  { text: "craft",     cls: "wg", lp:  22, tp:  4, rot: -4, desc: "Every pixel is intentional. We obsess over details until the output is undeniable." },
+  { text: "bold",      cls: "wg", lp:  66, tp:  7, rot:  4, desc: "We don't design to blend in. We design to stop people mid-scroll." },
+  { text: "instinct",  cls: "gw", lp:   2, tp: 20, rot: -3, desc: "Years of creative reps build gut-level judgment — we know what works before testing it." },
+  { text: "precision", cls: "gw", lp:  44, tp: 22, rot:  2, desc: "No guesswork. Every decision is deliberate, measured, and earned." },
+  { text: "edge",      cls: "wg", lp:  79, tp: 18, rot: -2, desc: "We stay ahead of the curve — tools, trends, and techniques others haven't touched yet." },
+  { text: "raw",       cls: "gw", lp:  11, tp: 40, rot: -5, desc: "Authentic, unfiltered creative energy. No templates. No recycled ideas." },
+  { text: "culture",   cls: "gw", lp:  61, tp: 43, rot: -7, desc: "Deep understanding of the audience before a single line gets written or drawn." },
+  { text: "clarity",   cls: "wg", lp:   5, tp: 56, rot: -6, desc: "Complex problems distilled into clear, elegant solutions that make sense immediately." },
+  { text: "sharp",     cls: "wg", lp:  37, tp: 60, rot:  6, desc: "Quick thinking, faster delivery. No months-long timelines for work that should ship now." },
+  { text: "velocity",  cls: "gw", lp:  72, tp: 55, rot:  3, desc: "From brief to live in weeks, not quarters. Speed without cutting corners." },
+  { text: "grit",      cls: "gw", lp:  18, tp: 72, rot: -3, desc: "We see things through. Revisions, pivots, pressure — we stay in it until it's right." },
+  { text: "form",      cls: "wg", lp:  52, tp: 74, rot:  2, desc: "Function drives form. The best design is the one that works." },
 ];
 
 const PROJECTS = [
   {
-    slug:     "elia-clinic",
-    name:     "Elia Clinic",
-    category: "Healthcare",
-    label:    "Brand identity and patient digital experience — 5 weeks from kickoff to launch, zero revision rounds.",
-    visual:   "/creative/353706ca-1752-4775-8f6d-18ffc60338d9.jpeg",
-    align:    "left" as const,
+    slug:        "elia-clinic",
+    name:        "Elia Clinic",
+    category:    "Healthcare",
+    description: "Brand identity and patient digital experience built from scratch. 5 weeks from kickoff to launch with zero revision rounds.",
+    did:         ["Brand Identity", "UI/UX Design", "Web Development", "Patient Portal", "CMS Integration"],
+    tech:        ["Next.js", "Figma", "Framer Motion", "Supabase", "Tailwind CSS"],
+    gif:         "/creative/elia-clinic-scroll.mp4",
+    visual:      "/creative/353706ca-1752-4775-8f6d-18ffc60338d9.jpeg",
+    align:       "left" as const,
   },
   {
-    slug:     "montgab",
-    name:     "Montgab",
-    category: "E-Commerce",
-    label:    "Full Shopify redesign and UX overhaul. Streamlined checkout cut cart abandonment by 40% in month one.",
-    visual:   "/creative/53cb6a99-88d0-49b2-a250-bc678bc725aa.jpeg",
-    align:    "right" as const,
+    slug:        "montgab",
+    name:        "Montgab",
+    category:    "E-Commerce",
+    description: "Full Shopify redesign and UX overhaul. Streamlined checkout flow cut cart abandonment by 40% in the first month.",
+    did:         ["UX Audit", "Shopify Theme", "Checkout Redesign", "Analytics Setup", "Speed Optimization"],
+    tech:        ["Shopify", "Liquid", "React", "Custom Checkout", "Analytics"],
+    gif:         "/creative/montgab-scroll.mp4",
+    visual:      "/creative/53cb6a99-88d0-49b2-a250-bc678bc725aa.jpeg",
+    align:       "right" as const,
   },
   {
-    slug:     "180-degrees",
-    name:     "180 Degrees",
-    category: "Agency Rebrand",
-    label:    "New name, mark, site, and launch campaign — all shipped simultaneously. A major client signed the week it went live.",
-    visual:   "/creative/68e9e822-c689-4c3c-a35555e9a818.jpeg",
-    align:    "left" as const,
+    slug:        "180-degrees",
+    name:        "180 Degrees",
+    category:    "Agency Rebrand",
+    description: "New name, mark, site, and launch campaign — all shipped simultaneously. A major client signed the week it went live.",
+    did:         ["Naming & Strategy", "Visual Identity", "Website Build", "Launch Campaign", "Brand Guidelines"],
+    tech:        ["Next.js", "GSAP", "Figma", "Three.js", "Vercel"],
+    gif:         "/creative/180-degrees-scroll.mp4",
+    visual:      "/creative/68e9e822-c689-4c3c-a35555e9a818.jpeg",
+    align:       "left" as const,
   },
 ];
 
@@ -107,31 +116,26 @@ const IC: Record<string, React.ReactNode> = {
   ),
 };
 
-/* ── tag throw interaction ────────────────────────────────────────── */
-function onTagHit(e: React.MouseEvent<HTMLSpanElement>) {
+/* ── tag hover: scale up + reveal description ─────────────────────── */
+function onTagEnter(e: React.MouseEvent<HTMLSpanElement>) {
   const el = e.currentTarget;
-  const rot = parseFloat(el.dataset.rot ?? "0");
-  const rect = el.getBoundingClientRect();
-  const dx = e.clientX - (rect.left + rect.width  / 2);
-  const dy = e.clientY - (rect.top  + rect.height / 2);
-  const norm = Math.sqrt(dx * dx + dy * dy) || 1;
-  const power = 260 + Math.random() * 220;
-
+  const desc = el.querySelector<HTMLElement>("[data-desc]");
   gsap.killTweensOf(el);
-  gsap.timeline()
-    .to(el, {
-      x: -(dx / norm) * power,
-      y: -(dy / norm) * power - 70,
-      rotation: rot + (Math.random() - 0.5) * 80,
-      scale: 0.88,
-      duration: 0.36,
-      ease: "power3.out",
-    })
-    .to(el, {
-      x: 0, y: 0, rotation: rot, scale: 1,
-      duration: 1.4,
-      ease: "elastic.out(0.75, 0.38)",
-    });
+  gsap.killTweensOf(desc);
+  el.style.zIndex = "20";
+  gsap.to(el, { scale: 1.18, duration: 0.28, ease: "power2.out" });
+  if (desc) gsap.to(desc, { height: "auto", opacity: 1, y: 0, duration: 0.28, ease: "power2.out" });
+}
+function onTagLeave(e: React.MouseEvent<HTMLSpanElement>) {
+  const el = e.currentTarget;
+  const desc = el.querySelector<HTMLElement>("[data-desc]");
+  gsap.killTweensOf(el);
+  gsap.killTweensOf(desc);
+  gsap.to(el, {
+    scale: 1, duration: 0.55, ease: "elastic.out(1, 0.45)",
+    onComplete: () => { el.style.zIndex = "1"; },
+  });
+  if (desc) gsap.to(desc, { height: 0, opacity: 0, y: 4, duration: 0.18, ease: "power2.in" });
 }
 
 /* ── pixel decorations ────────────────────────────────────────────── */
@@ -185,26 +189,43 @@ export default function HomeFocused() {
         opacity: 0, duration: 0.5, stagger: 0.07, delay: 1,
       });
 
-      const wsuaST = { trigger: ".tk-wsua", start: "top 70%", once: true };
+      // ── What sets us apart — pin + cards fall in ─────────────────────
+      gsap.set(".tk-wsua-heading", { opacity: 0, y: 40 });
+      gsap.set(".tk-wsua-sub",     { opacity: 0, y: 20 });
 
-      gsap.from(".tk-wsua-heading", { y: 50, opacity: 0, duration: 0.85, ease: "power3.out", scrollTrigger: wsuaST });
-      gsap.from(".tk-wsua-sub",     { y: 24, opacity: 0, duration: 0.7,  ease: "power3.out", delay: 0.2, scrollTrigger: wsuaST });
+      // Tags start invisible but at their FINAL position so overflow:hidden
+      // doesn't clip them — we animate them from yPercent:-200 (above viewport)
+      gsap.utils.toArray<HTMLElement>(".tk-tag-item").forEach((el) => {
+        gsap.set(el, { opacity: 0, yPercent: -200 });
+      });
 
-      gsap.utils.toArray<HTMLElement>(".tk-tag-item").forEach((el, i) => {
-        gsap.set(el, { transformOrigin: "center bottom" });
-        gsap.from(el, {
-          y: -(300 + i * 40),
-          opacity: 0,
-          duration: 1.1 + i * 0.05,
-          ease: "bounce.out",
-          delay: 0.3 + i * 0.12,
-          scrollTrigger: wsuaST,
-          onComplete() {
-            gsap.timeline()
-              .to(el, { scaleX: 1.18, scaleY: 0.78, duration: 0.07, ease: "none" })
-              .to(el, { scaleX: 1, scaleY: 1, duration: 0.35, ease: "elastic.out(1.2, 0.4)" });
-          },
-        });
+      // Pin the section and animate on entry
+      ScrollTrigger.create({
+        trigger:       ".tk-wsua",
+        start:         "top top",
+        end:           "+=1000",
+        pin:           true,
+        anticipatePin: 1,
+        onEnter() {
+          gsap.to(".tk-wsua-heading", { opacity: 1, y: 0, duration: 0.7,  ease: "power3.out" });
+          gsap.to(".tk-wsua-sub",     { opacity: 1, y: 0, duration: 0.6,  ease: "power3.out", delay: 0.15 });
+
+          gsap.utils.toArray<HTMLElement>(".tk-tag-item").forEach((el, i) => {
+            gsap.set(el, { transformOrigin: "center bottom" });
+            gsap.to(el, {
+              yPercent:  0,
+              opacity:   1,
+              duration:  0.6,
+              ease:      "power3.in",
+              delay:     0.3 + i * 0.1,
+              onComplete() {
+                gsap.timeline()
+                  .to(el, { scaleX: 1.2,  scaleY: 0.75, duration: 0.06, ease: "none" })
+                  .to(el, { scaleX: 1,    scaleY: 1,    duration: 0.35, ease: "elastic.out(1.2, 0.4)" });
+              },
+            });
+          });
+        },
       });
 
       // ── Projects ──────────────────────────────────────
@@ -214,18 +235,18 @@ export default function HomeFocused() {
       });
 
       gsap.utils.toArray<HTMLElement>(".tk-proj-row").forEach((row) => {
-        const card = row.querySelector<HTMLElement>(".tk-proj-card");
-        const mask = row.querySelector<HTMLElement>(".tk-proj-mask");
-        const image = row.querySelector<HTMLElement>(".tk-proj-image");
+        const card    = row.querySelector<HTMLElement>(".tk-proj-card");
+        const mask    = row.querySelector<HTMLElement>(".tk-proj-mask");
+        const image   = row.querySelector<HTMLElement>(".tk-proj-image");
         const details = row.querySelector<HTMLElement>(".tk-proj-details");
-        const kicker = row.querySelector<HTMLElement>(".tk-proj-kicker");
+        const kicker  = row.querySelector<HTMLElement>(".tk-proj-kicker");
         if (!card || !mask || !image || !details || !kicker) return;
 
-        gsap.set(card, { autoAlpha: 0.18, y: 120, scale: 0.94 });
-        gsap.set(image, { xPercent: -12, scale: 1.2, filter: "saturate(0.72) contrast(1.18) brightness(0.56)" });
-        gsap.set(mask, { xPercent: 0, backgroundColor: TK.green });
+        gsap.set(card,    { autoAlpha: 0.18, y: 120, scale: 0.94 });
+        gsap.set(image,   { xPercent: -12, scale: 1.2, filter: "saturate(0.72) contrast(1.18) brightness(0.56)" });
+        gsap.set(mask,    { xPercent: 0, backgroundColor: TK.green });
         gsap.set(details, { autoAlpha: 0, y: 28 });
-        gsap.set(kicker, { autoAlpha: 1, y: 0 });
+        gsap.set(kicker,  { autoAlpha: 1, y: 0 });
 
         const tl = gsap.timeline({
           scrollTrigger: {
@@ -236,10 +257,10 @@ export default function HomeFocused() {
           },
         });
 
-        tl.to(card, { autoAlpha: 1, y: 0, scale: 1, ease: "none" }, 0)
-          .to(image, { xPercent: 0, scale: 1, filter: "saturate(1) contrast(1) brightness(0.94)", ease: "none" }, 0.04)
-          .to(mask, { xPercent: 62, backgroundColor: "#0b220d", ease: "none" }, 0.16)
-          .to(kicker, { autoAlpha: 0, y: -18, ease: "none" }, 0.24)
+        tl.to(card,    { autoAlpha: 1, y: 0, scale: 1, ease: "none" }, 0)
+          .to(image,   { xPercent: 0, scale: 1, filter: "saturate(1) contrast(1) brightness(0.94)", ease: "none" }, 0.04)
+          .to(mask,    { xPercent: 62, backgroundColor: "#0b220d", ease: "none" }, 0.16)
+          .to(kicker,  { autoAlpha: 0, y: -18, ease: "none" }, 0.24)
           .to(details, { autoAlpha: 1, y: 0, ease: "none" }, 0.42);
       });
 
@@ -310,16 +331,16 @@ export default function HomeFocused() {
         }
       );
 
-      // ── Musts — each row appears one by one while section is sticky ──
+      // ── Musts — rows fade+slide up as they enter the viewport ──
       const mustRows = gsap.utils.toArray<HTMLElement>(".tk-must-row");
-      gsap.set(mustRows, { opacity: 0, y: 36 });
+      gsap.set(mustRows, { opacity: 0, y: 48 });
       mustRows.forEach((row, i) => {
         gsap.to(row, {
           opacity: 1, y: 0,
-          duration: 0.72, ease: "power3.out",
+          duration: 0.8, ease: "power3.out",
           scrollTrigger: {
-            trigger: ".tk-musts",
-            start:   `top+=${i * 380} top`,
+            trigger: row,
+            start:   "top 88%",
             once:    true,
           },
         });
@@ -342,13 +363,10 @@ export default function HomeFocused() {
         <PxPair className="tk-px-deco" style={{ left: "17%", bottom: "22%" }} />
         <PxPair className="tk-px-deco" style={{ right: "20%", bottom: "18%" }} />
 
-        {/* NOX mesh logo — full-width hero wordmark */}
-        <div className="tk-logo-hero" style={{ margin: "0 auto clamp(2rem, 4vw, 4rem)", maxWidth: 960 }}>
-          <img
-            src="/nox-mesh-logo.svg"
-            alt="NOX STUDIO"
-            style={{ width: "100%", height: "auto", display: "block" }}
-          />
+        {/* NOX animated logo — full-width hero wordmark */}
+        <div className="tk-logo-hero" style={{ margin: "0 auto clamp(2rem, 4vw, 4rem)", maxWidth: 980 }}>
+          <NoxLogo height={200} />
+          <style>{`.tk-logo-hero svg { width: 100% !important; height: auto !important; }`}</style>
         </div>
 
         <p className="tk-hero-sub" style={{
@@ -388,57 +406,87 @@ export default function HomeFocused() {
 
       {/* ════════════════ WHAT SETS US APART ════════════════ */}
       <section className="tk-wsua" style={{
-        padding:    "clamp(5rem, 9vw, 10rem) clamp(1.5rem, 4vw, 3.5rem)",
-        borderTop:  `1px solid ${TK.line}`,
-        overflowX:  "clip",
+        minHeight:      "100dvh",
+        display:        "flex",
+        flexDirection:  "column",
+        justifyContent: "center",
+        padding:        "clamp(3rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3.5rem)",
+        borderTop:      `1px solid ${TK.line}`,
+        overflow:       "hidden",
+        boxSizing:      "border-box",
       }}>
         <h2 className="tk-wsua-heading" style={{
           fontFamily:    SANS,
           fontWeight:    700,
-          fontSize:      "clamp(2.2rem, 5.5vw, 5.5rem)",
+          fontSize:      "clamp(2rem, 5vw, 5rem)",
           lineHeight:    1,
           color:         TK.paper,
           textTransform: "uppercase",
           textAlign:     "center",
-          margin:        "0 0 clamp(1.5rem, 2.5vw, 2rem)",
+          margin:        "0 0 clamp(0.8rem, 1.5vw, 1.2rem)",
+          flexShrink:    0,
         }}>what sets us apart</h2>
 
         <p className="tk-wsua-sub" style={{
           fontFamily: SANS,
-          fontSize:   "clamp(0.88rem, 1.2vw, 1.2rem)",
+          fontSize:   "clamp(0.85rem, 1.1vw, 1.1rem)",
           lineHeight: 1.55,
           color:      TK.green,
           textAlign:  "center",
-          maxWidth:   540,
-          margin:     "0 auto clamp(3rem, 6vw, 6rem)",
+          maxWidth:   520,
+          margin:     "0 auto clamp(1.2rem, 2.5vw, 2rem)",
+          flexShrink: 0,
         }}>
           Small team. No middlemen. You talk directly to the people doing the work — from brief to launch.
         </p>
 
-        <div style={{ position: "relative", height: "clamp(380px, 60vh, 680px)", width: "100%" }}>
+        {/* tag cloud — flex:1 fills remaining vh, overflow hidden clips fallers */}
+        <div style={{ position: "relative", flex: 1, width: "100%", minHeight: 0 }}>
           {TAGS.map((tag, i) => (
             <span
               key={i}
               className="tk-tag-item"
               data-rot={tag.rot}
-              onMouseEnter={onTagHit}
+              onMouseEnter={onTagEnter}
+              onMouseLeave={onTagLeave}
               style={{
-                position:      "absolute",
-                left:          `${tag.lp}%`,
-                top:           `${tag.tp}%`,
-                padding:       "clamp(3px, 0.6vw, 7px) clamp(8px, 1.2vw, 16px)",
-                fontFamily:    SANS,
-                fontWeight:    700,
-                fontSize:      "clamp(1rem, 3vw, 3.5rem)",
-                lineHeight:    1,
-                whiteSpace:    "nowrap",
-                transform:     `rotate(${tag.rot}deg)`,
-                background:    tag.cls === "wg" ? TK.paper : TK.green,
-                color:         tag.cls === "wg" ? TK.green : TK.paper,
-                cursor:        "pointer",
-                userSelect:    "none",
+                position:        "absolute",
+                left:            `${tag.lp}%`,
+                top:             `${tag.tp}%`,
+                padding:         "clamp(3px, 0.5vw, 6px) clamp(7px, 1vw, 14px)",
+                fontFamily:      SANS,
+                fontWeight:      700,
+                fontSize:        "clamp(0.9rem, 2.4vw, 2.8rem)",
+                lineHeight:      1,
+                transform:       `rotate(${tag.rot}deg)`,
+                transformOrigin: "center center",
+                background:      tag.cls === "wg" ? TK.paper : TK.green,
+                color:           tag.cls === "wg" ? TK.green : TK.paper,
+                cursor:          "default",
+                userSelect:      "none",
+                zIndex:          1,
+                overflow:        "hidden",
+                minWidth:        "max-content",
               }}
-            >{tag.text}</span>
+            >
+              <span style={{ display: "block", whiteSpace: "nowrap" }}>{tag.text}</span>
+              <span
+                data-desc
+                style={{
+                  display:    "block",
+                  height:     0,
+                  opacity:    0,
+                  overflow:   "hidden",
+                  fontSize:   "clamp(0.55rem, 0.75vw, 0.72rem)",
+                  fontWeight: 400,
+                  lineHeight: 1.45,
+                  marginTop:  "clamp(3px, 0.5vw, 6px)",
+                  whiteSpace: "normal",
+                  maxWidth:   "16em",
+                  transform:  "translateY(4px)",
+                }}
+              >{tag.desc}</span>
+            </span>
           ))}
         </div>
       </section>
@@ -486,11 +534,14 @@ export default function HomeFocused() {
                   willChange:     "transform, opacity",
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <video
                   className="tk-proj-image"
-                  src={p.visual}
-                  alt={p.name}
+                  src={p.gif}
+                  poster={p.visual}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
                   style={{
                     position:   "absolute",
                     inset:      0,
@@ -500,18 +551,18 @@ export default function HomeFocused() {
                     willChange: "transform, filter",
                   }}
                 />
+                {/* full-card mask — slides right to reveal video, leaves green panel on right */}
                 <div
                   className="tk-proj-mask"
                   style={{
-                    position:       "absolute",
-                    inset:          0,
-                    zIndex:         2,
-                    padding:        "clamp(1.25rem, 3vw, 3.25rem)",
-                    overflow:       "hidden",
-                    boxShadow:      "inset -1px 0 0 rgba(255,255,255,0.06)",
-                    willChange:     "transform, background-color",
+                    position:    "absolute",
+                    inset:       0,
+                    zIndex:      2,
+                    overflow:    "hidden",
+                    willChange:  "transform, background-color",
                   }}
                 >
+                  {/* kicker shown before reveal */}
                   <span className="tk-proj-kicker" style={{
                     position:      "absolute",
                     left:          "clamp(1.25rem, 3vw, 3.25rem)",
@@ -524,39 +575,102 @@ export default function HomeFocused() {
                   }}>
                     {String(i + 1).padStart(2, "0")} / {p.category}
                   </span>
+
+                  {/* details panel: constrained to the 38% visible portion of the mask */}
                   <div className="tk-proj-details" style={{
-                    position:      "absolute",
-                    left:          "clamp(1.25rem, 3vw, 3.25rem)",
-                    bottom:        "clamp(1.25rem, 3vw, 3.25rem)",
-                    width:         "min(35%, 360px)",
-                    minWidth:      "clamp(180px, 25vw, 280px)",
-                    color:         TK.paper,
+                    position:       "absolute",
+                    left:           0,
+                    top:            0,
+                    bottom:         0,
+                    width:          "38%",
+                    overflow:       "hidden",
+                    padding:        "clamp(1.4rem, 2.5vw, 2.5rem) clamp(1rem, 2vw, 2rem)",
+                    display:        "flex",
+                    flexDirection:  "column",
+                    justifyContent: "flex-end",
+                    gap:            "clamp(0.5rem, 0.8vw, 0.9rem)",
+                    color:          TK.paper,
                   }}>
+                    {/* category */}
                     <span style={{
-                      display:       "block",
                       fontFamily:    SANS,
-                      fontSize:      "clamp(0.62rem, 0.78vw, 0.78rem)",
-                      letterSpacing: "0.18em",
-                      color:         "var(--nox-proj-sub, rgba(255,255,255,0.55))",
-                      marginBottom:  12,
+                      fontSize:      "clamp(0.6rem, 0.76vw, 0.76rem)",
+                      letterSpacing: "0.22em",
+                      color:         "rgba(255,255,255,0.55)",
                       textTransform: "uppercase",
-                    }}>{p.category}</span>
+                    }}>{String(i + 1).padStart(2, "0")} — {p.category}</span>
+
+                    {/* name */}
                     <strong style={{
-                      display:       "block",
-                      fontFamily:    SANS,
-                      fontWeight:    700,
-                      fontSize:      "clamp(1.45rem, 3vw, 3.35rem)",
-                      lineHeight:    0.95,
-                      color:         TK.paper,
-                      marginBottom:  14,
-                    }}>{p.name}</strong>
-                    <span style={{
                       display:    "block",
                       fontFamily: SANS,
-                      fontSize:   "clamp(0.74rem, 0.98vw, 0.98rem)",
-                      lineHeight: 1.5,
-                      color:      "var(--nox-proj-body, rgba(255,255,255,0.74))",
-                    }}>{p.label}</span>
+                      fontWeight: 700,
+                      fontSize:   "clamp(1.5rem, 2.8vw, 3.2rem)",
+                      lineHeight: 0.93,
+                      color:      "#ffffff",
+                    }}>{p.name}</strong>
+
+                    {/* description */}
+                    <p style={{
+                      fontFamily: SANS,
+                      fontSize:   "clamp(0.68rem, 0.82vw, 0.82rem)",
+                      lineHeight: 1.6,
+                      color:      "rgba(255,255,255,0.72)",
+                      margin:     0,
+                    }}>{p.description}</p>
+
+                    {/* what we did */}
+                    <div>
+                      <span style={{
+                        display:       "block",
+                        fontFamily:    SANS,
+                        fontSize:      "clamp(0.52rem, 0.6vw, 0.6rem)",
+                        letterSpacing: "0.22em",
+                        color:         "rgba(255,255,255,0.45)",
+                        textTransform: "uppercase",
+                        marginBottom:  5,
+                      }}>What we did</span>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                        {p.did.map((d) => (
+                          <span key={d} style={{
+                            fontFamily:  SANS,
+                            fontSize:    "clamp(0.54rem, 0.65vw, 0.65rem)",
+                            fontWeight:  600,
+                            color:       "#46d12a",
+                            background:  "rgba(70,174,34,0.18)",
+                            border:      "1px solid rgba(70,212,42,0.55)",
+                            padding:     "2px 8px",
+                          }}>{d}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* built with */}
+                    <div>
+                      <span style={{
+                        display:       "block",
+                        fontFamily:    SANS,
+                        fontSize:      "clamp(0.52rem, 0.6vw, 0.6rem)",
+                        letterSpacing: "0.22em",
+                        color:         "rgba(255,255,255,0.45)",
+                        textTransform: "uppercase",
+                        marginBottom:  5,
+                      }}>Built with</span>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                        {p.tech.map((t) => (
+                          <span key={t} style={{
+                            fontFamily:    SANS,
+                            fontSize:      "clamp(0.52rem, 0.62vw, 0.62rem)",
+                            fontWeight:    700,
+                            letterSpacing: "0.06em",
+                            color:         "#ffffff",
+                            background:    "rgba(70,174,34,0.35)",
+                            border:        "1px solid rgba(70,212,42,0.7)",
+                            padding:       "2px 7px",
+                          }}>{t}</span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -734,10 +848,7 @@ export default function HomeFocused() {
         </div>
       </section>
 
-      {/* tall wrapper gives the sticky NoxMusts section scroll depth for row reveals */}
-      <div style={{ position: "relative", height: "calc(100vh + 1600px)" }}>
-        <NoxMusts />
-      </div>
+      <NoxMusts />
       <NoxContactHome />
       <NoxFooter />
     </div>

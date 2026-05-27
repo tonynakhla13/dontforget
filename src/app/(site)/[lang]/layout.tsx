@@ -18,7 +18,7 @@ export default async function LocalizedLayout({
 
   return (
     <html lang={lang} dir={direction(lang)} className={fontVariables}>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <ThemeTransitionProvider>{children}</ThemeTransitionProvider>
       </body>
     </html>
