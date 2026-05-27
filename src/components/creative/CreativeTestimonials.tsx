@@ -19,7 +19,7 @@ export default function CreativeTestimonials() {
               <span>Testi</span>
               <button className="c-testi__btn" aria-label="Next testimonial">
                 <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" width={88} height={88}>
-                  <circle cx="44" cy="44" r="43.5" fill="#A8FD02" stroke="#231F20" />
+                  <circle cx="44" cy="44" r="43.5" fill="#46D12A" stroke="#231F20" />
                   <path d="M58 30C46.1 41.9 26.8 41.9 14.9 30C26.8 41.9 26.8 61.2 14.9 73.1" stroke="#231F20" strokeWidth="5.83" strokeMiterlimit="10" transform="rotate(-90 44 44)" />
                   <path d="M14.9 30L58 73.1" stroke="#231F20" strokeWidth="5.83" strokeMiterlimit="10" transform="rotate(-90 44 44)" />
                 </svg>

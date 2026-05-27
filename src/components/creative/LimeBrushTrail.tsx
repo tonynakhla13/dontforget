@@ -16,7 +16,7 @@ import { useEffect, useRef } from "react";
      • Opacity falls off quadratically with age
 ───────────────────────────────────────────────────────────────────────── */
 
-const LIME    = "168, 253, 2" as const;   // #a8fd02
+const LIME    = "70, 209, 42" as const;   // #46D12A
 const LIFE_MS = 800;                       // how long each point lives
 const W_MAX   = 18;                        // px — brush width when slow
 const W_MIN   = 3;                         // px — brush width when fast

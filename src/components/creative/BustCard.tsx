@@ -31,7 +31,7 @@ export default function BustCard() {
       aria-hidden="true"
       className="c-hero__card"
       style={{
-        background: "#a8fd02",
+        background: "#46D12A",
         overflow: "visible",   /* let bust bleed above the card */
         border: "1.5px solid var(--c-ink)",
         cursor: "none",

@@ -61,6 +61,8 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
   const homeHref = canonicalBase ?? (mode ? `/${mode}` : "/");
   const ctaHref = canonicalBase ? `${canonicalBase}/contact` : mode ? `/${mode}/contact` : isInnerPage ? "/#contact" : "#contact";
   const isImmersive = mode === "immersive";
+  const logoSrc = isImmersive ? "/immersive/nokx-studio-logo.svg" : "/dont%20forget%20logo.png";
+  const logoAlt = isImmersive ? "NOKX Studio" : "DON'T FORGET";
 
   /* ── Full-screen overlay animation ── */
   useEffect(() => {
@@ -145,7 +147,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
           <Link href={homeHref} onClick={() => setMenuOpen(false)}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
+            <img src={logoSrc} alt={logoAlt} style={{ height: isImmersive ? 54 : 134, width: "auto" }} />
           </Link>
           <button
             onClick={() => setMenuOpen(false)}
@@ -199,11 +201,11 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
           <Link href={homeHref}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/dont%20forget%20logo.png"
-              alt="DON'T FORGET"
+              src={logoSrc}
+              alt={logoAlt}
               className="transition-[height,filter] duration-500"
               style={{
-                height: isImmersive ? (compact ? 64 : 134) : 134,
+                height: isImmersive ? (compact ? 42 : 56) : 134,
                 width: "auto",
                 filter: isImmersive && compact ? "drop-shadow(0 0 18px rgba(var(--teal-rgb),0.24))" : "none",
               }}
@@ -249,7 +251,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
             <div className="wrap flex w-full items-center justify-between">
               <Link href={homeHref} className="flex shrink-0 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
+                <img src={logoSrc} alt={logoAlt} style={{ height: 134, width: "auto" }} />
               </Link>
 
               <button

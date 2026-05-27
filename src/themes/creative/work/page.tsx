@@ -11,7 +11,7 @@ const FILTERS = ["All work", "Brand", "Web", "Motion", "Packaging", "Campaign"];
 const CASES = [
   { cat: "brand",     size: "wide",  bg: "#dfead0",                                                title: "Urban Threads — A loud little clothing label",    label: "Brand Identity",  date: "FEB 2024" },
   { cat: "packaging", size: "tall",  bg: "linear-gradient(135deg, #b8b8b8, #6e6e6e)",               title: "Lume Skincare",                                   label: "Packaging",       date: "AUG 2024" },
-  { cat: "campaign",  size: "third", bg: "linear-gradient(135deg, rgb(168,253,2), #d2ff8b)",        title: "TechCon 2024",                                    label: "Campaign",        date: "APR 2024" },
+  { cat: "campaign",  size: "third", bg: "linear-gradient(135deg, #46D12A, #d2ff8b)",                title: "TechCon 2024",                                    label: "Campaign",        date: "APR 2024" },
   { cat: "web",       size: "third", bg: "linear-gradient(45deg, rgba(35,31,32,.10) 25%, transparent 25%, transparent 75%, rgba(35,31,32,.10) 75%), linear-gradient(45deg, rgba(35,31,32,.10) 25%, transparent 25%, transparent 75%, rgba(35,31,32,.10) 75%), rgb(233,233,233)", title: "Northwind Co.", label: "Website", date: "JUN 2024" },
   { cat: "motion",    size: "third", bg: "linear-gradient(135deg, #2a2a2a, #5a5a5a)",               title: "Field Notes Title Sequence",                      label: "Motion",          date: "SEP 2024" },
   { cat: "brand",     size: "half",  bg: "linear-gradient(135deg, #f4cdab, #efb487)",               title: "Tessa Coffee — A new third wave",                 label: "Brand Identity",  date: "NOV 2024" },

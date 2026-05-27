@@ -180,9 +180,10 @@ export default function ImmersiveFooter() {
         </div>
 
         <div className="mt-8 grid gap-8 border-y border-[rgba(var(--teal-rgb),0.14)] py-8 lg:grid-cols-[0.8fr_1fr_0.8fr] lg:items-center">
-          <Link href="/immersive" className="group font-mono text-[0.7rem] font-bold uppercase tracking-[0.34em] text-[var(--fg)]">
-            Don&apos;t Forget
-            <span className="mt-2 block text-[0.56rem] tracking-[0.26em] text-[var(--immersive-warm)] transition group-hover:text-[var(--teal)]">
+          <Link href="/immersive" className="group inline-flex flex-col">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/immersive/nokx-studio-logo.svg" alt="NOKX Studio" className="h-auto w-[clamp(128px,16vw,190px)]" />
+            <span className="mt-3 block font-mono text-[0.56rem] uppercase tracking-[0.26em] text-[var(--immersive-warm)] transition group-hover:text-[var(--teal)]">
               web development agency
             </span>
           </Link>

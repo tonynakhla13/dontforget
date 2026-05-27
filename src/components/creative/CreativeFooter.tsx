@@ -2,7 +2,10 @@ export default function CreativeFooter() {
   return (
     <footer className="c-footer">
       <div className="c-footer__contact">
-        <div className="c-footer__brand">Don&rsquo;t Forget</div>
+        <div className="c-footer__brand">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="c-footer__logo" src="/creative/nokx-studio-logo.svg" alt="NOKX Studio" />
+        </div>
         <div className="c-footer__earth" aria-hidden="true" />
         <ul className="c-footer__items">
           <li>+123 456 7890</li>
