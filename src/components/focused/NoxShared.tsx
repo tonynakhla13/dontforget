@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useId, useState, useEffect, useRef } from "react";
 
 /* ── design tokens ──────────────────────────────────────────────────── */
 export const TK = {
@@ -19,10 +19,8 @@ export const SANS    = "'Syne', 'Inter', sans-serif";
 export const DISPLAY = "'Syne', 'Inter', sans-serif";
 
 /* ── NOX animated logo — mouse-tracking eye ─────────────────────────── */
-let _noxLogoCount = 0;
-
 export function NoxLogo({ height = 36 }: { height?: number }) {
-  const clipId   = useRef(`nox-clip-${++_noxLogoCount}`).current;
+  const clipId   = useId();
   const svgRef   = useRef<SVGSVGElement>(null);
   const pupilRef = useRef<SVGGElement>(null);
   const scaleRef = useRef<SVGGElement>(null);
