@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 interface ClientItem {
   id: string;
   name: string;
+  company?: string | null;
+  country?: string | null;
   logo?: string | null;
   website?: string | null;
   order: number;
@@ -20,13 +22,21 @@ export default function ClientsPage() {
   const [items, setItems] = useState<ClientItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newLogo, setNewLogo] = useState("");
-  const [newWebsite, setNewWebsite] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Add form state
+  const [newName, setNewName] = useState("");
+  const [newCompany, setNewCompany] = useState("");
+  const [newCountry, setNewCountry] = useState("");
+  const [newLogo, setNewLogo] = useState("");
+  const [newWebsite, setNewWebsite] = useState("");
+
+  // Edit form state
   const [editName, setEditName] = useState("");
+  const [editCompany, setEditCompany] = useState("");
+  const [editCountry, setEditCountry] = useState("");
   const [editLogo, setEditLogo] = useState("");
   const [editWebsite, setEditWebsite] = useState("");
 
@@ -37,21 +47,7 @@ export default function ClientsPage() {
   }
 
   useEffect(() => {
-    let active = true;
-
-    async function loadInitialItems() {
-      const res = await fetch("/api/clients");
-      const data = await res.json();
-      if (!active) return;
-      setItems(data);
-      setLoading(false);
-    }
-
-    void loadInitialItems();
-
-    return () => {
-      active = false;
-    };
+    load();
   }, []);
 
   async function uploadLogo(file: File, onDone: (url: string) => void) {
@@ -71,6 +67,11 @@ export default function ClientsPage() {
     }
   }
 
+  function resetAdd() {
+    setNewName(""); setNewCompany(""); setNewCountry(""); setNewLogo(""); setNewWebsite("");
+    setAdding(false);
+  }
+
   async function handleAdd() {
     if (!newName.trim()) return;
     setSaving(true);
@@ -79,13 +80,14 @@ export default function ClientsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: newName.trim(),
+        company: newCompany.trim() || null,
+        country: newCountry.trim() || null,
         logo: newLogo.trim() || null,
         website: newWebsite.trim() || null,
         order: items.length,
       }),
     });
-    setNewName(""); setNewLogo(""); setNewWebsite("");
-    setAdding(false);
+    resetAdd();
     setSaving(false);
     load();
   }
@@ -97,6 +99,8 @@ export default function ClientsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: editName.trim(),
+        company: editCompany.trim() || null,
+        country: editCountry.trim() || null,
         logo: editLogo.trim() || null,
         website: editWebsite.trim() || null,
       }),
@@ -115,6 +119,8 @@ export default function ClientsPage() {
   function startEdit(item: ClientItem) {
     setEditingId(item.id);
     setEditName(item.name);
+    setEditCompany(item.company ?? "");
+    setEditCountry(item.country ?? "");
     setEditLogo(item.logo ?? "");
     setEditWebsite(item.website ?? "");
   }
@@ -136,20 +142,42 @@ export default function ClientsPage() {
         </button>
       </div>
 
-      {/* Add form */}
+      {/* ── Add form ── */}
       {adding && (
         <div className="bg-zinc-900 border border-[#3ABF8A]/30 rounded-xl p-5 mb-6 space-y-4">
           <h3 className="text-sm text-white/60 font-medium">New client</h3>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={lbl}>Client Name *</label>
+              <label className={lbl}>Contact Name *</label>
               <input
                 className={inp}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Acme Corp"
+                placeholder="John Smith"
                 autoFocus
-                onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); if (e.key === "Escape") setAdding(false); }}
+                onKeyDown={(e) => { if (e.key === "Escape") resetAdd(); }}
+              />
+            </div>
+            <div>
+              <label className={lbl}>Company</label>
+              <input
+                className={inp}
+                value={newCompany}
+                onChange={(e) => setNewCompany(e.target.value)}
+                placeholder="Acme Corp"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={lbl}>Country</label>
+              <input
+                className={inp}
+                value={newCountry}
+                onChange={(e) => setNewCountry(e.target.value)}
+                placeholder="Saudi Arabia"
               />
             </div>
             <div>
@@ -162,6 +190,7 @@ export default function ClientsPage() {
               />
             </div>
           </div>
+
           <div>
             <label className={lbl}>Logo</label>
             <div className="flex gap-3 items-start">
@@ -177,10 +206,7 @@ export default function ClientsPage() {
                   type="file"
                   accept="image/*,image/svg+xml"
                   className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) uploadLogo(f, setNewLogo);
-                  }}
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo(f, setNewLogo); }}
                 />
               </label>
             </div>
@@ -189,6 +215,7 @@ export default function ClientsPage() {
               <img src={newLogo} alt="Logo preview" className="mt-2 h-10 object-contain rounded bg-white/5 p-1.5" />
             )}
           </div>
+
           <div className="flex gap-3">
             <button
               onClick={handleAdd}
@@ -197,17 +224,14 @@ export default function ClientsPage() {
             >
               {saving ? "Saving…" : "Add"}
             </button>
-            <button
-              onClick={() => { setAdding(false); setNewName(""); setNewLogo(""); setNewWebsite(""); }}
-              className="bg-white/5 hover:bg-white/10 text-white/60 text-sm px-4 py-2 rounded-lg transition-colors"
-            >
+            <button onClick={resetAdd} className="bg-white/5 hover:bg-white/10 text-white/60 text-sm px-4 py-2 rounded-lg transition-colors">
               Cancel
             </button>
           </div>
         </div>
       )}
 
-      {/* List */}
+      {/* ── List ── */}
       {loading ? (
         <p className="text-white/30 text-sm">Loading…</p>
       ) : items.length === 0 ? (
@@ -222,8 +246,18 @@ export default function ClientsPage() {
               <div key={item.id} className="bg-zinc-900 border border-[#3ABF8A]/30 rounded-xl p-4 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className={lbl}>Name</label>
-                    <input className={inp} value={editName} onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleSaveEdit(item.id); if (e.key === "Escape") setEditingId(null); }} />
+                    <label className={lbl}>Contact Name</label>
+                    <input className={inp} value={editName} onChange={(e) => setEditName(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") setEditingId(null); }} />
+                  </div>
+                  <div>
+                    <label className={lbl}>Company</label>
+                    <input className={inp} value={editCompany} onChange={(e) => setEditCompany(e.target.value)} placeholder="Acme Corp" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={lbl}>Country</label>
+                    <input className={inp} value={editCountry} onChange={(e) => setEditCountry(e.target.value)} placeholder="Saudi Arabia" />
                   </div>
                   <div>
                     <label className={lbl}>Website</label>
@@ -260,7 +294,12 @@ export default function ClientsPage() {
                   )}
                   <div>
                     <p className="text-white text-sm font-medium">{item.name}</p>
-                    {item.website && <p className="text-white/25 text-xs">{item.website}</p>}
+                    <p className="text-white/30 text-xs">
+                      {[item.company, item.country].filter(Boolean).join(" · ")}
+                      {item.website && (
+                        <span className="ml-2 text-white/20">{item.website}</span>
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

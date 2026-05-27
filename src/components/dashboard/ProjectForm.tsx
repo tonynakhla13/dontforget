@@ -16,6 +16,8 @@ interface TechItem {
 interface ClientItem {
   id: string;
   name: string;
+  company?: string | null;
+  country?: string | null;
   logo?: string | null;
   website?: string | null;
 }
@@ -417,7 +419,14 @@ export default function ProjectForm({
                       ) : (
                         <span className="text-white/30 text-xs">⟡</span>
                       )}
-                      {c.name}
+                      <span className="flex flex-col leading-tight text-left">
+                        <span>{c.name}</span>
+                        {(c.company || c.country) && (
+                          <span className="text-[10px] text-white/30 font-normal">
+                            {[c.company, c.country].filter(Boolean).join(" · ")}
+                          </span>
+                        )}
+                      </span>
                       {selected && <span className="text-[#3ABF8A] text-xs">✓</span>}
                     </button>
                   );

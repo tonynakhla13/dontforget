@@ -84,6 +84,8 @@ model TechItem {
 model ClientItem {
   id        String   @id @default(cuid())
   name      String
+  company   String?
+  country   String?
   logo      String?
   website   String?
   order     Int      @default(0)
