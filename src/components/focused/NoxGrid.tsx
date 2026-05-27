@@ -65,14 +65,14 @@ export default function NoxGrid() {
          rising toward the viewer as you scroll */
       function alpha(y: number) {
         const t = Math.max(0, Math.min(1, y / H));
-        return 0.07 + t * 0.13;
+        return 0.18 + t * 0.32;
       }
 
       /* horizontal lines */
       for (let r = 0; r <= rows; r++) {
         const y0 = r * cell - offY;
         ctx.strokeStyle = `rgba(${RGB},${alpha(Math.max(0, Math.min(H, y0))).toFixed(3)})`;
-        ctx.lineWidth   = 0.55;
+        ctx.lineWidth   = 0.9;
         ctx.beginPath();
         P[r].forEach(([x, y], c) => c === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y));
         ctx.stroke();
@@ -86,7 +86,7 @@ export default function NoxGrid() {
           const [x1, y1] = P[r + 1][c];
           const midY = (y0 + y1) * 0.5;
           ctx.strokeStyle = `rgba(${RGB},${alpha(Math.max(0, Math.min(H, midY))).toFixed(3)})`;
-          ctx.lineWidth   = 0.55;
+          ctx.lineWidth   = 0.9;
           ctx.beginPath();
           ctx.moveTo(x0, y0);
           ctx.lineTo(x1, y1);

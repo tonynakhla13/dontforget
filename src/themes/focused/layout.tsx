@@ -34,7 +34,7 @@ export default function FocusedLayout({ children }: { children: React.ReactNode 
           --nox-btn-start-ch:   #000000;
         }
         [data-nox-theme="light"] {
-          --nox-ink:            #ffffff;
+          --nox-ink:            #e9e9e9;
           --nox-paper:          #000000;
           --nox-green:          #3d9e18;
           --nox-chrome:         rgb(215,215,215);
@@ -42,7 +42,7 @@ export default function FocusedLayout({ children }: { children: React.ReactNode 
           --nox-field-bg-focus: #b2dea0;
           --nox-card-mask:      #ffffff;
           --nox-form-card-bg:   #daf0ce;
-          --nox-proj-card-bg:   #e8f0e5;
+          --nox-proj-card-bg:   #c2e0b2;
           --nox-proj-sub:       rgba(0,0,0,0.5);
           --nox-proj-body:      rgba(0,0,0,0.72);
           --nox-svc-card-bg:    #eaf6e4;

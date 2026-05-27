@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { parseCanonicalPath, type Theme } from "@/lib/site-routing";
 
@@ -37,6 +38,12 @@ const THEME_LABELS: Record<Theme, string> = {
   focused: "Focused",
   creative: "Creative",
   immersive: "Immersive",
+};
+
+const THEME_PREVIEWS: Record<Theme, string> = {
+  focused: "/theme-previews/foucsed.png",
+  creative: "/theme-previews/creative.png",
+  immersive: "/theme-previews/immersive.png",
 };
 
 const idleState: TransitionState = {
@@ -184,6 +191,7 @@ function ThemeLoadingScreen({ mode, phase, fromTheme, toTheme }: Omit<Transition
   const label = mode === "theme"
     ? `${fromTheme ? THEME_LABELS[fromTheme] : "Theme"} to ${toTheme ? THEME_LABELS[toTheme] : "Theme"}`
     : `${THEME_LABELS[activeTheme]} loading`;
+  const backgroundThemes = mode === "theme" && fromTheme && toTheme ? [fromTheme, toTheme] : null;
 
   return (
     <div
@@ -194,11 +202,32 @@ function ThemeLoadingScreen({ mode, phase, fromTheme, toTheme }: Omit<Transition
       aria-live="polite"
       aria-label={label}
     >
-      <div className="theme-loading-field" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
+      {backgroundThemes ? (
+        <div className="theme-loading-backgrounds" aria-hidden="true">
+          {backgroundThemes.map((theme, index) => (
+            <div className="theme-loading-background" key={`${index}-${theme}`}>
+              <Image
+                className="theme-loading-background__image"
+                src={THEME_PREVIEWS[theme]}
+                alt=""
+                fill
+                sizes="50vw"
+                priority
+              />
+              <span className="theme-loading-background__shade" />
+              <span className="theme-loading-background__label">
+                {index === 0 ? "From" : "To"} <strong>{THEME_LABELS[theme]}</strong>
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="theme-loading-field" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
       <div className="theme-loading-copy">
         <p>{mode === "theme" ? "Changing theme" : `${THEME_LABELS[activeTheme]} mode`}</p>
         <h2>{mode === "theme" ? label : "Loading page"}</h2>
