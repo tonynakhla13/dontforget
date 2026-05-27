@@ -10,10 +10,15 @@ export default async function EditProjectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const project = await prisma.project.findUnique({ where: { id } });
+
+  const [project, techItems, clientItems] = await Promise.all([
+    prisma.project.findUnique({ where: { id } }),
+    prisma.techItem.findMany({ orderBy: [{ order: "asc" }, { name: "asc" }] }),
+    prisma.clientItem.findMany({ orderBy: [{ order: "asc" }, { name: "asc" }] }),
+  ]);
+
   if (!project) notFound();
 
-  // Convert Prisma nulls to undefined for the form
   const initial = Object.fromEntries(
     Object.entries(project).map(([k, v]) => [k, v === null ? undefined : v])
   );
@@ -23,7 +28,7 @@ export default async function EditProjectPage({
       <h1 className="text-2xl font-semibold text-white mb-8">
         Edit — {project.title}
       </h1>
-      <ProjectForm initial={initial} />
+      <ProjectForm initial={initial} techItems={techItems} clientItems={clientItems} />
     </div>
   );
 }
