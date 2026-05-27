@@ -36,7 +36,23 @@ export default function ClientsPage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    let active = true;
+
+    async function loadInitialItems() {
+      const res = await fetch("/api/clients");
+      const data = await res.json();
+      if (!active) return;
+      setItems(data);
+      setLoading(false);
+    }
+
+    void loadInitialItems();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function uploadLogo(file: File, onDone: (url: string) => void) {
     setUploading("logo");

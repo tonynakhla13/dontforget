@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="420 0 390 362" fill="none">
+  <style>
+    .outer {
+      fill: #000;
+    }
+
+    .pupil {
+      fill: #fff;
+    }
+
+    .pupil-x {
+      transform-origin: 610px 181px;
+      animation: pupil-x 5s ease-in-out infinite;
+    }
+
+    .pupil-y {
+      transform-origin: 610px 181px;
+      animation: pupil-y 5s ease-in-out infinite;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .outer {
+        fill: #fff;
+      }
+
+      .pupil {
+        fill: #000;
+      }
+    }
+
+    @keyframes pupil-x {
+      0%, 100% { transform: translateX(0); }
+      15%, 35% { transform: translateX(-48px); }
+      50% { transform: translateX(0); }
+      65%, 82% { transform: translateX(48px); }
+    }
+
+    @keyframes pupil-y {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(30px); }
+      82% { transform: translateY(-30px); }
+      92% { transform: translateY(0); }
+    }
+  </style>
+  <defs>
+    <clipPath id="o-clip">
+      <path d="M610.48,1.55c148.49-12.15,244.49,141.46,171.28,270.23-79.21,139.33-286.71,111.03-325.72-43.43C429.83,124.54,501.53,10.47,610.48,1.55Z" />
+    </clipPath>
+  </defs>
+  <path
+    class="outer"
+    d="M610.48,1.55c148.49-12.15,244.49,141.46,171.28,270.23-79.21,139.33-286.71,111.03-325.72-43.43C429.83,124.54,501.53,10.47,610.48,1.55Z"
+  />
+  <g class="pupil-x" clip-path="url(#o-clip)">
+    <g class="pupil-y">
+      <path
+        class="pupil"
+        d="M746.24,265.73c77.26-70.56,54.62-197.48-39.64-239.96-118.98-53.62-229.75,70.86-181.05,186.05,36.05,85.28,149.89,118.57,220.69,53.91Z"
+      />
+    </g>
+  </g>
+</svg>

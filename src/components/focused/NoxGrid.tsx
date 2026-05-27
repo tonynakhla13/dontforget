@@ -8,9 +8,12 @@ export default function NoxGrid() {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const cvs = ref.current;
-    if (!cvs) return;
-    const ctx = cvs.getContext("2d")!;
+    const currentCanvas = ref.current;
+    if (!currentCanvas) return;
+    const currentContext = currentCanvas.getContext("2d");
+    if (!currentContext) return;
+    const canvas: HTMLCanvasElement = currentCanvas;
+    const ctx: CanvasRenderingContext2D = currentContext;
 
     let raf: number;
     let mx = -9999, my = -9999;
@@ -26,17 +29,17 @@ export default function NoxGrid() {
 
     /* ── resize ─────────────────────────────────────────────────────── */
     function resize() {
-      cvs.width  = window.innerWidth;
-      cvs.height = window.innerHeight;
-      COLS = Math.max(6, Math.round(cvs.width / CELL_TARGET));
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      COLS = Math.max(6, Math.round(canvas.width / CELL_TARGET));
     }
 
     /* ── main draw loop ─────────────────────────────────────────────── */
     function draw() {
       smoothScroll += (rawScroll - smoothScroll) * 0.09;
 
-      const W    = cvs.width;
-      const H    = cvs.height;
+      const W    = canvas.width;
+      const H    = canvas.height;
       const cell = W / COLS;
       const rows = Math.ceil(H / cell) + 3;
       const offY = (smoothScroll * PARALLAX) % cell;
@@ -99,16 +102,23 @@ export default function NoxGrid() {
 
     /* ── event listeners ────────────────────────────────────────────── */
     resize();
-    window.addEventListener("resize",    resize,                              { passive: true });
-    window.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; }, { passive: true });
-    window.addEventListener("scroll",    () => { rawScroll = window.scrollY; }, { passive: true });
+    const handleMouseMove = (event: MouseEvent) => {
+      mx = event.clientX;
+      my = event.clientY;
+    };
+    const handleScroll = () => {
+      rawScroll = window.scrollY;
+    };
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     raf = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize",    resize);
-      window.removeEventListener("mousemove", () => {});
-      window.removeEventListener("scroll",    () => {});
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 

@@ -10,6 +10,7 @@ import * as THREE from "three";
 
 type RulePipeShape = "clarity" | "motion" | "systems-rule" | "honesty";
 type StrokeSpec = { points: THREE.Vector3[]; radius?: number; bright?: boolean; closed?: boolean };
+type RulePipeMaterial = THREE.MeshBasicMaterial & { color: THREE.Color };
 
 function v(x: number, y: number, z: number) { return new THREE.Vector3(x, y, z); }
 
@@ -29,7 +30,7 @@ function roundedRectPoints(w: number, h: number, z: number, r: number): THREE.Ve
   return pts;
 }
 
-function makeMat(color: number, opacity: number) {
+function makeMat(color: THREE.ColorRepresentation, opacity: number) {
   return new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
 }
 
@@ -75,12 +76,12 @@ function ruleStrokes(shape: RulePipeShape): StrokeSpec[] {
   }
 }
 
-function createRulePipeHologram(shape: RulePipeShape): THREE.Group {
+function createRulePipeHologram(shape: RulePipeShape, color: THREE.ColorRepresentation): THREE.Group {
   const group = new THREE.Group();
-  const mat = makeMat(0x35c592, 0.055);
-  const bright = makeMat(0x53e6b2, 0.105);
-  const echoMat = makeMat(0x35c592, 0.026);
-  const echoBright = makeMat(0x53e6b2, 0.04);
+  const mat = makeMat(color, 0.055);
+  const bright = makeMat(color, 0.105);
+  const echoMat = makeMat(color, 0.026);
+  const echoBright = makeMat(color, 0.04);
 
   const echo = new THREE.Group();
   echo.position.set(0.12, -0.1, -0.32);
@@ -107,6 +108,8 @@ function RuleMeshCanvas({ shape }: { shape: RulePipeShape }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    const getParticleColor = () =>
+      getComputedStyle(el).getPropertyValue("--immersive-particles").trim() || "#46D12A";
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0, 0);
@@ -116,8 +119,18 @@ function RuleMeshCanvas({ shape }: { shape: RulePipeShape }) {
     const cam = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
     cam.position.set(0, 0, 6.5);
 
-    const group = createRulePipeHologram(shape);
+    const group = createRulePipeHologram(shape, getParticleColor());
     scene.add(group);
+
+    const syncParticleColor = () => {
+      const color = getParticleColor();
+      group.traverse((object) => {
+        if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshBasicMaterial) {
+          (object.material as RulePipeMaterial).color.set(color);
+        }
+      });
+    };
+    window.addEventListener("immersive-theme-change", syncParticleColor);
 
     const resize = () => {
       const { width: w, height: h } = el.getBoundingClientRect();
@@ -143,6 +156,7 @@ function RuleMeshCanvas({ shape }: { shape: RulePipeShape }) {
 
     return () => {
       cancelAnimationFrame(raf);
+      window.removeEventListener("immersive-theme-change", syncParticleColor);
       ro.disconnect();
       scene.traverse(o => {
         if (o instanceof THREE.Mesh) {
@@ -200,6 +214,7 @@ export default function Principles() {
     const musts   = mustsRef.current;
     const grid    = gridRef.current;
     const cards   = cardRefs.current.filter(Boolean) as HTMLElement[];
+    const timers  = timersRef.current;
     if (!section || !musts || !grid || cards.length < 4) return;
 
     gsap.set(cards, { autoAlpha: 0, y: 48, scale: 0.962, filter: "blur(10px)" });
@@ -243,9 +258,8 @@ export default function Principles() {
 
     return () => {
       ctx.revert();
-      timersRef.current.forEach(t => { if (t) window.clearInterval(t); });
+      timers.forEach(t => { if (t) window.clearInterval(t); });
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

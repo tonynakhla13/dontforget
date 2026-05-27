@@ -6,7 +6,6 @@ import About from "@/components/About";
 import ClientsMarquee from "@/components/about/ClientsMarquee";
 import AmbientGlow from "@/components/AmbientGlow";
 import ImmersiveContact from "@/components/immersive/ImmersiveContact";
-import ImmersiveGlobalsPanel from "@/components/immersive/ImmersiveGlobalsPanel";
 import Hero from "@/components/Hero";
 import Marquee from "@/components/Marquee";
 import Navbar from "@/components/Navbar";
@@ -30,7 +29,6 @@ export default function HomeImmersive({ projects }: { projects?: Project[] }) {
   return (
     <>
       <SmoothScroll />
-      <ImmersiveGlobalsPanel />
       {/* ParticleLayer must live OUTSIDE <main> to avoid stacking context trapping z-index:-1 */}
       <ParticleLayer />
       <main className="immersive-mode relative z-[1] overflow-x-clip">

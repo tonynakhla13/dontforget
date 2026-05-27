@@ -36,7 +36,23 @@ export default function TechLibraryPage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    let active = true;
+
+    async function loadInitialItems() {
+      const res = await fetch("/api/tech");
+      const data = await res.json();
+      if (!active) return;
+      setItems(data);
+      setLoading(false);
+    }
+
+    void loadInitialItems();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function uploadIcon(file: File, onDone: (url: string) => void) {
     setUploading("icon");

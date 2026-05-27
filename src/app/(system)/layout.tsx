@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AnimatedFavicon from "@/components/site/AnimatedFavicon";
 import { fontVariables } from "../fonts";
 import "../globals.css";
 
@@ -10,7 +11,10 @@ export const metadata: Metadata = {
 export default function SystemLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" dir="ltr" className={fontVariables}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <AnimatedFavicon />
+        {children}
+      </body>
     </html>
   );
 }

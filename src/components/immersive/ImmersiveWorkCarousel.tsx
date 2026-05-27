@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, useReducedMotion, type PanInfo } from "framer-motion";
+import { motion, useReducedMotion, type PanInfo } from "motion/react";
 import { useRef, useState } from "react";
 import type { Project } from "@/components/Work";
 import { pagePath, parseCanonicalPath, projectPath } from "@/lib/site-routing";
@@ -95,15 +95,22 @@ export default function ImmersiveWorkCarousel({ projects }: { projects?: Project
   const reduceMotion = useReducedMotion();
   const list = projects?.length ? projects : FALLBACK;
   const [active, setActive] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
   const dragged = useRef(false);
 
   const shift = (direction: number) => setActive((current) => current + direction);
 
+  const onDrag = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    setDragOffset(info.offset.x * 0.72);
+    dragged.current = Math.abs(info.offset.x) > 3;
+  };
+
   const onDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const movement = info.offset.x + info.velocity.x * 0.12;
-    dragged.current = Math.abs(info.offset.x) > 7;
-    if (movement < -68) shift(1);
-    if (movement > 68) shift(-1);
+    const movement = info.offset.x + info.velocity.x * 0.18;
+    dragged.current = Math.abs(info.offset.x) > 3;
+    setDragOffset(0);
+    if (movement < -38) shift(1);
+    if (movement > 38) shift(-1);
     window.setTimeout(() => {
       dragged.current = false;
     }, 0);
@@ -152,8 +159,9 @@ export default function ImmersiveWorkCarousel({ projects }: { projects?: Project
           className="relative h-[clamp(23rem,34vw,28rem)] cursor-grab select-none touch-pan-y active:cursor-grabbing"
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.08}
+          dragElastic={0.2}
           dragMomentum={false}
+          onDrag={onDrag}
           onDragEnd={onDragEnd}
           aria-roledescription="carousel"
         >
@@ -202,7 +210,7 @@ export default function ImmersiveWorkCarousel({ projects }: { projects?: Project
                 className="absolute left-1/2 top-0 h-full w-[clamp(16rem,36vw,29rem)]"
                 initial={reduceMotion ? false : { opacity: 0, y: 22, scale: 0.96 }}
                 animate={{
-                  x: `${offset * 104 - 50}%`,
+                  x: `calc(${offset * 104 - 50}% + ${dragOffset}px)`,
                   y: distant ? 14 : featured ? 0 : 8,
                   scale: featured ? 1.04 : distant ? 0.87 : 0.92,
                   opacity: distant ? 0.44 : featured ? 1 : 0.74,

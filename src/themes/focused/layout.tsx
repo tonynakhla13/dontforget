@@ -4,8 +4,6 @@ import NoxGrid from "@/components/focused/NoxGrid";
 export default function FocusedLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* Prevent flash: read localStorage before React hydrates */}
-      <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('nox-theme');if(t==='light')document.documentElement.dataset.noxTheme='light';}catch(e){}` }} />
       <style>{`
         @import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap");
 

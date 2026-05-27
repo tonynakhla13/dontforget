@@ -4,8 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { gsap } from "@/lib/gsap";
+import { isLocale } from "@/lib/site-routing";
+import { LocaleControl } from "@/components/site/SiteControls";
+import ImmersiveLogo from "@/components/immersive/ImmersiveLogo";
 
 const NAV_H = 86;
+const LANGUAGE_LABELS = {
+  language: "Switch language",
+  theme: "Switch theme",
+  current: "Current",
+};
 
 export default function Navbar({ inner = false }: { inner?: boolean }) {
   const primaryRef = useRef<HTMLElement>(null);
@@ -30,6 +38,8 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
   // On inner pages that aren't mode-prefixed (e.g. /work, /about, /services)
   // use full route links instead of homepage anchor links
   const isInnerPage = !mode && pathname !== "/";
+  const localeSegment = segments[0] ?? "";
+  const locale = isLocale(localeSegment) ? localeSegment : null;
 
   const navLinks = mode
     ? canonicalBase ? [
@@ -145,9 +155,15 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         style={{ background: "var(--bg)", visibility: "hidden" }}
       >
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
-          <Link href={homeHref} onClick={() => setMenuOpen(false)}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoSrc} alt={logoAlt} style={{ height: isImmersive ? 54 : 134, width: "auto" }} />
+          <Link href={homeHref} onClick={() => setMenuOpen(false)} aria-label="DON'T FORGET home" className={isImmersive ? "immersive-logo-link" : undefined}>
+            {isImmersive ? (
+              <ImmersiveLogo />
+            ) : (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
+              </>
+            )}
           </Link>
           <button
             onClick={() => setMenuOpen(false)}
@@ -175,10 +191,15 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
           ))}
         </div>
 
-        <div className="wrap flex items-center justify-between border-t border-[var(--border)] py-6">
+        <div className="wrap flex items-center justify-between gap-4 border-t border-[var(--border)] py-6">
           <span className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[var(--body)]">
             © {new Date().getFullYear()} Don&apos;t Forget
           </span>
+          {isImmersive && locale ? (
+            <div className="immersive-menu-locale md:hidden">
+              <LocaleControl locale={locale} theme="immersive" labels={LANGUAGE_LABELS} />
+            </div>
+          ) : null}
           <span className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[var(--body)]">
             hello@dontforget.studio
           </span>
@@ -198,18 +219,19 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         }}
       >
         <div className="wrap flex w-full items-center justify-between">
-          <Link href={homeHref}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={logoSrc}
-              alt={logoAlt}
-              className="transition-[height,filter] duration-500"
-              style={{
-                height: isImmersive ? (compact ? 42 : 56) : 134,
-                width: "auto",
-                filter: isImmersive && compact ? "drop-shadow(0 0 18px rgba(var(--teal-rgb),0.24))" : "none",
-              }}
-            />
+          <Link href={homeHref} aria-label="DON'T FORGET home" className={isImmersive ? "immersive-logo-link" : undefined}>
+            {isImmersive ? (
+              <ImmersiveLogo compact={compact} />
+            ) : (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/dont%20forget%20logo.png"
+                  alt="DON'T FORGET"
+                  style={{ height: 134, width: "auto" }}
+                />
+              </>
+            )}
           </Link>
 
           <ul className="hidden items-center gap-8 md:flex">
@@ -233,10 +255,21 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
             Menu
           </button>
 
-          <Link href={ctaHref} className={`btn-glass transition-[transform] duration-500 ${isImmersive && compact ? "scale-[0.94]" : ""}`}>
-            <span className="btn-glass-blob" aria-hidden="true" />
-            <span className="btn-glass-face" style={{ padding: "0.48rem 1.1rem", fontSize: "0.78rem" }}>Let&apos;s talk</span>
-          </Link>
+          <div className="immersive-header-actions">
+            {isImmersive && locale ? (
+              <div className="immersive-locale-control">
+                <LocaleControl
+                  locale={locale}
+                  theme="immersive"
+                  labels={LANGUAGE_LABELS}
+                />
+              </div>
+            ) : null}
+            <Link href={ctaHref} className={`btn-glass transition-[transform] duration-500 ${isImmersive && compact ? "scale-[0.94]" : ""}`}>
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face" style={{ padding: "0.48rem 1.1rem", fontSize: "0.78rem" }}>Let&apos;s talk</span>
+            </Link>
+          </div>
         </div>
       </header>
 
