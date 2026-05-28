@@ -4,11 +4,12 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { NoxNavbar, NoxFooter, NoxCTABar, SANS } from "./NoxShared";
+import { NoxNavbar, NoxFooter, NoxCTABar, SANS, TK } from "./NoxShared";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const G  = "var(--nox-green, #46ae22)";
+const G  = TK.green;
+const W  = TK.paper;
 const LN = "rgba(70,174,34,0.22)";
 
 /* ── service data (mirrors ServicesFocused) ────────────────────── */
@@ -120,10 +121,10 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
   }, [svc]);
 
   if (!svc) return (
-    <div style={{ minHeight: "100vh", fontFamily: SANS, color: G, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1.5rem" }}>
+    <div style={{ minHeight: "100vh", fontFamily: SANS, color: W, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1.5rem" }}>
       <NoxNavbar active="services" />
-      <span style={{ fontSize: "5rem", opacity: 0.1 }}>404</span>
-      <h1 style={{ fontSize: "2rem", textTransform: "uppercase", margin: 0 }}>Service not found</h1>
+      <span style={{ fontSize: "5rem", color: G, opacity: 0.2 }}>404</span>
+      <h1 style={{ fontSize: "2rem", textTransform: "uppercase", margin: 0, color: W }}>Service not found</h1>
       <Link href="/en/focused/services" style={{ color: G, fontSize: "0.82rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>← All services</Link>
       <NoxFooter />
     </div>
@@ -132,7 +133,7 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
   const others = SERVICES_DATA.filter((s) => s.slug !== slug);
 
   return (
-    <div ref={root} style={{ fontFamily: SANS, color: G, minHeight: "100vh" }}>
+    <div ref={root} style={{ fontFamily: SANS, color: W, minHeight: "100vh" }}>
       <NoxNavbar active="services" />
 
       {/* ── HERO ───────────────────────────────────────────── */}
@@ -140,41 +141,41 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
 
         <Link href="/en/focused/services" style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          color: G, opacity: 0.45, textDecoration: "none",
+          color: G, opacity: 0.6, textDecoration: "none",
           fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase",
           marginBottom: "clamp(2.5rem,5vw,4rem)", transition: "opacity .2s",
         }}
           onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "0.45")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
         >
           ← All services
         </Link>
 
-        {/* number */}
-        <p className="sdf-num" style={{ fontSize: "clamp(0.8rem,1.2vw,1rem)", letterSpacing: "0.14em", opacity: 0.35, margin: "0 0 clamp(0.5rem,1vw,0.8rem)" }}>
+        {/* number — green accent */}
+        <p className="sdf-num" style={{ fontSize: "clamp(0.8rem,1.2vw,1rem)", letterSpacing: "0.14em", color: G, opacity: 0.6, margin: "0 0 clamp(0.5rem,1vw,0.8rem)" }}>
           {svc.n}
         </p>
 
-        {/* BIG title */}
+        {/* BIG title — white */}
         <h1 className="sdf-title" style={{
           fontSize: "clamp(3.5rem,10vw,9rem)", fontWeight: 800,
           lineHeight: 0.88, letterSpacing: "-0.02em",
           textTransform: "uppercase", margin: "0 0 clamp(1.2rem,2.5vw,2rem)",
-          color: G,
+          color: W,
         }}>
           {svc.title}
         </h1>
 
         {/* tag + stats row */}
         <div className="sdf-tag" style={{ display: "flex", alignItems: "center", gap: "clamp(1.5rem,4vw,3rem)", flexWrap: "wrap", borderTop: `1px solid ${LN}`, paddingTop: "clamp(1rem,2vw,1.5rem)" }}>
-          <span style={{ fontSize: "clamp(0.75rem,1vw,0.88rem)", letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.45 }}>
+          <span style={{ fontSize: "clamp(0.75rem,1vw,0.88rem)", letterSpacing: "0.14em", textTransform: "uppercase", color: W, opacity: 0.45 }}>
             {svc.tag}
           </span>
           <div style={{ marginLeft: "auto", display: "flex", gap: "clamp(1.5rem,3vw,2.5rem)" }}>
             {["Timeline", "Deliverables", "Tools"].map((label, i) => (
               <div key={label} style={{ textAlign: "right" }}>
-                <p style={{ fontSize: "clamp(0.85rem,1.1vw,1rem)", fontWeight: 700, margin: "0 0 0.15rem" }}>{svc.delivers.length > i ? [svc.delivers.length + "+", "6+", svc.tech.length + "+"][i] : "—"}</p>
-                <p style={{ fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.35, margin: 0 }}>{label}</p>
+                <p style={{ fontSize: "clamp(0.85rem,1.1vw,1rem)", fontWeight: 700, margin: "0 0 0.15rem", color: W }}>{svc.delivers.length > i ? [svc.delivers.length + "+", "6+", svc.tech.length + "+"][i] : "—"}</p>
+                <p style={{ fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: W, opacity: 0.35, margin: 0 }}>{label}</p>
               </div>
             ))}
           </div>
@@ -186,18 +187,20 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
 
         {/* LEFT */}
         <div>
-          <p className="sdf-in" style={{ fontSize: "clamp(1rem,1.4vw,1.2rem)", lineHeight: 1.75, opacity: 0.72, margin: "0 0 clamp(2.5rem,5vw,4rem)" }}>
+          <p className="sdf-in" style={{ fontSize: "clamp(1rem,1.4vw,1.2rem)", lineHeight: 1.75, color: W, opacity: 0.72, margin: "0 0 clamp(2.5rem,5vw,4rem)" }}>
             {svc.body}
           </p>
 
-          <p className="sdf-in" style={{ fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.35, marginBottom: "0.75rem" }}>How it works</p>
+          {/* section label — green */}
+          <p className="sdf-in" style={{ fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", color: G, opacity: 0.8, marginBottom: "0.75rem" }}>How it works</p>
 
           {svc.process.map((p, i) => (
             <div key={p.step} className="sdf-in" style={{ display: "grid", gridTemplateColumns: "2.5rem 1fr", gap: "0.75rem", padding: "1.1rem 0", borderTop: `1px solid ${LN}` }}>
-              <span style={{ fontSize: "0.72rem", letterSpacing: "0.1em", opacity: 0.3, paddingTop: 3 }}>{String(i + 1).padStart(2, "0")}</span>
+              {/* step number — green */}
+              <span style={{ fontSize: "0.72rem", letterSpacing: "0.1em", color: G, opacity: 0.5, paddingTop: 3 }}>{String(i + 1).padStart(2, "0")}</span>
               <div>
-                <p style={{ fontWeight: 700, fontSize: "0.9rem", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 0.3rem" }}>{p.step}</p>
-                <p style={{ fontSize: "0.86rem", opacity: 0.6, margin: 0, lineHeight: 1.65 }}>{p.desc}</p>
+                <p style={{ fontWeight: 700, fontSize: "0.9rem", letterSpacing: "0.06em", textTransform: "uppercase", color: W, margin: "0 0 0.3rem" }}>{p.step}</p>
+                <p style={{ fontSize: "0.86rem", color: W, opacity: 0.55, margin: 0, lineHeight: 1.65 }}>{p.desc}</p>
               </div>
             </div>
           ))}
@@ -208,39 +211,39 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
 
           {/* delivers */}
           <div className="sdf-in" style={{ border: `1px solid ${LN}`, borderRadius: 14, padding: "clamp(1.2rem,2.5vw,2rem)" }}>
-            <p style={{ fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.35, marginBottom: "1.1rem" }}>What we deliver</p>
+            <p style={{ fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", color: G, opacity: 0.7, marginBottom: "1.1rem" }}>What we deliver</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
               {svc.delivers.map((d) => (
-                <span key={d} style={{ fontSize: "0.78rem", padding: "0.28rem 0.72rem", border: `1px solid ${LN}`, borderRadius: 99, opacity: 0.8 }}>{d}</span>
+                <span key={d} style={{ fontSize: "0.78rem", padding: "0.28rem 0.72rem", border: `1px solid rgba(255,255,255,0.15)`, borderRadius: 99, color: W, opacity: 0.8 }}>{d}</span>
               ))}
             </div>
           </div>
 
           {/* tech */}
           <div className="sdf-in" style={{ border: `1px solid ${LN}`, borderRadius: 14, padding: "clamp(1.2rem,2.5vw,2rem)" }}>
-            <p style={{ fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.35, marginBottom: "1.1rem" }}>Tech &amp; tools</p>
+            <p style={{ fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", color: G, opacity: 0.7, marginBottom: "1.1rem" }}>Tech &amp; tools</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
               {svc.tech.map((t) => (
-                <span key={t} style={{ fontSize: "0.78rem", padding: "0.28rem 0.72rem", background: "rgba(70,174,34,0.09)", borderRadius: 99, opacity: 0.75 }}>{t}</span>
+                <span key={t} style={{ fontSize: "0.78rem", padding: "0.28rem 0.72rem", background: "rgba(255,255,255,0.07)", borderRadius: 99, color: W, opacity: 0.75 }}>{t}</span>
               ))}
             </div>
           </div>
 
           {/* other services */}
           <div className="sdf-in">
-            <p style={{ fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.35, marginBottom: "0.75rem" }}>Other services</p>
+            <p style={{ fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", color: G, opacity: 0.7, marginBottom: "0.75rem" }}>Other services</p>
             {others.map((s) => (
               <Link key={s.slug} href={`/en/focused/services/${s.slug}`} style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "0.75rem 0", borderBottom: `1px solid ${LN}`,
-                color: G, textDecoration: "none", opacity: 0.4,
+                color: W, textDecoration: "none", opacity: 0.45,
                 fontSize: "0.84rem", letterSpacing: "0.04em", transition: "opacity .2s",
               }}
                 onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-                onMouseLeave={e => (e.currentTarget.style.opacity = "0.4")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "0.45")}
               >
                 <span>{s.n} — {s.title}</span>
-                <span>→</span>
+                <span style={{ color: G }}>→</span>
               </Link>
             ))}
           </div>
