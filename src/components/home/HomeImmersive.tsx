@@ -17,6 +17,7 @@ import type { Project } from "@/components/Work";
 import ImmersiveWorkCarousel from "@/components/immersive/ImmersiveWorkCarousel";
 import ParticleLayer from "@/components/ParticleLayer";
 import ImmersiveFooter from "@/components/immersive/ImmersiveFooter";
+import ImmersiveLoader from "@/components/immersive/ImmersiveLoader";
 
 export default function HomeImmersive({ projects }: { projects?: Project[] }) {
   // Content mounts late inside the theme switcher, so ScrollTrigger measured
@@ -28,6 +29,7 @@ export default function HomeImmersive({ projects }: { projects?: Project[] }) {
 
   return (
     <>
+      <ImmersiveLoader />
       <SmoothScroll />
       {/* ParticleLayer must live OUTSIDE <main> to avoid stacking context trapping z-index:-1 */}
       <ParticleLayer />

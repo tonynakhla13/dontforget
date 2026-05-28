@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Seeding database…");
@@ -152,6 +154,54 @@ async function main() {
       },
     ],
   });
+
+  // Tech Library — only seed if empty (preserves any custom icon uploads)
+  const techCount = await prisma.techItem.count();
+  if (techCount === 0) {
+    const SI = "https://cdn.simpleicons.org";
+    await prisma.techItem.createMany({
+      data: [
+        { name: "Next.js",         icon: "⚡", iconUrl: `${SI}/nextdotjs`,      order: 1  },
+        { name: "React",           icon: "⚛️", iconUrl: `${SI}/react`,           order: 2  },
+        { name: "TypeScript",      icon: "🔷", iconUrl: `${SI}/typescript`,      order: 3  },
+        { name: "JavaScript",      icon: "🟡", iconUrl: `${SI}/javascript`,      order: 4  },
+        { name: "Node.js",         icon: "🟢", iconUrl: `${SI}/nodedotjs`,       order: 5  },
+        { name: "Tailwind CSS",    icon: "🎨", iconUrl: `${SI}/tailwindcss`,     order: 6  },
+        { name: "PostgreSQL",      icon: "🐘", iconUrl: `${SI}/postgresql`,      order: 7  },
+        { name: "Prisma",          icon: "🔺", iconUrl: `${SI}/prisma`,          order: 8  },
+        { name: "GraphQL",         icon: "🔴", iconUrl: `${SI}/graphql`,         order: 9  },
+        { name: "Vercel",          icon: "▲",  iconUrl: `${SI}/vercel`,          order: 10 },
+        { name: "AWS",             icon: "☁️", iconUrl: `${SI}/amazonaws`,       order: 11 },
+        { name: "Docker",          icon: "🐳", iconUrl: `${SI}/docker`,          order: 12 },
+        { name: "Figma",           icon: "🎯", iconUrl: `${SI}/figma`,           order: 13 },
+        { name: "Shopify",         icon: "🛍️", iconUrl: `${SI}/shopify`,         order: 14 },
+        { name: "Stripe",          icon: "💳", iconUrl: `${SI}/stripe`,          order: 15 },
+        { name: "Supabase",        icon: "⚡", iconUrl: `${SI}/supabase`,        order: 16 },
+        { name: "Redis",           icon: "🔴", iconUrl: `${SI}/redis`,           order: 17 },
+        { name: "MongoDB",         icon: "🍃", iconUrl: `${SI}/mongodb`,         order: 18 },
+        { name: "Python",          icon: "🐍", iconUrl: `${SI}/python`,          order: 19 },
+        { name: "Vue.js",          icon: "💚", iconUrl: `${SI}/vuedotjs`,        order: 20 },
+        { name: "Svelte",          icon: "🔥", iconUrl: `${SI}/svelte`,          order: 21 },
+        { name: "Astro",           icon: "🚀", iconUrl: `${SI}/astro`,           order: 22 },
+        { name: "Three.js",        icon: "🎲", iconUrl: `${SI}/threedotjs`,      order: 23 },
+        { name: "GSAP",            icon: "🟢", iconUrl: `${SI}/greensock`,       order: 24 },
+        { name: "Framer Motion",   icon: "🌀", iconUrl: `${SI}/framer`,          order: 25 },
+        { name: "Sanity",          icon: "🟥", iconUrl: `${SI}/sanity`,          order: 26 },
+        { name: "Contentful",      icon: "🔵", iconUrl: `${SI}/contentful`,      order: 27 },
+        { name: "Cloudinary",      icon: "☁️", iconUrl: `${SI}/cloudinary`,      order: 28 },
+        { name: "Firebase",        icon: "🔥", iconUrl: `${SI}/firebase`,        order: 29 },
+        { name: "Cloudflare",      icon: "🌐", iconUrl: `${SI}/cloudflare`,      order: 30 },
+        { name: "Webflow",         icon: "🌊", iconUrl: `${SI}/webflow`,         order: 31 },
+        { name: "WordPress",       icon: "🔵", iconUrl: `${SI}/wordpress`,       order: 32 },
+        { name: "React Native",    icon: "📱", iconUrl: `${SI}/react`,           order: 33 },
+        { name: "Expo",            icon: "📱", iconUrl: `${SI}/expo`,            order: 34 },
+        { name: "GitHub Actions",  icon: "🔄", iconUrl: `${SI}/githubactions`,   order: 35 },
+      ],
+    });
+    console.log("✓ Tech library seeded (35 items)");
+  } else {
+    console.log(`↩ Tech library skipped (${techCount} items already exist)`);
+  }
 
   console.log("✓ Seed complete");
 }
