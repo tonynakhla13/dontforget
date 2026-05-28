@@ -6,31 +6,21 @@ import { useEffect, useMemo, useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import type { ProjectData } from "./page";
 
-type ResultSlide = { label: string; value: string; note?: string };
+type ProjectService = { id: string; title: string; slug: string; icon: string | null; shortDescription: string | null };
+type ProjectChallenge = {
+  title: string;
+  problem: string;
+  proposedSolutions: { title: string; description: string }[];
+  chosenSolutionIndex: number | null;
+  chosenReason: string;
+};
+type ProjectResult = { title: string; description: string; metric?: string; mediaUrl?: string };
 
 function stringsFrom(value: unknown): string[] {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
     : [];
 }
-
-function slidesFrom(value: unknown): ResultSlide[] {
-  if (!Array.isArray(value)) return [];
-  return value.flatMap((item) => {
-    if (!item || typeof item !== "object") return [];
-    const record = item as Record<string, unknown>;
-    const label = typeof record.label === "string" ? record.label : null;
-    const result = typeof record.value === "string" ? record.value : null;
-    if (!label || !result) return [];
-    return [{ label, value: result, note: typeof record.note === "string" ? record.note : undefined }];
-  });
-}
-
-function wordsFrom(value: string | null | undefined) {
-  return value?.split(/\s+/).filter(Boolean) ?? [];
-}
-
-type TechDisplayItem = { id: string; name: string; icon: string | null; iconUrl: string | null };
 
 function Tag({ label, icon, iconUrl }: { label: string; icon?: string | null; iconUrl?: string | null }) {
   return (
@@ -45,35 +35,69 @@ function Tag({ label, icon, iconUrl }: { label: string; icon?: string | null; ic
   );
 }
 
-function InfoBlock({ eyebrow, title, body }: { eyebrow: string; title: string; body?: string | null }) {
-  return (
-    <article className="relative flex h-[68vh] w-[min(72vw,760px)] shrink-0 flex-col justify-center overflow-hidden rounded-[2rem] bg-[#0d0f0c]/88 p-10 ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_28px_80px_rgba(0,0,0,0.28)] md:p-14">
-      <div className="pointer-events-none absolute inset-x-8 top-8 h-px bg-gradient-to-r from-transparent via-[#8bcf6d]/35 to-transparent" />
-      <div className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[#5fbf36]/10 blur-3xl" />
-      <p className="font-mono text-[0.58rem] uppercase tracking-[0.42em] text-[#7fb967]">{eyebrow}</p>
-      <div className="mt-8">
-        <h2 className="max-w-[13ch] text-[clamp(2.5rem,4.4vw,5.2rem)] leading-[0.98] text-[#f3f0e8] [text-wrap:balance]">{title}</h2>
-        {body ? <p className="mt-8 max-w-[34rem] text-[0.98rem] leading-8 text-[#9d9b92]">{body}</p> : null}
-      </div>
-    </article>
-  );
+function galleryUrlsFrom(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (typeof item === "string" && item.trim()) return [item];
+    if (item && typeof item === "object") {
+      const url = (item as Record<string, unknown>).url;
+      return typeof url === "string" && url.trim() ? [url] : [];
+    }
+    return [];
+  });
 }
 
-function ListPanel({ eyebrow, title, items }: { eyebrow: string; title: string; items: string[] }) {
+function challengesFrom(value: unknown): ProjectChallenge[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const title = typeof record.title === "string" ? record.title.trim() : "";
+    const problem = typeof record.problem === "string" ? record.problem.trim() : "";
+    const proposedSolutions = Array.isArray(record.proposedSolutions)
+      ? record.proposedSolutions.flatMap((solution) => {
+          if (!solution || typeof solution !== "object") return [];
+          const source = solution as Record<string, unknown>;
+          const optionTitle = typeof source.title === "string" ? source.title.trim() : "";
+          const description = typeof source.description === "string" ? source.description.trim() : "";
+          if (!optionTitle && !description) return [];
+          return [{ title: optionTitle || "Proposed option", description }];
+        })
+      : [];
+    if (!title && !problem && !proposedSolutions.length) return [];
+    return [{
+      title: title || "Project challenge",
+      problem,
+      proposedSolutions,
+      chosenSolutionIndex: typeof record.chosenSolutionIndex === "number" ? record.chosenSolutionIndex : null,
+      chosenReason: typeof record.chosenReason === "string" ? record.chosenReason : "",
+    }];
+  });
+}
+
+function normalizedResultsFrom(value: unknown): ProjectResult[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as Record<string, unknown>;
+    const title = typeof record.title === "string" ? record.title.trim() : "";
+    const description = typeof record.description === "string" ? record.description.trim() : "";
+    const metric = typeof record.metric === "string" ? record.metric.trim() : "";
+    const mediaUrl = typeof record.mediaUrl === "string" ? record.mediaUrl : "";
+    if (!title && !description && !metric && !mediaUrl) return [];
+    return [{ title: title || "Result", description, metric, mediaUrl }];
+  });
+}
+
+function ClientGoalsListPanel({ goals }: { goals: string[] }) {
   return (
-    <article className="relative flex h-[68vh] w-[min(78vw,820px)] shrink-0 flex-col justify-between overflow-hidden rounded-[2rem] bg-[#0b0d0a]/90 p-10 ring-1 ring-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_24px_70px_rgba(0,0,0,0.24)] md:p-12">
-      <div className="pointer-events-none absolute left-0 top-0 h-full w-px bg-gradient-to-b from-transparent via-[#73c453]/45 to-transparent" />
-      <div>
-        <p className="font-mono text-[0.58rem] uppercase tracking-[0.42em] text-[#7fb967]">{eyebrow}</p>
-        <h2 className="mt-5 max-w-[12ch] text-[clamp(2.3rem,3.8vw,4.4rem)] leading-[1.02] text-[#f3f0e8] [text-wrap:balance]">{title}</h2>
-      </div>
-      <div className="grid gap-0">
-        {items.map((item, index) => (
-          <div key={item} className="grid grid-cols-[3.6rem_1fr] gap-5 border-t border-white/[0.07] py-5">
-            <span className="font-mono text-[0.58rem] uppercase tracking-[0.28em] text-[#6ec14f]">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <p className="max-w-[34rem] text-[1.02rem] leading-8 text-[#e7e2d8]">{item}</p>
+    <article className="relative flex h-[68vh] w-[min(78vw,820px)] shrink-0 flex-col justify-center overflow-hidden rounded-[2rem] bg-[#0b0d0a]/90 p-10 ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_24px_70px_rgba(0,0,0,0.24)] md:p-12">
+      <div className="pointer-events-none absolute -right-24 top-8 h-72 w-72 rounded-full bg-[rgba(var(--teal-rgb),0.10)] blur-3xl" />
+      <div className="divide-y divide-white/[0.08]">
+        {goals.slice(0, 6).map((goal, index) => (
+          <div key={goal} className="grid grid-cols-[3.5rem_1fr] gap-5 py-6">
+            <p className="font-mono text-[0.54rem] uppercase tracking-[0.28em] text-[var(--teal)]">{String(index + 1).padStart(2, "0")}</p>
+            <p className="text-[1.05rem] leading-8 text-[#e7e2d8]">{goal}</p>
           </div>
         ))}
       </div>
@@ -81,24 +105,149 @@ function ListPanel({ eyebrow, title, items }: { eyebrow: string; title: string; 
   );
 }
 
-function ResultPanel({ results }: { results: ResultSlide[] }) {
+function SectionTitlePanel({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <article className="relative flex h-[68vh] w-[min(84vw,940px)] shrink-0 flex-col justify-between overflow-hidden rounded-[2rem] bg-[#10110e]/90 p-10 ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_24px_70px_rgba(0,0,0,0.24)] md:p-12">
-      <div className="pointer-events-none absolute -left-20 bottom-0 h-64 w-64 rounded-full bg-[#6ec14f]/10 blur-3xl" />
-      <div>
-        <p className="font-mono text-[0.58rem] uppercase tracking-[0.42em] text-[#7fb967]">Outcomes</p>
-        <h2 className="mt-5 text-[clamp(2.5rem,4vw,4.8rem)] leading-none text-[#f3f0e8]">What changed</h2>
-      </div>
-      <div className="grid gap-8 md:grid-cols-3">
-        {results.map((item) => (
-          <div key={item.label} className="border-t border-[#6ec14f]/35 pt-5">
-            <p className="font-mono text-[0.54rem] uppercase tracking-[0.28em] text-[#88867f]">{item.label}</p>
-            <p className="mt-5 text-[clamp(2.4rem,3.8vw,4.4rem)] leading-none text-[#f3f0e8]">{item.value}</p>
-            {item.note ? <p className="mt-5 text-[0.95rem] leading-7 text-[#8e8b82]">{item.note}</p> : null}
-          </div>
-        ))}
+    <article className="flex h-[68vh] w-[min(66vw,720px)] shrink-0 flex-col items-center justify-center">
+      <p className="mb-7 font-mono text-[0.56rem] uppercase tracking-[0.42em] text-[var(--teal)]">{eyebrow}</p>
+      <div className="flex w-full items-center justify-center gap-5">
+        <span className="h-0.5 w-[clamp(2.5rem,7vw,6rem)] rounded-full bg-[var(--teal)]" />
+        <h2 className="shrink-0 text-center text-[clamp(2.35rem,4vw,4.6rem)] leading-[0.98] text-[var(--teal)] [text-wrap:balance]">
+          {title}
+        </h2>
+        <span className="h-0.5 w-[clamp(2.5rem,7vw,6rem)] rounded-full bg-[var(--teal)]" />
       </div>
     </article>
+  );
+}
+
+function ChallengePanel({ challenge, index }: { challenge: ProjectChallenge; index: number }) {
+  const chosenIndex = challenge.chosenSolutionIndex;
+  return (
+    <article className="relative flex h-[76vh] w-[min(94vw,1320px)] shrink-0 flex-col overflow-hidden rounded-[2rem] bg-[#0b0d0a]/92 p-8 ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_24px_70px_rgba(0,0,0,0.28)] md:p-11">
+      <div className="flex shrink-0 items-start justify-between gap-8">
+        <div>
+          <p className="font-mono text-[0.56rem] uppercase tracking-[0.36em] text-[var(--teal)]">Challenge {String(index + 1).padStart(2, "0")}</p>
+          <h3 className="mt-4 max-w-[19ch] text-[clamp(2.1rem,3.1vw,3.8rem)] leading-[0.98] text-[#f3f0e8]">{challenge.title}</h3>
+        </div>
+        {chosenIndex !== null ? (
+          <span className="rounded-full border border-[rgba(var(--teal-rgb),0.40)] bg-[rgba(var(--teal-rgb),0.10)] px-3 py-1.5 font-mono text-[0.54rem] uppercase tracking-[0.24em] text-[var(--teal)]">
+            Chosen path
+          </span>
+        ) : null}
+      </div>
+      {challenge.problem ? <p className="mt-5 max-w-[64rem] shrink-0 text-[1rem] leading-8 text-[#b9b4a8]">{challenge.problem}</p> : null}
+      <div className="mt-7 grid min-h-0 flex-1 auto-rows-fr gap-5 overflow-hidden lg:grid-cols-3">
+        {challenge.proposedSolutions.map((solution, solutionIndex) => {
+          const selected = chosenIndex === solutionIndex;
+          return (
+            <div
+              key={`${solution.title}-${solutionIndex}`}
+              className={`relative min-h-0 overflow-hidden border-t p-5 transition-shadow ${
+                selected
+                  ? "border-[var(--teal)] bg-[rgba(var(--teal-rgb),0.08)] shadow-[0_0_42px_rgba(var(--teal-rgb),0.24),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                  : "border-white/[0.10] bg-white/[0.025]"
+              }`}
+            >
+              {selected ? <span className="absolute right-4 top-4 rounded-full bg-[rgba(var(--teal-rgb),0.18)] px-2.5 py-1 font-mono text-[0.5rem] uppercase tracking-[0.22em] text-[var(--teal)]">Selected</span> : null}
+              <p className="font-mono text-[0.54rem] uppercase tracking-[0.28em] text-[#77756e]">Option {String.fromCharCode(65 + solutionIndex)}</p>
+              <h4 className="mt-5 max-w-[20rem] text-2xl leading-tight text-[#f3f0e8]">{solution.title}</h4>
+              {solution.description ? <p className="mt-5 text-[0.95rem] leading-7 text-[#a7a297]">{solution.description}</p> : null}
+            </div>
+          );
+        })}
+      </div>
+      {challenge.chosenReason ? <p className="mt-5 shrink-0 border-t border-[rgba(var(--teal-rgb),0.22)] pt-4 text-[0.95rem] leading-7 text-[#d4cfbf]">{challenge.chosenReason}</p> : null}
+    </article>
+  );
+}
+
+function ProjectResultCard({ result, index }: { result: ProjectResult; index: number }) {
+  const indexLabel = String(index + 1).padStart(2, "0");
+  const hasMetric = Boolean(result.metric);
+  const hasReveal = hasMetric || Boolean(result.description);
+  return (
+    <article className="group relative h-[78vh] w-[min(94vw,1280px)] shrink-0 overflow-hidden rounded-[2.2rem] bg-[#0b0d0a] ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_28px_90px_rgba(0,0,0,0.32)]">
+      {result.mediaUrl ? (
+        <Image
+          src={result.mediaUrl}
+          alt=""
+          fill
+          className="object-cover object-top saturate-[0.92] transition-transform duration-[1400ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.04]"
+          sizes="1280px"
+          priority={index === 0}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0e110d] via-[#0b0d0a] to-[#0a0c08]" />
+      )}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#050604] via-[#050604]/75 to-transparent" />
+
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-[-3.5rem] left-[-1.5rem] select-none font-mono text-[clamp(14rem,28vw,26rem)] font-light leading-none text-white/[0.06] mix-blend-overlay"
+      >
+        {indexLabel}
+      </span>
+
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-5 p-9 md:p-14">
+        <div className="flex items-center gap-4">
+          <span className="h-px w-10 bg-[var(--teal)]" />
+          <p className="font-mono text-[0.56rem] uppercase tracking-[0.42em] text-[var(--teal)]">Result · {indexLabel}</p>
+        </div>
+
+        <h3 className="max-w-[20ch] text-[clamp(2.4rem,4vw,4.8rem)] leading-[0.96] text-[#f3f0e8] [text-wrap:balance] [text-shadow:0_2px_28px_rgba(0,0,0,0.75)]">
+          {result.title}
+        </h3>
+
+        {hasReveal ? (
+          <div className="grid max-w-[36rem] grid-rows-[0fr] opacity-0 transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:grid-rows-[1fr] group-hover:opacity-100">
+            <div className="min-h-0 overflow-hidden">
+              <div className="flex flex-col gap-5 pt-1">
+                {hasMetric ? (
+                  <div className="inline-flex w-fit items-baseline gap-3 rounded-2xl border border-[rgba(var(--teal-rgb),0.32)] bg-[rgba(var(--teal-rgb),0.10)] px-5 py-3 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_40px_rgba(var(--teal-rgb),0.18)]">
+                    <span className="text-[clamp(1.4rem,2.2vw,2rem)] font-light leading-none text-[var(--teal)] [text-shadow:0_0_24px_rgba(var(--teal-rgb),0.5)]">{result.metric}</span>
+                  </div>
+                ) : null}
+
+                {result.description ? (
+                  <p className="text-[1rem] leading-8 text-[#d4cfc1] [text-shadow:0_1px_12px_rgba(0,0,0,0.7)]">{result.description}</p>
+                ) : null}
+
+                <div className="mt-1 flex items-center gap-3 font-mono text-[0.52rem] uppercase tracking-[0.32em] text-white/55">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--teal)] shadow-[0_0_10px_rgba(var(--teal-rgb),0.7)]" />
+                  <span>Outcome delivered</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function MediaSection({ media, title }: { media: string[]; title: string }) {
+  if (!media.length) return null;
+  return (
+    <section className="relative bg-[#070806] px-[max(5vw,4rem)] py-24">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] [background-size:72px_72px]" />
+      <div className="relative mx-auto max-w-6xl">
+        <div className="mb-14 flex items-center gap-5">
+          <span className="h-0.5 w-16 rounded-full bg-[var(--teal)]" />
+          <h2 className="font-mono text-[0.72rem] uppercase tracking-[0.42em] text-[var(--teal)]">Media</h2>
+          <span className="h-0.5 flex-1 rounded-full bg-[var(--teal)] opacity-55" />
+        </div>
+        <div className="space-y-10">
+          {media.map((src, index) => (
+            <figure key={`${src}-${index}`} className="overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-[#0b0d0a]">
+              <div className="relative aspect-[16/9] w-full bg-zinc-950">
+                <Image src={src} alt={`${title} media ${index + 1}`} fill className="object-cover saturate-[0.9]" sizes="(max-width: 1200px) 90vw, 1100px" />
+              </div>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -147,18 +296,18 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
   const trackRef = useRef<HTMLDivElement>(null);
 
   const gallery = useMemo(() => {
-    const fromGallery = stringsFrom(project.gallery);
-    const all = [project.coverImage, ...fromGallery, ...(project.images ?? [])].filter((item): item is string => Boolean(item));
+    const fromGallery = galleryUrlsFrom(project.gallery);
+    const firstVisual = project.useTallImage ? project.tallImage ?? project.heroImage ?? project.coverImage : project.heroImage ?? project.coverImage;
+    const all = [firstVisual, project.tallImage, ...fromGallery, ...(project.images ?? [])].filter((item): item is string => Boolean(item));
     return Array.from(new Set(all));
-  }, [project.coverImage, project.gallery, project.images]);
+  }, [project.coverImage, project.gallery, project.heroImage, project.images, project.tallImage, project.useTallImage]);
 
-  const challenges = stringsFrom(project.challengePoints);
-  const changes = stringsFrom(project.challengeResponses);
-  const results = slidesFrom(project.resultSlides);
+  const clientGoals = stringsFrom(project.clientGoals);
+  const normalizedChallenges = challengesFrom(project.challenges);
+  const normalizedResults = normalizedResultsFrom(project.results);
   const shortDescription = project.shortDescription ?? project.description;
-  const fullDescription = project.fullDescription ?? project.description;
   const techStack = stringsFrom(project.techStack);
-  const techItems: TechDisplayItem[] = project.techStackItems ?? [];
+  const connectedServices: ProjectService[] = project.services ?? [];
   const serviceTags = techStack.length
     ? techStack
     : project.slug === "elia-clinic"
@@ -166,10 +315,11 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
       : project.tags.length
         ? project.tags
         : [project.category ?? "Web design"];
-  const dnaWords = wordsFrom(project.tagline ?? project.title).slice(0, 5);
-  const firstScreen = project.slug === "elia-clinic" ? FIRST_SCREEN_IMAGE : gallery[0];
+  const firstScreen = project.tallImage ?? (project.slug === "elia-clinic" ? FIRST_SCREEN_IMAGE : gallery[0]);
   const followupGallery = gallery.filter((src) => src !== firstScreen);
+  const media = Array.from(new Set([firstScreen, ...followupGallery].filter((item): item is string => Boolean(item))));
   const projectUrl = project.liveUrl ?? project.caseStudyUrl ?? project.githubUrl ?? "";
+  const heroServices = connectedServices.length ? connectedServices.map((service) => service.title) : serviceTags;
 
   useEffect(() => {
     const root = rootRef.current;
@@ -275,11 +425,12 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
                     <img
                       src={project.clientLogo}
                       alt=""
-                      className="h-7 max-w-[5.5rem] shrink-0 object-contain"
+                      className="h-7 max-w-[6.5rem] shrink-0 object-contain grayscale saturate-0 opacity-75 contrast-125 brightness-110"
                       decoding="async"
                     />
-                  ) : null}
-                  <p className="text-[#f0ece3]">{project.client ?? project.title}</p>
+                  ) : (
+                    <p className="text-[#f0ece3]">{project.client ?? project.title}</p>
+                  )}
                 </div>
               </div>
               <div>
@@ -294,9 +445,7 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
             <div data-reveal className="mt-8 max-w-2xl border-y border-[#6ec14f]/20 py-4">
               <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Services</p>
               <div className="mt-3 flex flex-wrap gap-3">
-                {techItems.length
-                  ? techItems.slice(0, 4).map((item) => <Tag key={item.id} label={item.name} icon={item.icon} iconUrl={item.iconUrl} />)
-                  : serviceTags.slice(0, 4).map((item) => <Tag key={item} label={item} />)}
+                {heroServices.slice(0, 6).map((item) => <Tag key={item} label={item} />)}
               </div>
             </div>
             <a data-reveal href={projectUrl} target="_blank" rel="noopener noreferrer" className="btn-glass mt-12 w-fit">
@@ -305,52 +454,27 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
             </a>
           </article>
 
-          {firstScreen ? <WebsiteFrame src={firstScreen} title={project.title} index={0} tall={project.slug === "elia-clinic"} /> : null}
+          {firstScreen ? <WebsiteFrame src={firstScreen} title={project.title} index={0} tall={!!project.useTallImage || firstScreen === project.tallImage || project.slug === "elia-clinic"} /> : null}
 
-          <article className="flex h-[68vh] w-[min(42vw,420px)] shrink-0 flex-col justify-center">
-            <p className="font-mono text-[0.58rem] uppercase tracking-[0.42em] text-[#7fb967]">Tech stack</p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              {techItems.length
-                ? techItems.slice(0, 8).map((item) => <Tag key={item.id} label={item.name} icon={item.icon} iconUrl={item.iconUrl} />)
-                : serviceTags.slice(0, 8).map((item) => <Tag key={item} label={item} />)}
-            </div>
-            {projectUrl ? (
-              <a href={projectUrl} target="_blank" rel="noopener noreferrer" className="btn-glass mt-10 w-fit">
-                <span className="btn-glass-blob" aria-hidden="true" />
-                <span className="btn-glass-face">View project</span>
-              </a>
-            ) : null}
-          </article>
+          {clientGoals.length ? <SectionTitlePanel eyebrow="Brief" title="Client Goals" /> : null}
 
-          <InfoBlock eyebrow="Project DNA" title={project.tagline ?? "Built around trust"} body={fullDescription} />
+          {clientGoals.length ? <ClientGoalsListPanel goals={clientGoals} /> : null}
 
-          {followupGallery[0] ? <WebsiteFrame src={followupGallery[0]} title={project.title} index={1} variant="light" /> : null}
+          {normalizedChallenges.length ? <SectionTitlePanel eyebrow="Decision path" title="Challenges And Solutions" /> : null}
 
-          <article className="relative flex h-[68vh] w-[min(78vw,760px)] shrink-0 flex-col justify-between overflow-hidden rounded-[2rem] bg-[#0d0f0c]/88 p-10 ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_28px_80px_rgba(0,0,0,0.28)] md:p-12">
-            <p className="font-mono text-[0.58rem] uppercase tracking-[0.42em] text-[#7fb967]">DNA markers</p>
-            <div className="flex flex-wrap gap-3">
-              {[...dnaWords, ...serviceTags].slice(0, 10).map((item) => <Tag key={item} label={item} />)}
-            </div>
-            <p className="max-w-[13ch] text-[clamp(2.7rem,4.3vw,5rem)] leading-[0.98] text-[#f3f0e8] [text-wrap:balance]">
-              Clear service paths, human trust signals, and booking moments that stay close without feeling pushy.
-            </p>
-          </article>
-
-          {challenges.length ? <ListPanel eyebrow="Struggles" title="What was blocking growth" items={challenges} /> : null}
-
-          {followupGallery[1] ? <WebsiteFrame src={followupGallery[1]} title={project.title} index={2} /> : null}
-
-          {changes.length ? <ListPanel eyebrow="Use case" title="How the site now works" items={changes} /> : null}
-
-          {results.length ? <ResultPanel results={results} /> : null}
-
-          {followupGallery.slice(2, 5).map((src, index) => (
-            <WebsiteFrame key={src} src={src} title={project.title} index={index + 3} variant={index % 2 ? "light" : "dark"} />
+          {normalizedChallenges.map((challenge, index) => (
+            <ChallengePanel key={`${challenge.title}-${index}`} challenge={challenge} index={index} />
           ))}
 
-          <InfoBlock eyebrow="Extra mile" title="Launch-ready system" body={project.extraMile ?? "The project leaves the team with reusable content patterns, not only a one-off visual refresh."} />
+          {normalizedResults.length ? <SectionTitlePanel eyebrow="Results" title="What we made" /> : null}
+
+          {normalizedResults.map((result, index) => (
+            <ProjectResultCard key={`${result.title}-${index}`} result={result} index={index} />
+          ))}
         </div>
       </section>
+
+      <MediaSection media={media} title={project.title} />
 
       <section className="border-t border-[var(--border)] bg-[var(--bg)] py-14">
         <div className="wrap flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
