@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { prisma } from "@/lib/prisma";
 import SmoothScroll from "@/components/SmoothScroll";
-import AltParticleLayer from "@/components/AltParticleLayer";
+import ParticleLayer from "@/components/ParticleLayer";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
 import ProjectContent from "./ProjectContent";
@@ -259,8 +259,8 @@ export default async function WorkPage({
   return (
     <>
       <SmoothScroll />
-      <AltParticleLayer mode="galaxy" />
-      <main className="relative z-[1] overflow-x-clip">
+      <ParticleLayer />
+      <main className="immersive-mode relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
         <Navbar inner />

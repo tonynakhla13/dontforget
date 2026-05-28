@@ -30,7 +30,7 @@ export default async function ImmersiveBlogPage() {
     <>
       <SmoothScroll />
       <ParticleLayer />
-      <main className="relative z-[1] overflow-x-clip">
+      <main className="immersive-mode relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
         <Navbar inner />

@@ -91,7 +91,7 @@ function normalizedResultsFrom(value: unknown): ProjectResult[] {
 
 function ClientGoalsListPanel({ goals }: { goals: string[] }) {
   return (
-    <article className="relative flex h-[68vh] w-[min(78vw,820px)] shrink-0 flex-col justify-center overflow-hidden rounded-[2rem] bg-[#0b0d0a]/90 p-10 ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_24px_70px_rgba(0,0,0,0.24)] md:p-12">
+    <article className="relative flex h-[68vh] w-[min(78vw,820px)] shrink-0 flex-col justify-center overflow-hidden rounded-[2rem] border border-[rgba(var(--teal-rgb),0.14)] bg-[rgba(var(--bg-rgb),0.56)] p-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_24px_70px_rgba(0,0,0,0.24)] backdrop-blur-xl md:p-12">
       <div className="pointer-events-none absolute -right-24 top-8 h-72 w-72 rounded-full bg-[rgba(var(--teal-rgb),0.10)] blur-3xl" />
       <div className="divide-y divide-white/[0.08]">
         {goals.slice(0, 6).map((goal, index) => (
@@ -123,7 +123,7 @@ function SectionTitlePanel({ eyebrow, title }: { eyebrow: string; title: string 
 function ChallengePanel({ challenge, index }: { challenge: ProjectChallenge; index: number }) {
   const chosenIndex = challenge.chosenSolutionIndex;
   return (
-    <article className="relative flex h-[76vh] w-[min(94vw,1320px)] shrink-0 flex-col overflow-hidden rounded-[2rem] bg-[#0b0d0a]/92 p-8 ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_24px_70px_rgba(0,0,0,0.28)] md:p-11">
+    <article className="relative flex h-[76vh] w-[min(94vw,1320px)] shrink-0 flex-col overflow-hidden rounded-[2rem] border border-[rgba(var(--teal-rgb),0.14)] bg-[rgba(var(--bg-rgb),0.58)] p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl md:p-11">
       <div className="flex shrink-0 items-start justify-between gap-8">
         <div>
           <p className="font-mono text-[0.56rem] uppercase tracking-[0.36em] text-[var(--teal)]">Challenge {String(index + 1).padStart(2, "0")}</p>
@@ -145,7 +145,7 @@ function ChallengePanel({ challenge, index }: { challenge: ProjectChallenge; ind
               className={`relative min-h-0 overflow-hidden border-t p-5 transition-shadow ${
                 selected
                   ? "border-[var(--teal)] bg-[rgba(var(--teal-rgb),0.08)] shadow-[0_0_42px_rgba(var(--teal-rgb),0.24),inset_0_1px_0_rgba(255,255,255,0.08)]"
-                  : "border-white/[0.10] bg-white/[0.025]"
+                  : "border-white/[0.10] bg-[rgba(var(--surface-rgb),0.38)] backdrop-blur-md"
               }`}
             >
               {selected ? <span className="absolute right-4 top-4 rounded-full bg-[rgba(var(--teal-rgb),0.18)] px-2.5 py-1 font-mono text-[0.5rem] uppercase tracking-[0.22em] text-[var(--teal)]">Selected</span> : null}
@@ -166,7 +166,7 @@ function ProjectResultCard({ result, index }: { result: ProjectResult; index: nu
   const hasMetric = Boolean(result.metric);
   const hasReveal = hasMetric || Boolean(result.description);
   return (
-    <article className="group relative h-[78vh] w-[min(94vw,1280px)] shrink-0 overflow-hidden rounded-[2.2rem] bg-[#0b0d0a] ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_28px_90px_rgba(0,0,0,0.32)]">
+    <article className="group relative h-[78vh] w-[min(94vw,1280px)] shrink-0 overflow-hidden rounded-[2.2rem] border border-[rgba(var(--teal-rgb),0.12)] bg-[rgba(var(--bg-rgb),0.58)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_28px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl">
       {result.mediaUrl ? (
         <Image
           src={result.mediaUrl}
@@ -229,7 +229,7 @@ function ProjectResultCard({ result, index }: { result: ProjectResult; index: nu
 function MediaSection({ media, title }: { media: string[]; title: string }) {
   if (!media.length) return null;
   return (
-    <section className="relative bg-[#070806] px-[max(5vw,4rem)] py-24">
+    <section className="relative bg-[#070806] px-[var(--gutter)] py-24">
       <div className="pointer-events-none absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] [background-size:72px_72px]" />
       <div className="relative mx-auto max-w-6xl">
         <div className="mb-14 flex items-center gap-5">
@@ -335,6 +335,9 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
 
       const firstFrame = root.querySelector<HTMLElement>("[data-first-frame='true']");
       const tallScreen = root.querySelector<HTMLElement>("[data-tall-screen]");
+      const refresh = () => ScrollTrigger.refresh();
+      const refreshFrame = requestAnimationFrame(refresh);
+      window.addEventListener("load", refresh, { once: true });
 
       gsap.timeline({
         scrollTrigger: {
@@ -388,6 +391,11 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
           ease: "none",
           duration: 8,
         });
+
+      return () => {
+        cancelAnimationFrame(refreshFrame);
+        window.removeEventListener("load", refresh);
+      };
     }, root);
 
     return () => ctx.revert();
@@ -395,30 +403,26 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
 
   return (
     <>
-      <section ref={rootRef} className="relative h-screen overflow-hidden bg-[#070806] pt-24 md:pt-0">
-        <style jsx global>{`
-          .canonical-theme.preference-immersive {
-            display: none;
-          }
-        `}</style>
+      <section id="hero" ref={rootRef} className="relative h-screen overflow-hidden bg-transparent">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_42%,rgba(93,146,66,0.13),transparent_29%),radial-gradient(circle_at_72%_55%,rgba(229,221,200,0.05),transparent_26%),linear-gradient(90deg,#070806,#10130f_44%,#080907)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(7,8,6,0.9)_0%,rgba(7,8,6,0.64)_42%,rgba(7,8,6,0.26)_66%,rgba(7,8,6,0.76)_100%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-[0.055] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] [background-size:72px_72px]" />
 
         <div
           ref={trackRef}
-          className="relative z-10 flex h-screen w-max flex-row items-center gap-[4.8vw] px-[max(5vw,4rem)] pb-0"
+          className="relative z-10 flex h-screen w-max flex-row items-center gap-[4.8vw] px-[var(--gutter)] pb-0"
         >
-          <article className="flex h-screen w-[min(86vw,720px)] shrink-0 flex-col justify-center">
+          <article className="flex h-screen w-[min(82vw,760px)] shrink-0 flex-col justify-center pb-10 pt-[clamp(7rem,13vh,9.5rem)]">
             <p data-reveal className="font-mono text-[0.6rem] uppercase tracking-[0.44em] text-[#78bf5d]">{project.category ?? "Case study"}</p>
-            <h1 data-reveal className="hed mt-8 max-w-[8ch] text-[clamp(4.5rem,8.8vw,8rem)] leading-[0.88] text-[#f4f1e8]">{project.title}</h1>
+            <h1 data-reveal className="hed mt-5 max-w-[9ch] text-[clamp(3.6rem,6.8vw,6rem)] leading-[0.9] text-[#f4f1e8]">{project.title}</h1>
             {project.tagline ? (
-              <p data-reveal className="mt-6 max-w-[31rem] border-l-2 border-[#6ec14f] pl-5 font-mono text-[0.66rem] uppercase leading-6 tracking-[0.24em] text-[#82d866]">
+              <p data-reveal className="mt-5 max-w-[31rem] border-l-2 border-[#6ec14f] pl-5 font-mono text-[0.64rem] uppercase leading-6 tracking-[0.24em] text-[#82d866]">
                 {project.tagline}
               </p>
             ) : null}
-            {shortDescription ? <p data-reveal className="mt-9 max-w-[34rem] text-[1.04rem] leading-8 text-[#d7d1c3]">{shortDescription}</p> : null}
-            <div data-reveal className="mt-10 grid max-w-3xl grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-3">
-              <div>
+            {shortDescription ? <p data-reveal className="mt-7 max-w-[35rem] text-[1rem] leading-8 text-[#d7d1c3]">{shortDescription}</p> : null}
+            <div data-reveal className="mt-7 grid max-w-[48rem] grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="min-h-[6rem] rounded-[0.9rem] border border-white/[0.07] bg-[rgba(var(--bg-rgb),0.42)] p-4 backdrop-blur-md">
                 <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Client</p>
                 <div className="mt-2 flex items-center gap-3">
                   {project.clientLogo ? (
@@ -433,22 +437,22 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
                   )}
                 </div>
               </div>
-              <div>
+              <div className="min-h-[6rem] rounded-[0.9rem] border border-white/[0.07] bg-[rgba(var(--bg-rgb),0.42)] p-4 backdrop-blur-md">
                 <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Location</p>
                 <p className="mt-2 text-[#f0ece3]">{project.location ?? "Remote"}</p>
               </div>
-              <div>
+              <div className="min-h-[6rem] rounded-[0.9rem] border border-white/[0.07] bg-[rgba(var(--bg-rgb),0.42)] p-4 backdrop-blur-md">
                 <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Year</p>
                 <p className="mt-2 text-[#f0ece3]">{project.year ?? "2025"}</p>
               </div>
             </div>
-            <div data-reveal className="mt-8 max-w-2xl border-y border-[#6ec14f]/20 py-4">
+            <div data-reveal className="mt-5 max-w-[48rem] rounded-[0.95rem] border border-[rgba(var(--teal-rgb),0.16)] bg-[rgba(var(--bg-rgb),0.44)] p-4 backdrop-blur-md">
               <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Services</p>
               <div className="mt-3 flex flex-wrap gap-3">
                 {heroServices.slice(0, 6).map((item) => <Tag key={item} label={item} />)}
               </div>
             </div>
-            <a data-reveal href={projectUrl} target="_blank" rel="noopener noreferrer" className="btn-glass mt-12 w-fit">
+            <a data-reveal href={projectUrl} target="_blank" rel="noopener noreferrer" className="btn-glass mt-8 w-fit">
               <span className="btn-glass-blob" aria-hidden="true" />
               <span className="btn-glass-face">View project</span>
             </a>

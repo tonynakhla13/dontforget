@@ -14,7 +14,7 @@ export default function ImmersiveContactPage() {
     <>
       <SmoothScroll />
       <AmbientGlow />
-      <main className="relative z-[1] overflow-x-clip" style={{ position: "relative" }}>
+      <main className="immersive-mode relative z-[1] overflow-x-clip" style={{ position: "relative" }}>
         <div className="noise" />
         <Navbar inner />
         <ImmersiveContact />

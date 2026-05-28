@@ -150,9 +150,11 @@ type RequestFormHeaderMeta = {
 export default function RequestForm({
   embedded = false,
   onHeaderMetaChange,
+  onBack,
 }: {
   embedded?: boolean;
   onHeaderMetaChange?: (meta: RequestFormHeaderMeta) => void;
+  onBack?: () => void;
 } = {}) {
   const [step, setStep]     = useState(1);
   const [dir,  setDir]      = useState<1 | -1>(1);
@@ -240,7 +242,14 @@ export default function RequestForm({
   }
 
   function goBack() {
-    if (step === 1) { window.location.href = "/"; return; }
+    if (step === 1) {
+      if (embedded && onBack) {
+        onBack();
+        return;
+      }
+      window.location.href = "/";
+      return;
+    }
     navigate(step - 1, -1);
   }
 
@@ -363,7 +372,7 @@ export default function RequestForm({
         <div className="w-full max-w-[940px]">
           <div ref={contentRef}>
             {done ? (
-              <SuccessScreen data={data} services={selectedServices} />
+              <SuccessScreen data={data} services={selectedServices} embedded={embedded} onBack={onBack} />
             ) : step === 1 ? (
               <Step1 data={data} setData={setData} />
             ) : step === 2 ? (
@@ -396,7 +405,7 @@ export default function RequestForm({
         <nav className={`${embedded ? "shrink-0" : "sticky bottom-0"} z-50 flex items-center justify-between border-t border-[var(--border)] bg-[rgba(9,9,9,0.88)] px-6 py-5 backdrop-blur-xl md:px-10`}>
           <button onClick={goBack} className="btn-glass-ghost">
             <span className="btn-glass-blob" aria-hidden="true" />
-            <span className="btn-glass-face">{step === 1 ? "← Home" : "← Back"}</span>
+            <span className="btn-glass-face">{step === 1 && !embedded ? "Home" : "Back"}</span>
           </button>
 
           <div className="flex items-center gap-4">
@@ -1042,9 +1051,13 @@ function Step3({
 function SuccessScreen({
   data,
   services,
+  embedded = false,
+  onBack,
 }: {
   data: FormData;
   services: typeof SERVICES;
+  embedded?: boolean;
+  onBack?: () => void;
 }) {
   const rowsRef = useRef<HTMLDivElement>(null);
 
@@ -1102,10 +1115,18 @@ function SuccessScreen({
         ))}
       </div>
 
-      <Link href="/" className="btn-glass-ghost inline-flex">
-        <span className="btn-glass-blob" aria-hidden="true" />
-        <span className="btn-glass-face">← Back to home</span>
-      </Link>
+      {embedded && onBack ? (
+        <button type="button" onClick={onBack} className="btn-glass-ghost inline-flex">
+          <span className="btn-glass-blob" aria-hidden="true" />
+          <span className="btn-glass-face">Back</span>
+        </button>
+      ) : (
+        <Link href="/" className="btn-glass-ghost inline-flex">
+          <span className="btn-glass-blob" aria-hidden="true" />
+          <span className="btn-glass-face">Back to home</span>
+        </Link>
+      )}
     </div>
   );
 }
+
