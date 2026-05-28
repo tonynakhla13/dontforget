@@ -140,7 +140,7 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
   if (!svc) return <ServiceNotFound />;
 
   return (
-    <div style={{ background: C.paper, minHeight: "100vh", color: C.ink }}>
+    <div style={{ minHeight: "100vh", color: C.green }}>
       <NoxNavbar active="services" />
 
       {/* ── HERO ──────────────────────────────────────────── */}
@@ -196,7 +196,7 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
 
         {/* left: description */}
         <div>
-          <p className="sdf-body-block" style={{ fontFamily: SANS, fontSize: "clamp(1rem,1.5vw,1.25rem)", lineHeight: 1.7, color: C.ink, opacity: 0.75, margin: 0 }}>
+          <p className="sdf-body-block" style={{ fontFamily: SANS, fontSize: "clamp(1rem,1.5vw,1.25rem)", lineHeight: 1.7, color: C.green, opacity: 0.75, margin: 0 }}>
             {svc.body}
           </p>
 
@@ -209,8 +209,8 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
               <div key={p.step} style={{ display: "grid", gridTemplateColumns: "1.5rem 1fr", gap: "1rem", marginBottom: "1.25rem", alignItems: "start" }}>
                 <span style={{ fontFamily: SANS, fontSize: "0.85rem", color: C.green, paddingTop: 3 }}>{String(i + 1).padStart(2, "0")}</span>
                 <div>
-                  <p style={{ fontFamily: SANS, fontSize: "1rem", textTransform: "uppercase", color: C.ink, margin: "0 0 0.2rem", letterSpacing: "0.04em" }}>{p.step}</p>
-                  <p style={{ fontFamily: SANS, fontSize: "0.9rem", color: C.ink, opacity: 0.6, margin: 0, lineHeight: 1.5 }}>{p.desc}</p>
+                  <p style={{ fontFamily: SANS, fontSize: "1rem", textTransform: "uppercase", color: C.green, margin: "0 0 0.2rem", letterSpacing: "0.04em" }}>{p.step}</p>
+                  <p style={{ fontFamily: SANS, fontSize: "0.9rem", color: C.green, opacity: 0.6, margin: 0, lineHeight: 1.5 }}>{p.desc}</p>
                 </div>
               </div>
             ))}
@@ -247,7 +247,7 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
               {svc.tech.map((t) => (
                 <span key={t} style={{
                   fontFamily: SANS, fontSize: "0.82rem", padding: "0.35rem 0.85rem",
-                  background: "rgba(70,174,34,0.08)", borderRadius: 99, color: C.ink, opacity: 0.7,
+                  background: "rgba(70,174,34,0.08)", borderRadius: 99, color: C.green, opacity: 0.7,
                 }}>
                   {t}
                 </span>
@@ -265,7 +265,7 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
                 <Link key={s.slug} href={`/en/focused/services/${s.slug}`} style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "0.65rem 0", borderBottom: `1px solid ${C.border}`,
-                  textDecoration: "none", color: C.ink, opacity: 0.55,
+                  textDecoration: "none", color: C.green, opacity: 0.55,
                   fontFamily: SANS, fontSize: "0.88rem",
                   transition: "opacity 0.2s",
                 }}
@@ -289,11 +289,11 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
 
 function ServiceNotFound() {
   return (
-    <div style={{ background: "var(--nox-paper)", minHeight: "100vh", color: "var(--nox-ink)" }}>
+    <div style={{ minHeight: "100vh", color: "var(--nox-green)" }}>
       <NoxNavbar active="services" />
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "70vh", gap: "1.5rem", textAlign: "center", padding: "2rem" }}>
         <p style={{ fontFamily: SANS, fontSize: "6rem", color: "var(--nox-green)", opacity: 0.2, margin: 0 }}>404</p>
-        <h1 style={{ fontFamily: SANS, fontSize: "clamp(2rem,6vw,4rem)", textTransform: "uppercase", margin: 0 }}>Service not found</h1>
+        <h1 style={{ fontFamily: SANS, fontSize: "clamp(2rem,6vw,4rem)", textTransform: "uppercase", margin: 0, color: "var(--nox-green)" }}>Service not found</h1>
         <Link href="/en/focused/services" style={{ fontFamily: SANS, color: "var(--nox-green)", textDecoration: "none", borderBottom: "1px solid", paddingBottom: 2 }}>
           View all services →
         </Link>
