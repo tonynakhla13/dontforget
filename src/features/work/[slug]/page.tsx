@@ -117,6 +117,9 @@ export type ProjectData = {
   githubUrl?: string | null;
   caseStudyUrl?: string | null;
   coverImage: string | null;
+  heroImage?: string | null;
+  tallImage?: string | null;
+  useTallImage?: boolean | null;
   images: string[];
   tagline?: string | null;
   shortDescription?: string | null;
@@ -127,8 +130,12 @@ export type ProjectData = {
   challengePoints?: unknown;
   challengeResponses?: unknown;
   resultSlides?: unknown;
+  clientGoals?: unknown;
+  challenges?: unknown;
+  results?: unknown;
   gallery?: unknown;
   extraMile?: string | null;
+  services?: { id: string; title: string; slug: string; icon: string | null; shortDescription: string | null }[];
 };
 
 async function getProject(slug: string): Promise<ProjectData | null> {
@@ -142,9 +149,26 @@ async function getProject(slug: string): Promise<ProjectData | null> {
       },
     });
     if (project) {
-      const record = project as ProjectData;
+      const record = project as unknown as ProjectData;
       const coverAttachment = project.attachments.find((item) => item.role === "project_cover")?.media.url;
+      const heroAttachment = project.attachments.find((item) => item.role === "project_hero")?.media.url;
+      const tallAttachment = project.attachments.find((item) => item.role === "project_tall_screenshot")?.media.url;
       const galleryAttachments = project.attachments.filter((item) => item.role === "project_gallery").map((item) => item.media.url);
+      const resultAttachments = project.attachments.filter((item) => item.role === "project_result");
+      const projectServices = project.services.map((item) => ({
+        id: item.service.id,
+        title: item.service.title,
+        slug: item.service.slug,
+        icon: item.service.icon,
+        shortDescription: item.service.shortDescription,
+      }));
+      const normalizedResults = Array.isArray(record.results)
+        ? record.results.map((item, index) => {
+            if (!item || typeof item !== "object") return item;
+            const mediaUrl = resultAttachments.find((attachment) => attachment.order === index)?.media.url;
+            return mediaUrl ? { ...(item as Record<string, unknown>), mediaUrl } : item;
+          })
+        : record.results;
       const techIds = Array.isArray(record.techStack)
         ? record.techStack.filter((item): item is string => typeof item === "string")
         : [];
@@ -172,8 +196,12 @@ async function getProject(slug: string): Promise<ProjectData | null> {
             challengePoints: record.challengePoints ?? fallback.challengePoints,
             challengeResponses: record.challengeResponses ?? fallback.challengeResponses,
             resultSlides: record.resultSlides ?? fallback.resultSlides,
+            clientGoals: record.clientGoals ?? fallback.clientGoals,
+            challenges: record.challenges ?? fallback.challenges,
+            results: normalizedResults ?? fallback.results,
             gallery: record.gallery ?? fallback.gallery,
             extraMile: record.extraMile ?? fallback.extraMile,
+            services: projectServices.length ? projectServices : fallback.services,
             techStack,
             techStackItems: techItems.length ? techItems : undefined,
             client: clientItem?.company ?? record.client ?? fallback.client,
@@ -181,9 +209,14 @@ async function getProject(slug: string): Promise<ProjectData | null> {
             liveUrl: record.liveUrl ?? clientItem?.website ?? fallback.liveUrl,
             images: galleryAttachments.length ? galleryAttachments : record.images?.length ? record.images : fallback.images,
             coverImage: coverAttachment ?? record.coverImage ?? fallback.coverImage,
+            heroImage: heroAttachment ?? record.heroImage ?? fallback.heroImage,
+            tallImage: tallAttachment ?? record.tallImage ?? fallback.tallImage,
+            useTallImage: record.useTallImage ?? fallback.useTallImage,
           }
         : {
             ...record,
+            results: normalizedResults,
+            services: projectServices,
             techStack,
             techStackItems: techItems.length ? techItems : undefined,
             client: clientItem?.company ?? record.client,
@@ -191,6 +224,8 @@ async function getProject(slug: string): Promise<ProjectData | null> {
             liveUrl: record.liveUrl ?? clientItem?.website ?? null,
             images: galleryAttachments.length ? galleryAttachments : record.images,
             coverImage: coverAttachment ?? record.coverImage,
+            heroImage: heroAttachment ?? record.heroImage,
+            tallImage: tallAttachment ?? record.tallImage,
           };
     }
   } catch {}
