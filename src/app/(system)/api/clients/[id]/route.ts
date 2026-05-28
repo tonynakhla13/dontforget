@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { parseClientItemUpdatePayload } from "@/lib/clientItems";
 
 export async function PUT(
   request: NextRequest,
@@ -11,7 +12,10 @@ export async function PUT(
 
   const { id } = await params;
   const body = await request.json();
-  const item = await prisma.clientItem.update({ where: { id }, data: body });
+  const data = parseClientItemUpdatePayload(body);
+  if ("error" in data) return NextResponse.json({ error: data.error }, { status: 400 });
+
+  const item = await prisma.clientItem.update({ where: { id }, data });
   return NextResponse.json(item);
 }
 

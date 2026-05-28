@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import MediaPicker from "./MediaPicker";
 
 const RichTextEditor = dynamic(() => import("./RichTextEditor"), { ssr: false });
 
@@ -20,6 +21,27 @@ interface ClientItem {
   country?: string | null;
   logo?: string | null;
   website?: string | null;
+}
+
+interface MediaAssetItem {
+  id: string;
+  url: string;
+  originalName?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  alt?: string | null;
+}
+
+interface ServiceItem {
+  id: string;
+  title: string;
+}
+
+interface AttachmentInput {
+  mediaId: string;
+  role: string;
+  theme?: string | null;
+  order?: number;
 }
 
 interface SolutionOption {
@@ -80,6 +102,18 @@ interface ProjectData {
   testimonialText?: string;
   gallery?: GalleryItem[];
   extraMile?: string;
+  heroImage?: string;
+  tallImage?: string;
+  useTallImage?: boolean;
+  clientGoals?: string[];
+  challenges?: { title: string; problem: string; proposedSolutions: SolutionOption[]; chosenSolutionIndex: number | null; chosenReason: string }[];
+  results?: { title: string; description: string; mediaId?: string; metric?: string }[];
+  testimonialAuthor?: string;
+  testimonialRole?: string;
+  testimonialCompany?: string;
+  extraMilePlanned?: string;
+  attachments?: AttachmentInput[];
+  serviceIds?: string[];
 }
 
 function slugify(str: string) {
@@ -95,10 +129,14 @@ export default function ProjectForm({
   initial,
   techItems = [],
   clientItems = [],
+  services = [],
+  mediaAssets = [],
 }: {
   initial?: ProjectData;
   techItems?: TechItem[];
   clientItems?: ClientItem[];
+  services?: ServiceItem[];
+  mediaAssets?: MediaAssetItem[];
 }) {
   const router = useRouter();
   const editing = !!initial?.id;
@@ -144,6 +182,18 @@ export default function ProjectForm({
     testimonialText: "",
     gallery: [],
     extraMile: "",
+    heroImage: "",
+    tallImage: "",
+    useTallImage: false,
+    clientGoals: [""],
+    challenges: [{ title: "", problem: "", proposedSolutions: [{ title: "", body: "" }], chosenSolutionIndex: null, chosenReason: "" }],
+    results: [{ title: "", description: "", mediaId: "", metric: "" }],
+    testimonialAuthor: "",
+    testimonialRole: "",
+    testimonialCompany: "",
+    extraMilePlanned: "",
+    attachments: [],
+    serviceIds: [],
     ...initial,
   });
 
@@ -235,12 +285,35 @@ export default function ProjectForm({
   const opts = form.solutionOptions ?? [{ title: "", body: "" }];
   const slides = form.resultSlides ?? [{ media: "", text: "" }];
   const gallery = form.gallery ?? [];
+  const attachments = form.attachments ?? [];
+  const selectedServices = form.serviceIds ?? [];
+  const clientGoals = form.clientGoals ?? [""];
+  const challenges = form.challenges ?? [];
+  const results = form.results ?? [];
 
   function updateAt<T>(arr: T[], i: number, val: T): T[] {
     const next = [...arr];
     next[i] = val;
     return next;
   }
+
+  function setAttachment(role: string, mediaId: string, order = 0, theme: string | null = null) {
+    set("attachments", [
+      ...attachments.filter((item) => !(item.role === role && item.order === order && (item.theme ?? null) === theme)),
+      ...(mediaId ? [{ role, mediaId, order, theme }] : []),
+    ]);
+  }
+
+  function attachmentValue(role: string, order = 0, theme: string | null = null) {
+    return attachments.find((item) => item.role === role && item.order === order && (item.theme ?? null) === theme)?.mediaId ?? "";
+  }
+
+  const mediaSelect = (role: string, label: string, order = 0, theme: string | null = null) => {
+    const id = attachmentValue(role, order, theme);
+    return (
+      <MediaPicker assets={mediaAssets} value={id} onChange={(mediaId) => setAttachment(role, mediaId, order, theme)} label={label} />
+    );
+  };
 
   // ── client picker ─────────────────────────────────────────────────────────
   function selectClient(c: ClientItem) {
@@ -375,6 +448,15 @@ export default function ProjectForm({
               />
             </div>
             <div>
+              <label className={lbl}>Project Type</label>
+              <input
+                className={inp}
+                value={form.projectType}
+                onChange={(e) => set("projectType", e.target.value)}
+                placeholder="website"
+              />
+            </div>
+            <div>
               <label className={lbl}>Year</label>
               <input
                 className={inp}
@@ -384,6 +466,27 @@ export default function ProjectForm({
               />
             </div>
           </div>
+
+          {services.length > 0 && (
+            <div>
+              <label className={lbl}>Connected Services</label>
+              <div className="flex flex-wrap gap-2">
+                {services.map((service) => {
+                  const active = selectedServices.includes(service.id);
+                  return (
+                    <button
+                      key={service.id}
+                      type="button"
+                      onClick={() => set("serviceIds", active ? selectedServices.filter((id) => id !== service.id) : [...selectedServices, service.id])}
+                      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${active ? "bg-[#3ABF8A]/12 border-[#3ABF8A]/40 text-[#3ABF8A]" : "bg-white/5 border-white/10 text-white/50 hover:text-white"}`}
+                    >
+                      {service.title}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* ── Client picker ── */}
           <div className="space-y-3">
@@ -660,6 +763,23 @@ export default function ProjectForm({
           )}
         </section>
 
+        <section id="media-attachments" className={card}>
+          <div className="flex items-center justify-between">
+            <h2 className={sec}>Media Attachments</h2>
+            <a href="/dashboard/media" target="_blank" className="text-xs text-white/25 hover:text-white/60 transition-colors">Manage media</a>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {mediaSelect("project_cover", "Cover asset")}
+            {mediaSelect("project_hero", "Hero asset")}
+            {mediaSelect("project_tall_screenshot", "Tall screenshot")}
+            {[0, 1, 2].map((i) => mediaSelect("project_gallery", `Gallery asset ${i + 1}`, i))}
+          </div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" checked={!!form.useTallImage} onChange={(e) => set("useTallImage", e.target.checked)} className="w-4 h-4 accent-[#2ea876]" />
+            <span className="text-sm text-white/60">Use tall image layout</span>
+          </label>
+        </section>
+
         {/* ── SECTION 04 — Project DNA ── */}
         <div id="s04" className="space-y-4">
           <h2 className={`${sec} px-1`}>04 — Project DNA</h2>
@@ -667,6 +787,30 @@ export default function ProjectForm({
           {/* 4A — Challenge */}
           <div className={card}>
             <h3 className="text-sm text-white/40 font-medium">4A — Challenge</h3>
+
+            <div>
+              <label className={lbl}>Client Goals</label>
+              <div className="space-y-2">
+                {clientGoals.map((goal, i) => (
+                  <input key={i} className={inp} value={goal} onChange={(e) => set("clientGoals", updateAt(clientGoals, i, e.target.value))} placeholder={`Goal ${i + 1}`} />
+                ))}
+              </div>
+              <button type="button" onClick={() => set("clientGoals", [...clientGoals, ""])} className={addBtn}>+ Add goal</button>
+            </div>
+
+            <div>
+              <label className={lbl}>Normalized Challenges</label>
+              <div className="space-y-4">
+                {challenges.map((challenge, i) => (
+                  <div key={i} className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 space-y-3">
+                    <input className={inp} value={challenge.title} onChange={(e) => set("challenges", updateAt(challenges, i, { ...challenge, title: e.target.value }))} placeholder="Challenge title" />
+                    <textarea className={`${inp} h-20 resize-none`} value={challenge.problem} onChange={(e) => set("challenges", updateAt(challenges, i, { ...challenge, problem: e.target.value }))} placeholder="Problem" />
+                    <input className={inp} value={challenge.chosenReason} onChange={(e) => set("challenges", updateAt(challenges, i, { ...challenge, chosenReason: e.target.value }))} placeholder="Chosen reason" />
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={() => set("challenges", [...challenges, { title: "", problem: "", proposedSolutions: [{ title: "", body: "" }], chosenSolutionIndex: null, chosenReason: "" }])} className={addBtn}>+ Add normalized challenge</button>
+            </div>
 
             <div>
               <label className={lbl}>Challenge Points <span className="text-white/20 normal-case tracking-normal">(exactly 3)</span></label>
@@ -805,6 +949,27 @@ export default function ProjectForm({
           <div className={card}>
             <h3 className="text-sm text-white/40 font-medium">4C — Results</h3>
 
+            <div>
+              <label className={lbl}>Normalized Results</label>
+              <div className="space-y-4">
+                {results.map((result, i) => (
+                  <div key={i} className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 space-y-3">
+                    <input className={inp} value={result.title} onChange={(e) => set("results", updateAt(results, i, { ...result, title: e.target.value }))} placeholder="Result title" />
+                    <input className={inp} value={result.metric ?? ""} onChange={(e) => set("results", updateAt(results, i, { ...result, metric: e.target.value }))} placeholder="Metric" />
+                    <textarea className={`${inp} h-20 resize-none`} value={result.description} onChange={(e) => set("results", updateAt(results, i, { ...result, description: e.target.value }))} placeholder="Description" />
+                    <select className={inp} value={result.mediaId ?? ""} onChange={(e) => {
+                      set("results", updateAt(results, i, { ...result, mediaId: e.target.value }));
+                      setAttachment("project_result", e.target.value, i);
+                    }}>
+                      <option value="">No media</option>
+                      {mediaAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.originalName ?? asset.filename ?? asset.url}</option>)}
+                    </select>
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={() => set("results", [...results, { title: "", description: "", mediaId: "", metric: "" }])} className={addBtn}>+ Add normalized result</button>
+            </div>
+
             <div className="space-y-4">
               {slides.map((slide, i) => (
                 <div key={i} className="border border-white/[0.08] rounded-xl p-4 space-y-3 bg-white/[0.02]">
@@ -869,6 +1034,11 @@ export default function ProjectForm({
                 onChange={(e) => set("testimonialText", e.target.value)}
                 placeholder={`"Working with the team was a game-changer for our business…"`}
               />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <input className={inp} value={form.testimonialAuthor} onChange={(e) => set("testimonialAuthor", e.target.value)} placeholder="Author" />
+              <input className={inp} value={form.testimonialRole} onChange={(e) => set("testimonialRole", e.target.value)} placeholder="Role" />
+              <input className={inp} value={form.testimonialCompany} onChange={(e) => set("testimonialCompany", e.target.value)} placeholder="Company" />
             </div>
           </div>
         </div>
@@ -950,6 +1120,15 @@ export default function ProjectForm({
               value={form.extraMile}
               onChange={(e) => set("extraMile", e.target.value)}
               placeholder={"- Custom animation system\n- Bilingual RTL support from day one\n- Performance: 98 Lighthouse score"}
+            />
+          </div>
+          <div>
+            <label className={lbl}>Planned Extra Mile</label>
+            <textarea
+              className={`${inp} h-28 resize-none text-xs font-mono leading-relaxed`}
+              value={form.extraMilePlanned}
+              onChange={(e) => set("extraMilePlanned", e.target.value)}
+              placeholder="Ideas planned before delivery"
             />
           </div>
         </section>

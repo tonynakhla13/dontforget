@@ -75,12 +75,12 @@ async function getProjects() {
     const projects = await prisma.project.findMany({
       where: { status: "PUBLISHED" },
       orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-      select: {
-        id: true, slug: true, title: true, category: true,
-        year: true, description: true, tags: true, liveUrl: true, coverImage: true,
-      },
+      include: { attachments: { include: { media: true }, orderBy: { order: "asc" } } },
     });
-    return projects.length ? projects : DEMO_PROJECTS;
+    return projects.length ? projects.map((project) => ({
+      ...project,
+      coverImage: project.attachments.find((item) => item.role === "project_cover")?.media.url ?? project.coverImage,
+    })) : DEMO_PROJECTS;
   } catch {
     return DEMO_PROJECTS;
   }

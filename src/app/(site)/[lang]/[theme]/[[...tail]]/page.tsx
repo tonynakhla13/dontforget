@@ -93,7 +93,10 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
     return view ? <CreativeThemeLayout>{view}</CreativeThemeLayout> : null;
   }
   if (theme === "immersive") {
-    if (page === "home") return <ImmersiveHome projects={await getProjects(locale)} />;
+    if (page === "home") {
+      const [projects, services] = await Promise.all([getProjects(locale), getServices(locale)]);
+      return <ImmersiveHome projects={projects} services={services} />;
+    }
     if (page === "about" && !tail[1]) return <ImmersiveAbout />;
     if (page === "work" && !tail[1]) return <ImmersiveWork />;
     if (page === "services" && !tail[1]) return <ImmersiveServices />;
