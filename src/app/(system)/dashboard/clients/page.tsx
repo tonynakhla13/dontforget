@@ -47,7 +47,20 @@ export default function ClientsPage() {
   }
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+
+    fetch("/api/clients")
+      .then((res) => res.json())
+      .then((data: ClientItem[]) => {
+        if (!cancelled) setItems(data);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function uploadLogo(file: File, onDone: (url: string) => void) {

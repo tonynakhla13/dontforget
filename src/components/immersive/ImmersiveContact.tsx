@@ -534,20 +534,21 @@ function GuidedBriefCard({ onClick }: { onClick: () => void }) {
 
   return (
     <button ref={ref} type="button" onClick={onClick}
-      className="group transition-all duration-200 hover:scale-[1.02]"
+      className="group guided-brief-card"
       style={{
         display: "flex", alignItems: "center", gap: "0.85rem",
         marginTop: "1.8rem",
         padding: "0.75rem 1rem",
-        border: "1px solid rgba(var(--teal-rgb),0.16)",
+        border: "1px solid rgba(var(--teal-rgb),0.22)",
         borderRadius: "0.95rem",
-        background: "linear-gradient(145deg, rgba(var(--teal-rgb),0.08), rgba(var(--teal-rgb),0.025))",
+        background: "rgba(var(--teal-rgb),0.06)",
         boxShadow: "0 12px 36px rgba(var(--bg-rgb),0.12)",
         cursor: "pointer",
         textAlign: "left",
         width: "100%",
         position: "relative",
         overflow: "hidden",
+        transition: "background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease",
       }}>
 
       {/* Top accent */}
@@ -573,8 +574,9 @@ function GuidedBriefCard({ onClick }: { onClick: () => void }) {
           fontSize: "clamp(1.1rem, 1.8vw, 1.4rem)",
           lineHeight: 0.95,
           letterSpacing: 0,
+          whiteSpace: "nowrap",
         }}>
-          Not sure what<br />you need?
+          Not sure what you need?
         </span>
         <span style={{
           display: "block",
@@ -1419,10 +1421,10 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
         background: "radial-gradient(ellipse 55% 65% at 25% 50%, rgba(var(--teal-rgb),0.05) 0%, transparent 65%)" }} />
 
       {/* ══════════ LEFT: heading / RIGHT: form ══════════ */}
-      <div className="grid gap-8 lg:grid-cols-[0.42fr_0.58fr] lg:items-center"
+      <div className="grid gap-8 lg:grid-cols-[0.42fr_0.58fr] lg:items-stretch"
         style={{ width: "100%", maxWidth: 1180, minWidth: 0, zIndex: 1 }}>
 
-        <div data-in style={{ opacity: 0 }}>
+        <div data-in style={{ opacity: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <p className="eyebrow" style={{ marginBottom: "0.6rem" }}>Immersive contact</p>
           <h1 className="hed" style={{ fontSize: "clamp(2.35rem,5.8vw,5.4rem)", lineHeight: 0.88 }}>
             Start with<br />
@@ -1437,11 +1439,11 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
         </div>
 
         <form onSubmit={e => e.preventDefault()}
-          style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+          style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "0.85rem", height: "100%" }}>
 
-          <div data-in className="grid gap-4" style={{ opacity: 0 }}>
+          <div data-in className="grid gap-4" style={{ opacity: 0, flex: 1 }}>
 
-            <div style={{ minHeight: embedded ? "clamp(260px,34vh,320px)" : "clamp(330px,48vh,390px)", minWidth: 0, display: "flex", flexDirection: "column",
+            <div style={{ height: "100%", minHeight: embedded ? "clamp(260px,34vh,320px)" : "clamp(330px,48vh,390px)", minWidth: 0, display: "flex", flexDirection: "column",
               borderRadius: "1rem", overflow: "hidden",
               border: "1px solid rgba(var(--teal-rgb),0.20)",
               background: "linear-gradient(145deg,rgba(var(--surface2-rgb),0.92),rgba(var(--bg-rgb),0.86))",
@@ -1470,16 +1472,15 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
                   fontFamily: "inherit", lineHeight: 1.75,
                   position: "relative", zIndex: 1,
                   overflow: "hidden" }} />
-              {/* Suggestions — smooth height transition */}
+              {/* Suggestions — fade without changing height */}
               <div
                 style={{
                   position: "relative", zIndex: 2,
-                  display: "grid",
-                  gridTemplateRows: !hasMessage && !isRecording ? "1fr" : "0fr",
-                  transition: "grid-template-rows 0.35s ease",
-                  overflow: "hidden",
+                  opacity: !hasMessage && !isRecording ? 1 : 0,
+                  visibility: !hasMessage && !isRecording ? "visible" as const : "hidden" as const,
+                  transition: "opacity 0.3s ease, visibility 0.3s ease",
                 }}>
-                <div style={{ minHeight: 0 }}>
+                <div>
                   <div className="flex flex-wrap gap-2 px-5 pb-4 pt-1">
                     {messageSuggestions.map(sentence => (
                       <button key={sentence} type="button"
@@ -1551,7 +1552,9 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
                   </svg>
                 </button>
               </div>
-              <style>{`@keyframes sendShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}`}</style>
+              <style>{`@keyframes sendShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.guided-brief-card{transition:background 0.3s ease,border-color 0.3s ease,box-shadow 0.3s ease,transform 0.3s ease}
+.guided-brief-card:hover{background:rgba(var(--teal-rgb),0.12) !important;border-color:rgba(var(--teal-rgb),0.35) !important;box-shadow:0 12px 36px rgba(var(--bg-rgb),0.12),0 0 20px rgba(var(--teal-rgb),0.08) !important;transform:scale(1.02)}`}</style>
             </div>
 
 
