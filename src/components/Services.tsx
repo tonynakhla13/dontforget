@@ -3,6 +3,20 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 import ServicePipeCardHologram, { servicePipeShapes } from "@/components/services/ServicePipeCardHologram";
+import type { PublicService } from "@/lib/public-content";
+
+type ServiceDeliverable = {
+  title: string;
+  iconUrl?: string | null;
+};
+
+type ImmersiveService = {
+  id: string;
+  num: string;
+  title: string;
+  body: string;
+  examples: ServiceDeliverable[];
+};
 
 const SERVICES = [
   {
@@ -10,44 +24,44 @@ const SERVICES = [
     num: "01",
     title: "Web Dev",
     body: "From high-converting landing pages to complex web applications, we build fast, scalable, and interactive digital experiences. Every decision is made with performance, clarity, conversion, and long-term maintainability in mind.",
-    examples: ["Landing pages", "Commercial sites", "Blogs", "Portfolios", "Dashboards", "Web apps"],
+    examples: ["Landing pages", "Commercial sites", "Blogs", "Portfolios", "Dashboards", "Web apps"].map((title) => ({ title })),
   },
   {
     id: "uiux",
     num: "02",
     title: "UI / UX",
     body: "We start with research, not assumptions. Through competitive analysis, user testing, wireframes, prototypes, and relentless iteration, we shape interfaces that feel effortless — and perform even better than they look.",
-    examples: ["Wireframes", "Design systems", "User flows", "Prototypes", "Usability tests", "Product UX"],
+    examples: ["Wireframes", "Design systems", "User flows", "Prototypes", "Usability tests", "Product UX"].map((title) => ({ title })),
   },
   {
     id: "ecomm",
     num: "03",
     title: "E-Commerce",
     body: "Shopify, WooCommerce, Salla, or fully custom-built — we design and develop stores that actually sell. Product structure, checkout flow, SEO, retention, and organic growth strategy are engineered in from day one.",
-    examples: ["Shopify", "WooCommerce", "Salla", "Product pages", "Checkout", "Subscriptions"],
+    examples: ["Shopify", "WooCommerce", "Salla", "Product pages", "Checkout", "Subscriptions"].map((title) => ({ title })),
   },
   {
     id: "mobile",
     num: "04",
     title: "Mobile",
     body: "iOS and Android. React Native or fully native — whichever fits your product best. We do not just ship apps; we define the feel, the flow, and the product rhythm that keeps users coming back every day.",
-    examples: ["iOS", "Android", "React Native", "Onboarding", "Push flows", "App systems"],
+    examples: ["iOS", "Android", "React Native", "Onboarding", "Push flows", "App systems"].map((title) => ({ title })),
   },
   {
     id: "seo",
     num: "05",
     title: "SEO",
     body: "From technical on-page SEO to AI-aware search strategies, we move the needle in ways most agencies cannot. We connect structure, content, authority, and reporting so growth compounds instead of appearing as a one-off spike.",
-    examples: ["Technical SEO", "Content plans", "AI search", "Local SEO", "Audits", "Reporting"],
+    examples: ["Technical SEO", "Content plans", "AI search", "Local SEO", "Audits", "Reporting"].map((title) => ({ title })),
   },
   {
     id: "crm",
     num: "06",
     title: "CRM",
     body: "We build custom CRMs for booking systems, travel platforms, medical practices, and complex business workflows. Engineer-minded and precision-built, these systems reflect exactly how your operations work in the real world.",
-    examples: ["Bookings", "Pipelines", "Dashboards", "Automations", "Permissions", "Integrations"],
+    examples: ["Bookings", "Pipelines", "Dashboards", "Automations", "Permissions", "Integrations"].map((title) => ({ title })),
   },
-];
+] satisfies ImmersiveService[];
 
 const SHOW_CENTER_SERVICE_HOLOGRAM = false;
 
@@ -70,6 +84,28 @@ function MiniIcon({ index }: { index: number }) {
     <svg key="nodes" {...common}><circle cx="6" cy="12" r="2" /><circle cx="18" cy="6" r="2" /><circle cx="18" cy="18" r="2" /><path d="M8 12h4" /><path d="m14 11 2-3" /><path d="m14 13 2 3" /></svg>,
   ];
   return icons[index % icons.length];
+}
+
+function techExamplesFromService(service: PublicService): ServiceDeliverable[] {
+  return (service.techStackItems ?? []).map((item) => ({
+    title: item.name,
+    iconUrl: item.iconUrl,
+  }));
+}
+
+function servicesFromContent(services?: PublicService[]): ImmersiveService[] {
+  if (!services?.length) return SERVICES;
+  return services.slice(0, 6).map((service, index) => {
+    const fallback = SERVICES[index] ?? SERVICES[0];
+    const examples = techExamplesFromService(service);
+    return {
+      id: service.slug ?? service.id,
+      num: service.icon ?? String(index + 1).padStart(2, "0"),
+      title: service.title,
+      body: service.description ?? service.shortDescription ?? fallback.body,
+      examples: examples.length ? examples.slice(0, 6) : fallback.examples,
+    };
+  });
 }
 
 
@@ -99,7 +135,8 @@ function Card({ num, title, tall }: { num: string; title: string; tall?: boolean
   );
 }
 
-export default function Services() {
+export default function Services({ services }: { services?: PublicService[] }) {
+  const serviceItems = servicesFromContent(services);
   const outerRef  = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const introRef  = useRef<HTMLDivElement>(null);
@@ -111,7 +148,7 @@ export default function Services() {
     if (!outer || !intro) return;
 
     const panels = panelsRef.current.filter((p): p is HTMLDivElement => p !== null);
-    if (panels.length !== SERVICES.length) return;
+    if (panels.length !== serviceItems.length) return;
 
     /* Initial states */
     gsap.set(panels, { autoAlpha: 0 });
@@ -178,7 +215,7 @@ export default function Services() {
     }, outer);
 
     return () => ctx.revert();
-  }, []);
+  }, [serviceItems.length]);
 
   return (
     /* Outer div height = sticky scroll range. CSS sticky keeps inner at top. */
@@ -204,7 +241,7 @@ export default function Services() {
         </div>
 
         {/* ── Service panels ── */}
-        {SERVICES.map((svc, i) => (
+        {serviceItems.map((svc, i) => (
           <div
             key={svc.id}
             ref={el => { panelsRef.current[i] = el; }}
@@ -231,7 +268,7 @@ export default function Services() {
                   boxShadow: "0 0 90px rgba(var(--teal-rgb),0.10), 0 0 200px rgba(var(--teal-rgb),0.05)",
                 }}
               >
-                <ServicePipeCardHologram shape={servicePipeShapes[svc.id]} />
+                <ServicePipeCardHologram shape={servicePipeShapes[svc.id] ?? servicePipeShapes.webdev} />
               </div>
             )}
 
@@ -253,15 +290,20 @@ export default function Services() {
               <div className="grid w-full grid-cols-2 justify-items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 {svc.examples.map((example, exampleIndex) => (
                   <div
-                    key={example}
+                    key={example.title}
                     data-pill
                     className="flex w-full flex-col items-center justify-center gap-3 rounded-2xl border border-[rgba(var(--teal-rgb),0.26)] bg-[rgba(var(--bg-rgb),0.78)] px-4 py-5 text-center shadow-[0_8px_32px_rgba(var(--bg-rgb),0.32),inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md"
                   >
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-[rgba(var(--teal-rgb),0.12)] text-[var(--teal)] shadow-[0_0_18px_rgba(var(--teal-rgb),0.22),inset_0_1px_0_rgba(var(--teal-rgb),0.18)] ring-1 ring-[rgba(var(--teal-rgb),0.20)]">
-                      <MiniIcon index={exampleIndex} />
+                      {example.iconUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={example.iconUrl} alt="" className="h-5 w-5 object-contain" decoding="async" />
+                      ) : (
+                        <MiniIcon index={exampleIndex} />
+                      )}
                     </span>
                     <span className="text-[0.72rem] font-semibold leading-tight tracking-wide text-[rgba(240,236,227,0.88)]">
-                      {example}
+                      {example.title}
                     </span>
                   </div>
                 ))}

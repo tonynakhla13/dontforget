@@ -17,6 +17,7 @@ export const TK = {
 
 export const SANS    = "'Syne', 'Inter', sans-serif";
 export const DISPLAY = "'Syne', 'Inter', sans-serif";
+let _noxLogoCount = 0;
 
 /* ── NOX animated logo — mouse-tracking eye ─────────────────────────── */
 export function NoxLogo({ height = 36 }: { height?: number }) {

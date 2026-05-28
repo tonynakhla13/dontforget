@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { requireAuth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
@@ -44,7 +45,25 @@ export async function POST(request: NextRequest) {
     await writeFile(path.join(uploadDir, fileName), buffer);
 
     const url = `/uploads/${subDir}/${fileName}`;
-    return NextResponse.json({ url });
+    const mediaAsset = await prisma.mediaAsset.upsert({
+      where: { url },
+      update: {
+        filename: fileName,
+        originalName: file.name,
+        mimeType: file.type || "application/octet-stream",
+        size: file.size,
+        folder: subDir,
+      },
+      create: {
+        url,
+        filename: fileName,
+        originalName: file.name,
+        mimeType: file.type || "application/octet-stream",
+        size: file.size,
+        folder: subDir,
+      },
+    });
+    return NextResponse.json({ url, mediaAsset });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload failed";
     console.error("[upload]", message);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import MediaPicker, { type MediaPickerAsset } from "@/components/dashboard/MediaPicker";
 
 interface TechItem {
   id: string;
@@ -13,17 +14,14 @@ interface TechItem {
 const inp =
   "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-[#2ea876] transition-colors text-sm";
 const lbl = "block text-xs text-white/50 uppercase tracking-widest mb-2";
-const uploadBtn =
-  "cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 text-xs px-4 py-3 rounded-lg transition-colors whitespace-nowrap";
-
 export default function TechLibraryPage() {
   const [items, setItems] = useState<TechItem[]>([]);
+  const [mediaAssets, setMediaAssets] = useState<MediaPickerAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState("");
   const [newIconUrl, setNewIconUrl] = useState("");
-  const [uploading, setUploading] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -31,8 +29,9 @@ export default function TechLibraryPage() {
   const [editIconUrl, setEditIconUrl] = useState("");
 
   async function load() {
-    const res = await fetch("/api/tech");
+    const [res, mediaRes] = await Promise.all([fetch("/api/tech"), fetch("/api/media")]);
     setItems(await res.json());
+    if (mediaRes.ok) setMediaAssets(await mediaRes.json());
     setLoading(false);
   }
 
@@ -40,10 +39,12 @@ export default function TechLibraryPage() {
     let active = true;
 
     async function loadInitialItems() {
-      const res = await fetch("/api/tech");
+      const [res, mediaRes] = await Promise.all([fetch("/api/tech"), fetch("/api/media")]);
       const data = await res.json();
+      const media = mediaRes.ok ? await mediaRes.json() : [];
       if (!active) return;
       setItems(data);
+      setMediaAssets(media);
       setLoading(false);
     }
 
@@ -54,21 +55,12 @@ export default function TechLibraryPage() {
     };
   }, []);
 
-  async function uploadIcon(file: File, onDone: (url: string) => void) {
-    setUploading("icon");
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("folder", "dontforget/tech-icons");
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Upload failed");
-      onDone(data.url);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setUploading(null);
-    }
+  function mediaIdForUrl(url: string) {
+    return mediaAssets.find((asset) => asset.url === url)?.id ?? "";
+  }
+
+  function rememberAsset(asset: MediaPickerAsset) {
+    setMediaAssets((prev) => prev.some((item) => item.id === asset.id) ? prev : [asset, ...prev]);
   }
 
   async function handleAdd() {
@@ -167,23 +159,17 @@ export default function TechLibraryPage() {
               <label className={lbl}>
                 Icon Image <span className="text-white/20 normal-case tracking-normal">(SVG / PNG)</span>
               </label>
-              <div className="flex gap-2 items-start">
-                <input
-                  className={`${inp} flex-1`}
-                  value={newIconUrl}
-                  onChange={(e) => setNewIconUrl(e.target.value)}
-                  placeholder="Paste URL or upload →"
-                />
-                <label className={uploadBtn}>
-                  {uploading === "icon" ? "…" : "↑"}
-                  <input
-                    type="file"
-                    accept="image/*,image/svg+xml"
-                    className="hidden"
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadIcon(f, setNewIconUrl); }}
-                  />
-                </label>
-              </div>
+              <MediaPicker
+                assets={mediaAssets}
+                value={mediaIdForUrl(newIconUrl)}
+                onChange={(mediaId) => { if (!mediaId) setNewIconUrl(""); }}
+                onSelectAsset={(asset) => {
+                  setNewIconUrl(asset.url);
+                  rememberAsset(asset);
+                }}
+                label="Icon image"
+                uploadFolder="dontforget/tech-icons"
+              />
               {newIconUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={newIconUrl} alt="Icon preview" className="mt-2 h-8 w-8 object-contain" />
@@ -240,13 +226,17 @@ export default function TechLibraryPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={lbl}>Icon Image <span className="text-white/20 normal-case tracking-normal">(SVG / PNG)</span></label>
-                    <div className="flex gap-2 items-start">
-                      <input className={`${inp} flex-1`} value={editIconUrl} onChange={(e) => setEditIconUrl(e.target.value)} placeholder="https://…" />
-                      <label className={uploadBtn}>
-                        {uploading === "icon" ? "…" : "↑"}
-                        <input type="file" accept="image/*,image/svg+xml" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadIcon(f, setEditIconUrl); }} />
-                      </label>
-                    </div>
+                    <MediaPicker
+                      assets={mediaAssets}
+                      value={mediaIdForUrl(editIconUrl)}
+                      onChange={(mediaId) => { if (!mediaId) setEditIconUrl(""); }}
+                      onSelectAsset={(asset) => {
+                        setEditIconUrl(asset.url);
+                        rememberAsset(asset);
+                      }}
+                      label="Icon image"
+                      uploadFolder="dontforget/tech-icons"
+                    />
                     {editIconUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={editIconUrl} alt="Icon" className="mt-2 h-8 w-8 object-contain" />

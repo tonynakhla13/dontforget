@@ -13,6 +13,7 @@ async function main() {
     data: [
       {
         title: "Web Dev",
+        slug: "web-dev",
         titleAr: "تطوير الويب",
         description: "Fast, scalable, interactive websites and applications built around performance, clarity, and measurable results.",
         descriptionAr: "مواقع وتطبيقات سريعة وقابلة للتوسع مبنية حول الأداء والوضوح والنتائج القابلة للقياس.",
@@ -21,6 +22,7 @@ async function main() {
       },
       {
         title: "UI / UX",
+        slug: "ui-ux",
         titleAr: "تصميم الواجهات وتجربة المستخدم",
         description: "Research-led interfaces, product flows, prototypes, and design systems shaped around how people actually use them.",
         descriptionAr: "واجهات وتدفقات منتجات وأنظمة تصميم مبنية على فهم استخدام الناس الفعلي.",
@@ -29,6 +31,7 @@ async function main() {
       },
       {
         title: "E-Commerce",
+        slug: "e-commerce",
         titleAr: "التجارة الإلكترونية",
         description: "Conversion-focused stores with storefront design, payments, retention flows, analytics, and growth foundations.",
         descriptionAr: "متاجر تركز على التحويل مع الدفع والتحليلات وأسس النمو.",
@@ -37,6 +40,7 @@ async function main() {
       },
       {
         title: "Mobile",
+        slug: "mobile",
         titleAr: "تطبيقات الجوال",
         description: "iOS and Android experiences with native-feeling flows, app release support, notifications, and analytics.",
         descriptionAr: "تجارب iOS وAndroid سلسة مع دعم الإطلاق والإشعارات والتحليلات.",
@@ -45,6 +49,7 @@ async function main() {
       },
       {
         title: "SEO",
+        slug: "seo",
         titleAr: "تحسين محركات البحث",
         description: "Technical audits, search architecture, content planning, Core Web Vitals, and AI-search visibility strategy.",
         descriptionAr: "تدقيق تقني وهيكلة البحث وتخطيط المحتوى واستراتيجية الظهور.",
@@ -53,6 +58,7 @@ async function main() {
       },
       {
         title: "CRM",
+        slug: "crm",
         titleAr: "إدارة علاقات العملاء",
         description: "Custom operational platforms for bookings, teams, pipelines, reports, integrations, and business workflows.",
         descriptionAr: "منصات تشغيل مخصصة للحجوزات والفرق والتقارير وسير العمل.",

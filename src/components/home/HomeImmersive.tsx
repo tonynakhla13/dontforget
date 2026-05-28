@@ -18,8 +18,9 @@ import ImmersiveWorkCarousel from "@/components/immersive/ImmersiveWorkCarousel"
 import ParticleLayer from "@/components/ParticleLayer";
 import ImmersiveFooter from "@/components/immersive/ImmersiveFooter";
 import ImmersiveLoader from "@/components/immersive/ImmersiveLoader";
+import type { PublicService } from "@/lib/public-content";
 
-export default function HomeImmersive({ projects }: { projects?: Project[] }) {
+export default function HomeImmersive({ projects, services }: { projects?: Project[]; services?: PublicService[] }) {
   // Content mounts late inside the theme switcher, so ScrollTrigger measured
   // stale positions on init. Refresh once laid out so reveal triggers fire.
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function HomeImmersive({ projects }: { projects?: Project[] }) {
         <Hero />
         <About />
         <Marquee />
-        <Services />
+        <Services services={services} />
         <Process />
         <ImmersiveWorkCarousel projects={projects} />
         <Principles />

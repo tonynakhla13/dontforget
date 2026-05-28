@@ -5,8 +5,9 @@ import type { Locale } from "@/i18n/config";
 export type PublicProject = {
   id: string; slug: string; title: string; description: string | null; client: string | null;
   category: string | null; tags: string[]; year: string | null; coverImage: string | null; gifUrl?: string | null; liveUrl: string | null;
+  services?: PublicService[]; attachments?: Record<string, string[]>;
 };
-export type PublicService = { id: string; title: string; description: string | null; icon: string | null };
+export type PublicService = { id: string; slug?: string; title: string; description: string | null; icon: string | null; shortDescription?: string | null; tagline?: string | null; benefits?: unknown; deliverables?: unknown; process?: unknown; techStack?: unknown; techStackItems?: { id: string; name: string; icon: string | null; iconUrl: string | null }[]; attachments?: Record<string, Record<string, string[]>> };
 export type PublicPost = { id: string; slug: string; title: string; excerpt: string | null; content: string; tags: string[]; coverImage: string | null; publishedAt: Date | null };
 export type PublicTeamMember = { id: string; name: string; role: string; bio: string | null; photo: string | null };
 export type PublicContact = { headline: string | null; subheadline: string | null; address: string | null; email: string | null; phone: string | null };
@@ -71,16 +72,59 @@ function localized(locale: Locale, english: string | null, arabic: string | null
   return locale === "ar" && arabic?.trim() ? arabic : english;
 }
 
+function projectAttachmentMap(record: { attachments?: { role: string; media: { url: string } }[] }) {
+  return (record.attachments ?? []).reduce<Record<string, string[]>>((acc, item) => {
+    acc[item.role] = [...(acc[item.role] ?? []), item.media.url];
+    return acc;
+  }, {});
+}
+
+function serviceAttachmentMap(record: { attachments?: { role: string; theme: string | null; media: { url: string } }[] }) {
+  return (record.attachments ?? []).reduce<Record<string, Record<string, string[]>>>((acc, item) => {
+    const theme = item.theme ?? "shared";
+    acc[theme] = acc[theme] ?? {};
+    acc[theme][item.role] = [...(acc[theme][item.role] ?? []), item.media.url];
+    return acc;
+  }, {});
+}
+
+function techIds(techStack: unknown) {
+  return Array.isArray(techStack) ? techStack.filter((id): id is string => typeof id === "string") : [];
+}
+
 export async function getProjects(locale: Locale): Promise<PublicProject[]> {
   try {
-    const records = await prisma.project.findMany({ where: { status: "PUBLISHED" }, orderBy: [{ order: "asc" }, { createdAt: "desc" }] });
+    const records = await prisma.project.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      include: {
+        attachments: { include: { media: true }, orderBy: { order: "asc" } },
+        services: { include: { service: { include: { attachments: { include: { media: true }, orderBy: { order: "asc" } } } } }, orderBy: { order: "asc" } },
+      },
+    });
     if (records.length) return records.map((record) => ({
       ...record,
+      coverImage: projectAttachmentMap(record).project_cover?.[0] ?? record.coverImage,
       title: localized(locale, record.title, record.titleAr)!,
       description: localized(locale, record.description, record.descriptionAr),
       client: localized(locale, record.client, record.clientAr),
       category: localized(locale, record.category, record.categoryAr),
       tags: locale === "ar" && record.tagsAr.length ? record.tagsAr : record.tags,
+      attachments: projectAttachmentMap(record),
+      services: record.services.map(({ service }) => ({
+        id: service.slug || service.id,
+        slug: service.slug,
+        title: localized(locale, service.title, service.titleAr)!,
+        description: localized(locale, service.description, service.descriptionAr),
+        icon: service.icon,
+        shortDescription: service.shortDescription,
+        tagline: service.tagline,
+        benefits: service.benefits,
+        deliverables: service.deliverables,
+        process: service.process,
+        techStack: service.techStack,
+        attachments: serviceAttachmentMap(service),
+      })),
     }));
   } catch {}
   return fallbackProjects.map((project, index) => locale === "ar" ? { ...project, ...fallbackProjectsAr[index] } : project);
@@ -92,12 +136,30 @@ export async function getProject(locale: Locale, slug: string) {
 
 export async function getServices(locale: Locale): Promise<PublicService[]> {
   try {
-    const records = await prisma.service.findMany({ where: { active: true }, orderBy: { order: "asc" } });
+    const records = await prisma.service.findMany({
+      where: { active: true },
+      orderBy: { order: "asc" },
+      include: { attachments: { include: { media: true }, orderBy: { order: "asc" } } },
+    });
+    const techItemIds = Array.from(new Set(records.flatMap((record) => techIds(record.techStack))));
+    const techItems = techItemIds.length
+      ? await prisma.techItem.findMany({ where: { id: { in: techItemIds } }, select: { id: true, name: true, icon: true, iconUrl: true } })
+      : [];
+    const techById = new Map(techItems.map((item) => [item.id, item]));
     if (records.length) return records.map((record, index) => ({
-      id: fallbackServices[index]?.id ?? record.id,
+      id: record.slug || (fallbackServices[index]?.id ?? record.id),
+      slug: record.slug,
       title: localized(locale, record.title, record.titleAr)!,
       description: localized(locale, record.description, record.descriptionAr),
+      shortDescription: record.shortDescription,
+      tagline: record.tagline,
+      benefits: record.benefits,
+      deliverables: record.deliverables,
+      process: record.process,
+      techStack: record.techStack,
+      techStackItems: techIds(record.techStack).map((id) => techById.get(id)).filter((item): item is NonNullable<typeof item> => Boolean(item)),
       icon: record.icon,
+      attachments: serviceAttachmentMap(record),
     }));
   } catch {}
   return fallbackServices.map((service, index) => locale === "ar" ? { ...service, title: fallbackServicesAr[index] } : service);

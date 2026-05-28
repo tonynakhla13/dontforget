@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import type { ProjectData } from "./page";
 
 type ResultSlide = { label: string; value: string; note?: string };
@@ -30,9 +30,16 @@ function wordsFrom(value: string | null | undefined) {
   return value?.split(/\s+/).filter(Boolean) ?? [];
 }
 
-function Tag({ label }: { label: string }) {
+type TechDisplayItem = { id: string; name: string; icon: string | null; iconUrl: string | null };
+
+function Tag({ label, icon, iconUrl }: { label: string; icon?: string | null; iconUrl?: string | null }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.035] px-3.5 py-1.5 font-mono text-[0.56rem] uppercase tracking-[0.22em] text-[#b8d8ad]">
+    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3.5 py-1.5 font-mono text-[0.56rem] uppercase tracking-[0.22em] text-[#b8d8ad]">
+      {iconUrl ? (
+        <img src={iconUrl} alt="" className="h-3.5 w-3.5 object-contain" decoding="async" />
+      ) : icon ? (
+        <span className="text-[0.68rem] leading-none" aria-hidden="true">{icon}</span>
+      ) : null}
       {label}
     </span>
   );
@@ -95,11 +102,37 @@ function ResultPanel({ results }: { results: ResultSlide[] }) {
   );
 }
 
-function WebsiteFrame({ src, title, index, variant = "dark" }: { src: string; title: string; index: number; variant?: "dark" | "light" }) {
+const FIRST_SCREEN_IMAGE = "/uploads/projects/1779936842782-d284d4d0-9e01-41cc-9dbc-3a58d355afbe.png";
+const ELIA_STACK_FALLBACK = ["Next.js", "GSAP", "CMS", "Motion Design"];
+
+function WebsiteFrame({
+  src,
+  title,
+  index,
+  variant = "dark",
+  tall = false,
+}: {
+  src: string;
+  title: string;
+  index: number;
+  variant?: "dark" | "light";
+  tall?: boolean;
+}) {
   return (
-    <figure className="relative h-[68vh] w-[min(88vw,1080px)] shrink-0 overflow-hidden rounded-[2.35rem] bg-gradient-to-br from-[#faf9f2] via-[#cfd4cb] to-[#6b7268] p-3 shadow-[0_34px_100px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.65)]">
-      <div className={`relative h-full overflow-hidden rounded-[1.75rem] ${variant === "light" ? "bg-[#eef1ed]" : "bg-[#070a0f]"}`}>
-        <Image src={src} alt={`${title} website screen ${index + 1}`} fill className="object-cover object-center saturate-[0.86] transition-transform duration-700 ease-[cubic-bezier(.16,1,.3,1)] hover:scale-[1.025]" sizes="(max-width: 1024px) 88vw, 1080px" priority={index === 0} />
+    <figure data-first-frame={tall ? "true" : undefined} className={`relative h-[68vh] w-[min(88vw,1080px)] shrink-0 overflow-hidden bg-gradient-to-br from-[#faf9f2] via-[#cfd4cb] to-[#6b7268] shadow-[0_34px_100px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.65)] ${tall ? "rounded-[1.55rem] p-1.5" : "rounded-[2.35rem] p-3"}`}>
+      <div className={`relative h-full overflow-hidden ${tall ? "rounded-[1.15rem]" : "rounded-[1.75rem]"} ${variant === "light" ? "bg-[#eef1ed]" : "bg-[#070a0f]"}`}>
+        {tall ? (
+          <img
+            data-tall-screen
+            src={src}
+            alt={`${title} website screen ${index + 1}`}
+            className="absolute inset-x-0 top-0 h-auto min-h-full w-full object-top saturate-[0.9]"
+            decoding="async"
+            onLoad={() => requestAnimationFrame(() => ScrollTrigger.refresh())}
+          />
+        ) : (
+          <Image src={src} alt={`${title} website screen ${index + 1}`} fill className="object-cover object-center saturate-[0.86] transition-transform duration-700 ease-[cubic-bezier(.16,1,.3,1)] hover:scale-[1.025]" sizes="(max-width: 1024px) 88vw, 1080px" priority={index === 0} />
+        )}
         <div className="absolute inset-x-0 top-0 flex h-12 items-center gap-5 bg-gradient-to-b from-black/45 to-black/0 px-7">
           <span className="h-2.5 w-2.5 rounded-full bg-[#6ec14f] shadow-[0_0_18px_rgba(110,193,79,0.75)]" />
           <span className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-white/64">{title} / screen {String(index + 1).padStart(2, "0")}</span>
@@ -124,8 +157,19 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
   const results = slidesFrom(project.resultSlides);
   const shortDescription = project.shortDescription ?? project.description;
   const fullDescription = project.fullDescription ?? project.description;
-  const serviceTags = project.tags.length ? project.tags : [project.category ?? "Web design"];
+  const techStack = stringsFrom(project.techStack);
+  const techItems: TechDisplayItem[] = project.techStackItems ?? [];
+  const serviceTags = techStack.length
+    ? techStack
+    : project.slug === "elia-clinic"
+      ? ELIA_STACK_FALLBACK
+      : project.tags.length
+        ? project.tags
+        : [project.category ?? "Web design"];
   const dnaWords = wordsFrom(project.tagline ?? project.title).slice(0, 5);
+  const firstScreen = project.slug === "elia-clinic" ? FIRST_SCREEN_IMAGE : gallery[0];
+  const followupGallery = gallery.filter((src) => src !== firstScreen);
+  const projectUrl = project.liveUrl ?? project.caseStudyUrl ?? project.githubUrl ?? "";
 
   useEffect(() => {
     const root = rootRef.current;
@@ -139,19 +183,61 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
         { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.85, ease: "power3.out", delay: 0.35 }
       );
 
-      gsap.to(track, {
-        x: () => -Math.max(0, track.scrollWidth - window.innerWidth),
-        ease: "none",
+      const firstFrame = root.querySelector<HTMLElement>("[data-first-frame='true']");
+      const tallScreen = root.querySelector<HTMLElement>("[data-tall-screen]");
+
+      gsap.timeline({
         scrollTrigger: {
           trigger: root,
           start: "top top",
-          end: () => `+=${Math.max(0, track.scrollWidth - window.innerWidth)}`,
+          end: () => {
+            const horizontal = Math.max(0, track.scrollWidth - window.innerWidth);
+            const vertical = tallScreen?.parentElement
+              ? Math.max(0, tallScreen.offsetHeight - tallScreen.parentElement.clientHeight)
+              : 0;
+            return `+=${horizontal + vertical}`;
+          },
           scrub: 1,
           pin: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
         },
-      });
+      })
+        .to(track, {
+          x: () => {
+            if (!firstFrame) return 0;
+            const centerStop = firstFrame.offsetLeft + firstFrame.offsetWidth / 2 - window.innerWidth / 2;
+            return -Math.max(0, Math.min(centerStop, track.scrollWidth - window.innerWidth));
+          },
+          ease: "none",
+          duration: 1.2,
+        })
+        .to(firstFrame, {
+          scale: 1.12,
+          boxShadow: "0 0 0 1px rgba(110,193,79,0.62), 0 0 52px rgba(110,193,79,0.42), 0 34px 110px rgba(0,0,0,0.4)",
+          ease: "power1.out",
+          duration: 0.45,
+          transformOrigin: "center center",
+        })
+        .to(tallScreen, {
+          y: () => {
+            if (!tallScreen?.parentElement) return 0;
+            return -Math.max(0, tallScreen.offsetHeight - tallScreen.parentElement.clientHeight);
+          },
+          ease: "none",
+          duration: 5.4,
+        })
+        .to(firstFrame, {
+          scale: 1,
+          boxShadow: "0 34px 100px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.65)",
+          ease: "power1.inOut",
+          duration: 0.45,
+        })
+        .to(track, {
+          x: () => -Math.max(0, track.scrollWidth - window.innerWidth),
+          ease: "none",
+          duration: 8,
+        });
     }, root);
 
     return () => ctx.revert();
@@ -175,38 +261,70 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
           <article className="flex h-screen w-[min(86vw,720px)] shrink-0 flex-col justify-center">
             <p data-reveal className="font-mono text-[0.6rem] uppercase tracking-[0.44em] text-[#78bf5d]">{project.category ?? "Case study"}</p>
             <h1 data-reveal className="hed mt-8 max-w-[8ch] text-[clamp(4.5rem,8.8vw,8rem)] leading-[0.88] text-[#f4f1e8]">{project.title}</h1>
+            {project.tagline ? (
+              <p data-reveal className="mt-6 max-w-[31rem] border-l-2 border-[#6ec14f] pl-5 font-mono text-[0.66rem] uppercase leading-6 tracking-[0.24em] text-[#82d866]">
+                {project.tagline}
+              </p>
+            ) : null}
             {shortDescription ? <p data-reveal className="mt-9 max-w-[34rem] text-[1.04rem] leading-8 text-[#d7d1c3]">{shortDescription}</p> : null}
-            <div data-reveal className="mt-10 grid max-w-xl grid-cols-2 gap-x-10 gap-y-6">
+            <div data-reveal className="mt-10 grid max-w-3xl grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-3">
               <div>
-                <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Year</p>
-                <p className="mt-2 text-[#f0ece3]">{project.year ?? "2025"}</p>
+                <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Client</p>
+                <div className="mt-2 flex items-center gap-3">
+                  {project.clientLogo ? (
+                    <img
+                      src={project.clientLogo}
+                      alt=""
+                      className="h-7 max-w-[5.5rem] shrink-0 object-contain"
+                      decoding="async"
+                    />
+                  ) : null}
+                  <p className="text-[#f0ece3]">{project.client ?? project.title}</p>
+                </div>
               </div>
               <div>
                 <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Location</p>
                 <p className="mt-2 text-[#f0ece3]">{project.location ?? "Remote"}</p>
               </div>
               <div>
-                <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Client</p>
-                <p className="mt-2 text-[#f0ece3]">{project.client ?? project.title}</p>
-              </div>
-              <div>
-                <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Services</p>
-                <p className="mt-2 text-[#f0ece3]">{serviceTags.slice(0, 2).join(", ")}</p>
+                <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Year</p>
+                <p className="mt-2 text-[#f0ece3]">{project.year ?? "2025"}</p>
               </div>
             </div>
-            {project.liveUrl ? (
-              <a data-reveal href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="btn-glass mt-12 w-fit">
+            <div data-reveal className="mt-8 max-w-2xl border-y border-[#6ec14f]/20 py-4">
+              <p className="font-mono text-[0.54rem] uppercase tracking-[0.32em] text-[#79bd61]">Services</p>
+              <div className="mt-3 flex flex-wrap gap-3">
+                {techItems.length
+                  ? techItems.slice(0, 4).map((item) => <Tag key={item.id} label={item.name} icon={item.icon} iconUrl={item.iconUrl} />)
+                  : serviceTags.slice(0, 4).map((item) => <Tag key={item} label={item} />)}
+              </div>
+            </div>
+            <a data-reveal href={projectUrl} target="_blank" rel="noopener noreferrer" className="btn-glass mt-12 w-fit">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face">View project</span>
+            </a>
+          </article>
+
+          {firstScreen ? <WebsiteFrame src={firstScreen} title={project.title} index={0} tall={project.slug === "elia-clinic"} /> : null}
+
+          <article className="flex h-[68vh] w-[min(42vw,420px)] shrink-0 flex-col justify-center">
+            <p className="font-mono text-[0.58rem] uppercase tracking-[0.42em] text-[#7fb967]">Tech stack</p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              {techItems.length
+                ? techItems.slice(0, 8).map((item) => <Tag key={item.id} label={item.name} icon={item.icon} iconUrl={item.iconUrl} />)
+                : serviceTags.slice(0, 8).map((item) => <Tag key={item} label={item} />)}
+            </div>
+            {projectUrl ? (
+              <a href={projectUrl} target="_blank" rel="noopener noreferrer" className="btn-glass mt-10 w-fit">
                 <span className="btn-glass-blob" aria-hidden="true" />
-                <span className="btn-glass-face">Launch project</span>
+                <span className="btn-glass-face">View project</span>
               </a>
             ) : null}
           </article>
 
-          {gallery[0] ? <WebsiteFrame src={gallery[0]} title={project.title} index={0} /> : null}
-
           <InfoBlock eyebrow="Project DNA" title={project.tagline ?? "Built around trust"} body={fullDescription} />
 
-          {gallery[1] ? <WebsiteFrame src={gallery[1]} title={project.title} index={1} variant="light" /> : null}
+          {followupGallery[0] ? <WebsiteFrame src={followupGallery[0]} title={project.title} index={1} variant="light" /> : null}
 
           <article className="relative flex h-[68vh] w-[min(78vw,760px)] shrink-0 flex-col justify-between overflow-hidden rounded-[2rem] bg-[#0d0f0c]/88 p-10 ring-1 ring-white/[0.075] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_28px_80px_rgba(0,0,0,0.28)] md:p-12">
             <p className="font-mono text-[0.58rem] uppercase tracking-[0.42em] text-[#7fb967]">DNA markers</p>
@@ -220,13 +338,13 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
 
           {challenges.length ? <ListPanel eyebrow="Struggles" title="What was blocking growth" items={challenges} /> : null}
 
-          {gallery[2] ? <WebsiteFrame src={gallery[2]} title={project.title} index={2} /> : null}
+          {followupGallery[1] ? <WebsiteFrame src={followupGallery[1]} title={project.title} index={2} /> : null}
 
           {changes.length ? <ListPanel eyebrow="Use case" title="How the site now works" items={changes} /> : null}
 
           {results.length ? <ResultPanel results={results} /> : null}
 
-          {gallery.slice(3, 6).map((src, index) => (
+          {followupGallery.slice(2, 5).map((src, index) => (
             <WebsiteFrame key={src} src={src} title={project.title} index={index + 3} variant={index % 2 ? "light" : "dark"} />
           ))}
 
