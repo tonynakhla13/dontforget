@@ -11,6 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 const SERVICES = [
   {
     n:        "01",
+    slug:     "web-development",
     title:    "Web Development",
     tag:      "Sites, apps & platforms",
     body:     "We build fast, scalable digital products that perform under pressure and look impossible to ignore. From marketing sites to full-stack web applications — everything is engineered to convert, load in milliseconds, and hold up at scale.",
@@ -27,6 +28,7 @@ const SERVICES = [
   },
   {
     n:        "02",
+    slug:     "ui-ux-design",
     title:    "UI / UX Design",
     tag:      "Research, systems & prototypes",
     body:     "We start with behavior before aesthetics. Every interface is grounded in how real users think — not how designers imagine they think. The result is work that feels obvious, reduces friction, and converts better than it looks.",
@@ -42,6 +44,7 @@ const SERVICES = [
   },
   {
     n:        "03",
+    slug:     "e-commerce",
     title:    "E-Commerce",
     tag:      "Shopify, WooCommerce & custom",
     body:     "Stores engineered around one goal — selling more. We handle everything from storefront design to checkout flow, payment integration, and post-purchase experience. Every decision is made with conversion rate in mind.",
@@ -57,6 +60,7 @@ const SERVICES = [
   },
   {
     n:        "04",
+    slug:     "mobile-apps",
     title:    "Mobile Apps",
     tag:      "iOS, Android & React Native",
     body:     "Native-feeling apps built for real users. Tight onboarding, frictionless flows, and retention mechanics baked in from day one — not bolted on after launch. We ship on both platforms without doubling the timeline.",
@@ -71,6 +75,7 @@ const SERVICES = [
   },
   {
     n:        "05",
+    slug:     "seo",
     title:    "SEO",
     tag:      "Technical, content & AI search",
     body:     "SEO that compounds. We combine technical audits, content architecture, and Core Web Vitals optimisation with AI search visibility strategies — the kind of work that keeps paying back long after the engagement ends.",
@@ -85,6 +90,7 @@ const SERVICES = [
   },
   {
     n:        "06",
+    slug:     "crm-platforms",
     title:    "CRM Platforms",
     tag:      "Bookings, pipelines & automations",
     body:     "Custom operational systems built around how your team actually works. Booking engines, sales pipelines, client dashboards, and internal tools — designed to reduce manual work and give leadership real-time visibility.",
@@ -266,7 +272,7 @@ function ServiceCard({ s }: { s: typeof SERVICES[0] }) {
 
         {/* Learn more — text link */}
         <a
-          href="/en/focused/services"
+          href={`/en/focused/services/${s.slug}`}
           style={{
             display:        "inline-flex",
             alignItems:     "center",
