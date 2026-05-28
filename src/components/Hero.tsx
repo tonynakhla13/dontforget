@@ -32,7 +32,7 @@ export default function Hero() {
           className="pointer-events-none absolute inset-x-0 bottom-0 h-80"
           style={{
             background:
-              "linear-gradient(to top, rgba(9,9,9,0.34) 0%, rgba(9,9,9,0.14) 46%, transparent 100%)",
+              "linear-gradient(to top, rgba(var(--bg-rgb),0.34) 0%, rgba(var(--bg-rgb),0.14) 46%, transparent 100%)",
           }}
         />
 
@@ -44,8 +44,8 @@ export default function Hero() {
             </p>
 
             <h1
-              className="hed text-[3.8rem] leading-[0.95] text-[#F8F5EE]"
-              style={{ color: "#F8F5EE" }}
+              className="hed text-[3.8rem] leading-[0.95] text-[var(--fg)]"
+              style={{ color: "var(--fg)" }}
               data-anim
             >
               We build things<br />
@@ -62,15 +62,15 @@ export default function Hero() {
             </p>
 
             <div className="mt-9 flex flex-wrap gap-4" data-anim>
-              <a href="#contact" className="btn btn-primary btn-glitch">
-                <span className="btn-label">Start a project</span>
-                <span className="glitch-layer layer-1">Start a project</span>
-                <span className="glitch-layer layer-2">Start a project</span>
+              <a href="#contact" className="btn-glass">
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">Start a project</span>
               </a>
-              <a href="#work" className="btn btn-tilt">
-                <span className="btn-tilt-inner">
+              <a href="#work" className="btn-glass-ghost">
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">
                   View work
-                  <span className="btn-tilt-arrow">➔</span>
+                  <span className="btn-glass-arrow">➔</span>
                 </span>
               </a>
             </div>

@@ -109,9 +109,10 @@ export default function Contact() {
               <button
                 type="submit"
                 disabled={status === "sending"}
-                className="btn btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-glass w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {status === "sending" ? "Sending…" : "Send inquiry →"}
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">{status === "sending" ? "Sending…" : "Send inquiry →"}</span>
               </button>
             </form>
           )}

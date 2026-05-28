@@ -10,11 +10,12 @@ export { cloudinary };
 
 export async function uploadToCloudinary(
   file: Buffer,
-  folder: string = "dontforget"
+  folder: string = "dontforget",
+  resourceType: "auto" | "image" | "video" | "raw" = "auto"
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     cloudinary.uploader
-      .upload_stream({ folder, resource_type: "auto" }, (error, result) => {
+      .upload_stream({ folder, resource_type: resourceType }, (error, result) => {
         if (error || !result) return reject(error);
         resolve(result.secure_url);
       })

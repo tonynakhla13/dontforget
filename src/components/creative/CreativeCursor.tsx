@@ -106,7 +106,7 @@ export default function CreativeCursor() {
         /* ── Dot ── */
         .cc-dot {
           width: 7px; height: 7px;
-          background: #a8fd02;
+          background: #46D12A;
           z-index: 99999;
           transition: width .2s, height .2s, background .2s;
         }
@@ -125,8 +125,8 @@ export default function CreativeCursor() {
         }
         .cc-ring.cc--hover {
           width: 46px; height: 46px;
-          border-color: #a8fd02;
-          background: rgba(168,253,2,0.10);
+          border-color: #46D12A;
+          background: rgba(70,209,42,0.10);
         }
       `}</style>
     </>

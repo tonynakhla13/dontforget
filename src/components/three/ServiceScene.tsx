@@ -4,8 +4,9 @@ import { Float, MeshDistortMaterial, Sparkles } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
+import { useImmersiveTheme, type ImmersiveTheme } from "./useImmersiveTheme";
 
-function Core() {
+function Core({ theme }: { theme: ImmersiveTheme }) {
   const icoRef  = useRef<THREE.Mesh>(null);
   const wireRef = useRef<THREE.Mesh>(null);
 
@@ -27,7 +28,7 @@ function Core() {
         <mesh ref={icoRef}>
           <icosahedronGeometry args={[0.95, 1]} />
           <MeshDistortMaterial
-            color="#00C8B0"
+            color={theme.accent}
             distort={0.14}
             speed={1.8}
             roughness={0.08}
@@ -37,26 +38,26 @@ function Core() {
         {/* Outer wireframe shell */}
         <mesh ref={wireRef} scale={1.22}>
           <icosahedronGeometry args={[0.95, 1]} />
-          <meshBasicMaterial color="#3ABF8A" wireframe transparent opacity={0.18} />
+          <meshBasicMaterial color={theme.accent} wireframe transparent opacity={0.18} />
         </mesh>
       </Float>
 
       {/* Equatorial torus */}
       <mesh rotation={[Math.PI / 2, 0, 0]} scale={1.88}>
         <torusGeometry args={[1.0, 0.006, 16, 180]} />
-        <meshBasicMaterial color="#3ABF8A" transparent opacity={0.30} />
+        <meshBasicMaterial color={theme.accent} transparent opacity={0.30} />
       </mesh>
 
       {/* Tilted accent ring */}
       <mesh rotation={[0.8, 0.4, 0]} scale={2.25}>
         <torusGeometry args={[1.0, 0.004, 16, 180]} />
-        <meshBasicMaterial color="#F8F3EA" transparent opacity={0.16} />
+        <meshBasicMaterial color={theme.fg} transparent opacity={0.16} />
       </mesh>
     </group>
   );
 }
 
-function Orbiters() {
+function Orbiters({ theme }: { theme: ImmersiveTheme }) {
   const g0 = useRef<THREE.Group>(null);
   const g1 = useRef<THREE.Group>(null);
   const g2 = useRef<THREE.Group>(null);
@@ -86,7 +87,7 @@ function Orbiters() {
     <>
       {groups.map((ref, i) => {
         const { sz, teal } = cfg[i];
-        const col = teal ? "#3ABF8A" : "#F8F3EA";
+        const col = teal ? theme.accent : theme.fg;
         return (
           <group key={i} ref={ref}>
             <mesh>
@@ -107,27 +108,31 @@ function Orbiters() {
 }
 
 export default function ServiceScene() {
+  const theme = useImmersiveTheme();
+  const themeKey = `${theme.bg}-${theme.fg}-${theme.accent}`;
+
   return (
     <Canvas
+      key={themeKey}
       camera={{ position: [0, 0, 5.5], fov: 46 }}
       dpr={[1, 1.75]}
       gl={{ antialias: true, alpha: true }}
       style={{ width: "100%", height: "100%" }}
     >
       <ambientLight intensity={0.62} />
-      <directionalLight position={[3, 4, 5]} intensity={2.4} color="#F8F3EA" />
-      <pointLight position={[2, 0.5, 3]} intensity={16} distance={9} color="#00C8B0" />
-      <pointLight position={[-3, -1, 2]} intensity={6}  distance={9} color="#F8F3EA" />
+      <directionalLight position={[3, 4, 5]} intensity={2.4} color={theme.fg} />
+      <pointLight position={[2, 0.5, 3]} intensity={16} distance={9} color={theme.accent} />
+      <pointLight position={[-3, -1, 2]} intensity={6}  distance={9} color={theme.fg} />
       <Sparkles
         count={70}
         scale={[7, 5, 4]}
         size={1.0}
         speed={0.28}
         opacity={0.22}
-        color="#F8F3EA"
+        color={theme.fg}
       />
-      <Core />
-      <Orbiters />
+      <Core theme={theme} />
+      <Orbiters theme={theme} />
     </Canvas>
   );
 }

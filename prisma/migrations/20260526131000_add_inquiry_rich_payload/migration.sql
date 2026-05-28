@@ -1,0 +1,7 @@
+ALTER TABLE "Inquiry"
+ADD COLUMN "contactMethod" TEXT,
+ADD COLUMN "contactValue" TEXT,
+ADD COLUMN "source" TEXT,
+ADD COLUMN "audioUrls" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "assetNames" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "metadata" JSONB NOT NULL DEFAULT '{}';

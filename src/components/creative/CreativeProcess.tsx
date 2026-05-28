@@ -26,7 +26,7 @@ function Connector({ fromLeft }: { fromLeft: boolean }) {
           strokeWidth="1.5"
           strokeLinecap="round"
         />
-        <circle cx={fromLeft ? 71 : 29} cy={60} r={3} fill="rgba(168,253,2,1)" />
+        <circle cx={fromLeft ? 71 : 29} cy={60} r={3} fill="#46D12A" />
       </svg>
     </div>
   );

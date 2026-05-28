@@ -55,15 +55,15 @@ export default function About() {
             autoAlpha: 0,
             y: 46,
             scale: 0.88,
-            boxShadow: "0 0 0 rgba(58,191,138,0)",
-            borderColor: "rgba(58,191,138,0.16)",
+            boxShadow: "0 0 0 rgba(var(--teal-rgb),0)",
+            borderColor: "rgba(var(--teal-rgb),0.16)",
           },
           {
             autoAlpha: 1,
             y: 0,
             scale: 1,
-            boxShadow: "0 0 36px rgba(58,191,138,0.24)",
-            borderColor: "rgba(58,191,138,0.72)",
+            boxShadow: "0 0 48px rgba(var(--teal-rgb),0.38), 0 0 96px rgba(var(--teal-rgb),0.14)",
+            borderColor: "rgba(var(--teal-rgb),0.72)",
             stagger: 0.18,
             duration: 0.22,
             ease: "none",
@@ -92,9 +92,53 @@ export default function About() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 66% 62% at 50% 48%, transparent 0%, rgba(9,9,9,0.2) 76%, rgba(9,9,9,0.46) 100%)",
+            "radial-gradient(ellipse 66% 62% at 50% 48%, transparent 0%, rgba(var(--bg-rgb),0.2) 76%, rgba(var(--bg-rgb),0.46) 100%)",
         }}
       />
+
+      {/* Stat boxes — positioned relative to the section (min-h-screen) so
+          top/bottom % values span the full viewport height, not just the
+          text-content height of the inner .wrap div. */}
+      <div
+        ref={statsRef}
+        className="pointer-events-none absolute inset-0 hidden md:block"
+        aria-hidden="true"
+      >
+        {stats.map((s) => (
+          <div
+            key={s.value}
+            className={`absolute flex min-w-[180px] flex-col gap-2 rounded-[1.2rem] border bg-[rgba(var(--bg-rgb),0.72)] px-6 py-5 backdrop-blur-md ${
+              s.featured
+                ? "min-w-[200px] border-[var(--teal)] bg-[rgba(var(--teal-rgb),0.96)] px-7 py-6 shadow-[0_0_48px_rgba(var(--teal-rgb),0.55),0_0_96px_rgba(var(--teal-rgb),0.22)]"
+                : "border-[rgba(var(--teal-rgb),0.38)] shadow-[0_0_36px_rgba(var(--teal-rgb),0.28),0_0_72px_rgba(var(--teal-rgb),0.10),0_12px_40px_rgba(var(--bg-rgb),0.5)]"
+            }`}
+            style={
+              s.value === "14+"
+                ? { left: "5%", top: "31%" }
+                : s.value === "6"
+                  ? { right: "5%", top: "31%" }
+                  : s.value === "24h"
+                    ? { left: "5%", bottom: "31%" }
+                    : { right: "5%", bottom: "31%" }
+            }
+          >
+            <span
+              className={`hed text-[clamp(2rem,4vw,4rem)] text-[var(--teal)] ${
+                s.featured ? "!text-white" : ""
+              }`}
+            >
+              {s.value}
+            </span>
+            <span
+              className={`font-mono text-[0.55rem] uppercase tracking-[0.32em] ${
+                s.featured ? "text-white" : "text-[var(--body)]"
+              }`}
+            >
+              {s.label}
+            </span>
+          </div>
+        ))}
+      </div>
 
       <div className="relative z-10 wrap text-center">
         <p ref={eyebrowRef} className="eyebrow mb-10">About us</p>
@@ -108,7 +152,7 @@ export default function About() {
           </span>
           <span data-line className="block overflow-hidden md:whitespace-nowrap">
             with enough{" "}
-            <span className="script text-[1.05em]">personality</span>
+            <span className="script text-[1.05em]">Personality</span>
           </span>
           <span data-line className="block overflow-hidden md:whitespace-nowrap">
             to survive the{" "}
@@ -123,45 +167,6 @@ export default function About() {
           We&apos;re a small studio that makes big things. Not a factory, not a
           freelancer — something in between, with better taste than both.
         </p>
-
-        <div
-          ref={statsRef}
-          className="pointer-events-none absolute inset-0 hidden md:block"
-          aria-hidden="true"
-        >
-          {stats.map((s) => (
-            <div
-              key={s.value}
-              className={`absolute flex min-w-[180px] flex-col gap-2 rounded-[1.2rem] border bg-[rgba(9,9,9,0.72)] px-6 py-5 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-md ${
-                s.featured ? "min-w-[200px] border-[var(--teal)] bg-[rgba(58,191,138,0.96)] px-7 py-6" : "border-[var(--border)]"
-              }`}
-              style={
-                s.value === "14+"
-                  ? { left: "0", top: "22%" }
-                  : s.value === "6"
-                    ? { right: "0", top: "22%" }
-                    : s.value === "24h"
-                      ? { left: "0", bottom: "22%" }
-                      : { right: "0", bottom: "22%" }
-              }
-            >
-              <span
-                className={`hed text-[clamp(2rem,4vw,4rem)] text-[var(--teal)] ${
-                  s.featured ? "!text-white" : ""
-                }`}
-              >
-                {s.value}
-              </span>
-              <span
-                className={`font-mono text-[0.55rem] uppercase tracking-[0.32em] ${
-                  s.featured ? "text-white" : "text-[var(--body)]"
-                }`}
-              >
-                {s.label}
-              </span>
-            </div>
-          ))}
-        </div>
 
         <div className="mt-16 flex flex-wrap items-center justify-center gap-12 md:hidden">
           {stats.map((s) => (

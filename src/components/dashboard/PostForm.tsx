@@ -6,11 +6,15 @@ import { useRouter } from "next/navigation";
 interface PostData {
   id?: string;
   title?: string;
+  titleAr?: string;
   slug?: string;
   excerpt?: string;
+  excerptAr?: string;
   content?: string;
+  contentAr?: string;
   coverImage?: string;
   tags?: string[];
+  tagsAr?: string[];
   status?: "DRAFT" | "PUBLISHED";
   order?: number;
 }
@@ -27,11 +31,12 @@ export default function PostForm({ initial }: { initial?: PostData }) {
   const editing = !!initial?.id;
 
   const [form, setForm] = useState<PostData>({
-    title: "", slug: "", excerpt: "", content: "", coverImage: "",
-    tags: [], status: "DRAFT", order: 0,
+    title: "", titleAr: "", slug: "", excerpt: "", excerptAr: "", content: "", contentAr: "", coverImage: "",
+    tags: [], tagsAr: [], status: "DRAFT", order: 0,
     ...initial,
   });
   const [tagsInput, setTagsInput] = useState((initial?.tags ?? []).join(", "));
+  const [tagsArInput, setTagsArInput] = useState((initial?.tagsAr ?? []).join(", "));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,6 +52,7 @@ export default function PostForm({ initial }: { initial?: PostData }) {
     const payload = {
       ...form,
       tags: tagsInput.split(",").map(t => t.trim()).filter(Boolean),
+      tagsAr: tagsArInput.split(",").map(t => t.trim()).filter(Boolean),
     };
 
     const url    = editing ? `/api/posts/${initial!.id}` : "/api/posts";
@@ -136,6 +142,26 @@ export default function PostForm({ initial }: { initial?: PostData }) {
           />
         </div>
       </div>
+
+      <section className="space-y-4 rounded-xl border border-white/8 bg-zinc-900 p-5">
+        <h2 className="text-xs font-medium uppercase tracking-widest text-white/50">Arabic Content</h2>
+        <div>
+          <label className={labelCls}>Arabic Title</label>
+          <input dir="rtl" className={inputCls} value={form.titleAr} onChange={e => set("titleAr", e.target.value)} />
+        </div>
+        <div>
+          <label className={labelCls}>Arabic Excerpt</label>
+          <textarea dir="rtl" className={`${inputCls} resize-none`} rows={2} value={form.excerptAr} onChange={e => set("excerptAr", e.target.value)} />
+        </div>
+        <div>
+          <label className={labelCls}>Arabic Content <span className="normal-case text-white/30">(Markdown)</span></label>
+          <textarea dir="rtl" className={`${inputCls} resize-y text-[0.8rem] leading-relaxed`} rows={14} value={form.contentAr} onChange={e => set("contentAr", e.target.value)} />
+        </div>
+        <div>
+          <label className={labelCls}>Arabic Tags <span className="normal-case text-white/30">(comma-separated)</span></label>
+          <input dir="rtl" className={inputCls} value={tagsArInput} onChange={e => setTagsArInput(e.target.value)} />
+        </div>
+      </section>
 
       {/* Status + Order */}
       <div className="grid grid-cols-2 gap-4">

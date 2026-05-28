@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { PointerEvent, WheelEvent, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { MouseEvent, PointerEvent, WheelEvent, useMemo, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
+import { pagePath, parseCanonicalPath, projectPath } from "@/lib/site-routing";
 
-interface Project {
+export interface Project {
   id: string;
   slug?: string | null;
   title: string;
@@ -13,6 +16,7 @@ interface Project {
   description: string | null;
   liveUrl: string | null;
   coverImage?: string | null;
+  gifUrl?: string | null;
 }
 
 const PROJECT_META: Record<string, { kind: string; business: string }> = {
@@ -65,12 +69,32 @@ const FALLBACK: Project[] = [
   },
 ];
 
-function projectHref(p: Project) {
-  return `/work/${p.slug ?? p.id}`;
+function slugFor(p: Project) {
+  return p.slug ?? p.id;
+}
+
+function projectHref(p: Project, pathname: string) {
+  const slug = slugFor(p);
+  const route = parseCanonicalPath(pathname);
+  return route ? projectPath(route.locale, route.theme, slug) : `/work/${encodeURIComponent(slug)}`;
+}
+
+function workIndexHref(pathname: string) {
+  const route = parseCanonicalPath(pathname);
+  return route ? pagePath(route.locale, route.theme, "work") : "/work";
+}
+
+function coverFor(p: Project) {
+  if (p.coverImage) return p.coverImage;
+  const slug = slugFor(p);
+  const knownCover = FALLBACK.find((item) => item.id === slug || item.slug === slug || item.title === p.title)?.coverImage;
+  if (knownCover) return knownCover;
+  const fallbackIndex = [...slug].reduce((sum, char) => sum + char.charCodeAt(0), 0) % FALLBACK.length;
+  return FALLBACK[fallbackIndex]?.coverImage ?? null;
 }
 
 function metaFor(p: Project) {
-  return PROJECT_META[p.slug ?? p.id] ?? {
+  return PROJECT_META[slugFor(p)] ?? {
     kind: p.category?.includes("App") ? "App" : p.category?.includes("Commerce") ? "E-Commerce" : "Website",
     business: p.category ?? "Business",
   };
@@ -90,7 +114,7 @@ function HologramField() {
           {[0, 24, 48, 72, 96, 120, 144].map((deg) => (
             <span
               key={deg}
-              className="absolute inset-0 rounded-[38%] border border-[rgba(58,191,138,0.28)]"
+              className="absolute inset-0 rounded-[38%] border border-[rgba(var(--teal-rgb),0.28)]"
               style={{ transform: `rotateX(${deg}deg) rotateY(${deg * 0.65}deg) rotateZ(${deg * 0.2}deg)` }}
             />
           ))}
@@ -101,7 +125,7 @@ function HologramField() {
             return (
               <span
                 key={i}
-                className="absolute left-1/2 top-1/2 h-1 w-1 rounded-full bg-[var(--teal)] shadow-[0_0_10px_rgba(58,191,138,0.9)]"
+                className="absolute left-1/2 top-1/2 h-1 w-1 rounded-full bg-[var(--teal)] shadow-[0_0_10px_rgba(var(--teal-rgb),0.9)]"
                 style={{
                   transform: `rotate(${angle}deg) translateX(${radius * 3}px) translateZ(${z}px)`,
                   opacity: 0.35 + (i % 5) * 0.09,
@@ -115,7 +139,7 @@ function HologramField() {
         {arrowDots.map(([x, y], index) => (
           <span
             key={`${x}-${y}-${index}`}
-            className="absolute h-1.5 w-1.5 rounded-full bg-[var(--teal)] shadow-[0_0_14px_rgba(58,191,138,0.95)]"
+            className="absolute h-1.5 w-1.5 rounded-full bg-[var(--teal)] shadow-[0_0_14px_rgba(var(--teal-rgb),0.95)]"
             style={{
               left: x,
               top: y,
@@ -143,15 +167,23 @@ function HologramField() {
 }
 
 export default function Work({ projects }: { projects?: Project[] }) {
+  const pathname = usePathname();
   const list = projects?.length ? projects : FALLBACK;
-  const slides = Array.from({ length: Math.max(6, list.length) }, (_, index) => ({
-    ...list[index % list.length],
-    carouselKey: `${list[index % list.length].id}-${index}`,
-  }));
+  const slides = useMemo(
+    () =>
+      Array.from({ length: Math.max(14, list.length * 4) }, (_, index) => ({
+        ...list[index % list.length],
+        carouselKey: `${list[index % list.length].id}-${index}`,
+      })),
+    [list],
+  );
   const [visualIndex, setVisualIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const targetIndex = useRef(0);
   const motion = useRef({ value: 0 });
   const dragStart = useRef<number | null>(null);
+  const dragOrigin = useRef(0);
+  const dragMoved = useRef(false);
   const wheelAt = useRef(0);
 
   const moveTo = (nextValue: number) => {
@@ -171,19 +203,43 @@ export default function Work({ projects }: { projects?: Project[] }) {
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     dragStart.current = event.clientX;
+    dragOrigin.current = motion.current.value;
+    dragMoved.current = false;
+    setIsDragging(true);
+    gsap.killTweensOf(motion.current);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
-  const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragStart.current === null) return;
+    const delta = event.clientX - dragStart.current;
+    if (Math.abs(delta) > 7) dragMoved.current = true;
+    const nextValue = dragOrigin.current - delta / 285;
+    motion.current.value = nextValue;
+    targetIndex.current = nextValue;
+    setVisualIndex(nextValue);
+  };
+
+  const endDrag = (event: PointerEvent<HTMLDivElement>) => {
     if (dragStart.current === null) return;
     const delta = event.clientX - dragStart.current;
     dragStart.current = null;
-    if (Math.abs(delta) < 55) return;
-    if (delta < 0) next();
-    else prev();
+    setIsDragging(false);
+    if (Math.abs(delta) < 7) return;
+    moveTo(Math.round(motion.current.value));
+  };
+
+  const onProjectClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!dragMoved.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    window.setTimeout(() => {
+      dragMoved.current = false;
+    }, 0);
   };
 
   const onWheel = (event: WheelEvent<HTMLDivElement>) => {
+    event.preventDefault();
     const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
     if (Math.abs(delta) < 22) return;
     const now = Date.now();
@@ -198,7 +254,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
       id="work"
       className="relative min-h-svh overflow-hidden border-t border-[var(--border)] bg-transparent px-[var(--gutter)] pb-20 pt-16 text-white"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_48%,rgba(58,191,138,0.05),transparent_68%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_48%,rgba(var(--teal-rgb),0.05),transparent_68%)]" />
       <HologramField />
 
       <div className="pointer-events-none relative z-50 max-w-4xl">
@@ -218,10 +274,14 @@ export default function Work({ projects }: { projects?: Project[] }) {
       </div>
 
       <div
-        className="absolute inset-x-0 bottom-4 h-[66vh] cursor-move select-none touch-pan-y overflow-hidden"
+        className={`absolute inset-x-0 bottom-4 h-[66vh] select-none touch-none overflow-hidden ${
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        }`}
         style={{ perspective: "1500px", perspectiveOrigin: "50% 50%", transformStyle: "preserve-3d" }}
         onPointerDown={onPointerDown}
-        onPointerUp={onPointerUp}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
         onWheel={onWheel}
       >
         {slides.map((p, index) => {
@@ -237,11 +297,15 @@ export default function Work({ projects }: { projects?: Project[] }) {
           const orbitX = Math.sin(radians) * radius;
           const orbitZ = Math.cos(radians) * radius - radius;
 
+          const coverImage = coverFor(p);
+
           return (
-            <a
+            <Link
               key={p.carouselKey}
-              href={projectHref(p)}
-              className="group absolute left-1/2 top-[52%] block w-[min(760px,54vw)] overflow-hidden border border-white/10 bg-black shadow-[0_45px_120px_rgba(0,0,0,0.62)] transition-[transform,opacity,border-radius,filter] duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+              href={projectHref(p, pathname)}
+              onClick={onProjectClick}
+              suppressHydrationWarning
+              className="group absolute left-1/2 top-[52%] block w-[min(760px,54vw)] overflow-hidden border border-white/10 bg-[var(--bg)] shadow-[0_45px_120px_rgba(var(--bg-rgb),0.62)] transition-[transform,opacity,border-radius,filter] duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
               style={{
                 aspectRatio: "16 / 9",
                 borderRadius: isActive
@@ -253,35 +317,28 @@ export default function Work({ projects }: { projects?: Project[] }) {
                 opacity: abs > 3 ? 0.18 : isActive ? 1 : 0.78,
                 pointerEvents: abs > 2.2 ? "none" : "auto",
                 zIndex: Math.round(80 - abs * 8 + (isActive ? 30 : 0)),
-                transform: `
-                  translate(-50%, -50%)
-                  translateX(${orbitX}px)
-                  translateZ(${orbitZ}px)
-                  rotateY(${-angle}deg)
-                  rotateZ(${isActive ? -2.8 : offset * 4.8}deg)
-                  scale(${isActive ? 1 : 0.98})
-                `,
+                transform: `translate(-50%, -50%) translateX(${orbitX}px) translateZ(${orbitZ}px) rotateY(${-angle}deg) rotateZ(${isActive ? -2.8 : offset * 4.8}deg) scale(${isActive ? 1 : 0.98})`,
                 transformStyle: "preserve-3d",
                 transformOrigin: "50% 50%",
                 backfaceVisibility: "visible",
               }}
             >
-              {p.coverImage ? (
+              {coverImage ? (
                 <Image
-                  src={p.coverImage}
+                  src={coverImage}
                   alt={p.title}
                   fill
-                  priority={isActive}
+                  preload={isActive}
                   className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  sizes="100vw"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1408px) 54vw, 760px"
                 />
               ) : (
                 <div className="absolute inset-0 bg-[var(--surface2)]" />
               )}
-              <div className="absolute inset-0 bg-black/30" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/28 to-black/36" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/34 to-black/8" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,rgba(58,191,138,0.20),transparent_34%)]" />
+              <div className="absolute inset-0 bg-[rgba(var(--bg-rgb),0.12)]" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/18 to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/68 via-black/22 to-black/5" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,rgba(var(--teal-rgb),0.20),transparent_34%)]" />
               <div
                 className="absolute bottom-7 left-7 right-7 transition-opacity duration-300 md:bottom-10 md:left-10 md:right-10"
                 style={{ opacity: isActive ? 1 : 0 }}
@@ -290,7 +347,7 @@ export default function Work({ projects }: { projects?: Project[] }) {
                   <span className="rounded-md bg-white/15 px-3 py-1 font-mono text-[0.58rem] uppercase tracking-[0.22em] text-white/85">
                     {meta.kind}
                   </span>
-                  <span className="rounded-md border border-white/15 bg-black/25 px-3 py-1 font-mono text-[0.58rem] uppercase tracking-[0.22em] text-white/70">
+                  <span className="rounded-md border border-white/15 bg-[rgba(var(--bg-rgb),0.25)] px-3 py-1 font-mono text-[0.58rem] uppercase tracking-[0.22em] text-white/70">
                     {meta.business}
                   </span>
                 </div>
@@ -300,19 +357,22 @@ export default function Work({ projects }: { projects?: Project[] }) {
                 <p className="mt-3 max-w-[520px] font-mono text-[0.7rem] uppercase leading-[1.5] text-white/82">
                   {p.description}
                 </p>
-                <span className="mt-5 inline-flex min-w-[160px] justify-center rounded-2xl border border-[var(--teal)] bg-white px-6 py-3 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-black shadow-[0_0_22px_rgba(58,191,138,0.25)] transition group-hover:bg-[var(--teal)]">
+                <span className="mt-5 inline-flex min-w-[160px] justify-center rounded-2xl border border-[var(--teal)] bg-white px-6 py-3 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-black shadow-[0_0_22px_rgba(var(--teal-rgb),0.25)] transition group-hover:bg-[var(--teal)]">
                   Launch
                 </span>
               </div>
-            </a>
+            </Link>
           );
         })}
       </div>
 
       <div className="pointer-events-auto absolute bottom-10 right-[var(--gutter)] z-50">
-        <a href="/work" className="font-mono text-[0.74rem] font-bold uppercase tracking-[0.28em] text-white">
-          See all work ▶
-        </a>
+        <Link
+          href={workIndexHref(pathname)}
+          className="font-mono text-[0.74rem] font-bold uppercase tracking-[0.28em] text-white"
+        >
+          See all work -&gt;
+        </Link>
       </div>
     </section>
   );

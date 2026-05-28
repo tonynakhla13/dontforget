@@ -27,11 +27,16 @@ model Project {
   id            String        @id @default(cuid())
   slug          String        @unique
   title         String
+  titleAr       String?
   description   String?       @db.Text
+  descriptionAr String?       @db.Text
   client        String?
+  clientAr      String?
   year          String?
   category      String?
+  categoryAr    String?
   tags          String[]
+  tagsAr        String[]      @default([])
   coverImage    String?
   images        String[]
   videoUrl      String?
@@ -44,13 +49,58 @@ model Project {
   status        ProjectStatus @default(DRAFT)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+
+  // Extended fields for web_development project type
+  clientId           String?
+  projectType        String?   @default("web_development")
+  tagline            String?
+  shortDescription   String?   @db.Text
+  fullDescription    String?   @db.Text
+  location           String?
+  clientLogo         String?
+  techStack          Json      @default("[]")
+  challengePoints    Json      @default("[]")
+  obstacles          Json      @default("[]")
+  challengeTagline   String?
+  challengeResponses Json      @default("[]")
+  solutionOptions    Json      @default("[]")
+  clientChoice       Int?
+  resultSlides       Json      @default("[]")
+  testimonialText    String?   @db.Text
+  gallery            Json      @default("[]")
+  extraMile          String?   @db.Text
+}
+
+model TechItem {
+  id        String   @id @default(cuid())
+  name      String
+  icon      String?
+  iconUrl   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ClientItem {
+  id        String   @id @default(cuid())
+  name      String
+  company   String?
+  country   String?
+  logo      String?
+  website   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model TeamMember {
   id          String   @id @default(cuid())
   name        String
+  nameAr      String?
   role        String
+  roleAr      String?
   bio         String?  @db.Text
+  bioAr       String?  @db.Text
   photo       String?
   linkedinUrl String?
   twitterUrl  String?
@@ -64,7 +114,9 @@ model TeamMember {
 model Service {
   id          String   @id @default(cuid())
   title       String
+  titleAr     String?
   description String?  @db.Text
+  descriptionAr String? @db.Text
   icon        String?
   order       Int      @default(0)
   active      Boolean  @default(true)
@@ -75,10 +127,13 @@ model Service {
 model ContactPage {
   id           Int      @id @default(autoincrement())
   headline     String?
+  headlineAr   String?
   subheadline  String?
+  subheadlineAr String?
   email        String?
   phone        String?
   address      String?
+  addressAr    String?
   socialLinks  Json     @default("{}")
   updatedAt    DateTime @updatedAt
 }
@@ -95,10 +150,14 @@ model Post {
   id          String     @id @default(cuid())
   slug        String     @unique
   title       String
+  titleAr     String?
   excerpt     String?    @db.Text
+  excerptAr   String?    @db.Text
   content     String     @default("") @db.Text
+  contentAr   String?    @db.Text
   coverImage  String?
   tags        String[]
+  tagsAr      String[]   @default([])
   status      PostStatus @default(DRAFT)
   publishedAt DateTime?
   order       Int        @default(0)
@@ -112,6 +171,12 @@ model Inquiry {
   email       String
   projectType String?
   message     String        @db.Text
+  contactMethod String?
+  contactValue  String?
+  source      String?
+  audioUrls   String[]      @default([])
+  assetNames  String[]      @default([])
+  metadata    Json          @default("{}")
   status      InquiryStatus @default(NEW)
   notes       String?       @db.Text
   createdAt   DateTime      @default(now())

@@ -17,6 +17,29 @@ const STATUS_COLORS: Record<InquiryStatus, string> = {
   ARCHIVED: "bg-white/5 text-white/20",
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function metadataRows(metadata: Inquiry["metadata"]) {
+  if (!isRecord(metadata)) return [];
+  const rows: { label: string; value: string }[] = [];
+
+  const services = metadata.services;
+  const subServices = metadata.subServices;
+  if (Array.isArray(services) && services.length) rows.push({ label: "Services", value: services.join(", ") });
+  if (Array.isArray(subServices) && subServices.length) rows.push({ label: "Deliverables", value: subServices.join(", ") });
+  if (typeof metadata.timeline === "string") rows.push({ label: "Timeline", value: metadata.timeline });
+  if (typeof metadata.budget === "string") rows.push({ label: "Budget", value: metadata.budget });
+  if (typeof metadata.voiceCount === "number") rows.push({ label: "Voice notes", value: String(metadata.voiceCount) });
+  if (typeof metadata.failedAudioCount === "number" && metadata.failedAudioCount > 0) {
+    rows.push({ label: "Failed audio uploads", value: String(metadata.failedAudioCount) });
+  }
+  if (typeof metadata.assetCount === "number") rows.push({ label: "Assets", value: String(metadata.assetCount) });
+
+  return rows;
+}
+
 export default function InquiriesManager({
   initial,
 }: {
@@ -97,6 +120,11 @@ export default function InquiriesManager({
             {inquiry.projectType && (
               <div className="text-xs text-white/30 mt-1">{inquiry.projectType}</div>
             )}
+            {inquiry.audioUrls.length > 0 && (
+              <div className="text-xs text-[#3ABF8A] mt-1">
+                {inquiry.audioUrls.length} voice note{inquiry.audioUrls.length === 1 ? "" : "s"}
+              </div>
+            )}
             <div className="text-xs text-white/20 mt-2">
               {new Date(inquiry.createdAt).toLocaleDateString()}
             </div>
@@ -116,6 +144,12 @@ export default function InquiriesManager({
               >
                 {selected.email}
               </a>
+              {selected.contactMethod && selected.contactValue && (
+                <div className="mt-2 text-sm text-white/60">
+                  <span className="text-white/30">Preferred:</span>{" "}
+                  {selected.contactMethod} · {selected.contactValue}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <select
@@ -146,6 +180,80 @@ export default function InquiriesManager({
                 Project Type
               </span>
               <p className="text-sm text-white mt-1">{selected.projectType}</p>
+            </div>
+          )}
+
+          {selected.source && (
+            <div>
+              <span className="text-xs text-white/40 uppercase tracking-widest">
+                Source
+              </span>
+              <p className="text-sm text-white mt-1">{selected.source}</p>
+            </div>
+          )}
+
+          {selected.audioUrls.length > 0 && (
+            <div>
+              <span className="text-xs text-white/40 uppercase tracking-widest">
+                Voice Notes
+              </span>
+              <div className="mt-3 grid gap-3">
+                {selected.audioUrls.map((url, index) => (
+                  <div
+                    key={url}
+                    className="rounded-lg border border-[#3ABF8A]/20 bg-[#3ABF8A]/5 p-3"
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="text-xs font-medium text-[#3ABF8A]">
+                        Voice note {index + 1}
+                      </span>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-white/35 hover:text-white/70"
+                      >
+                        Open
+                      </a>
+                    </div>
+                    <audio controls preload="metadata" src={url} className="w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selected.assetNames.length > 0 && (
+            <div>
+              <span className="text-xs text-white/40 uppercase tracking-widest">
+                Shared Assets
+              </span>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selected.assetNames.map((asset) => (
+                  <span
+                    key={asset}
+                    className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-white/60"
+                  >
+                    {asset}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {metadataRows(selected.metadata).length > 0 && (
+            <div>
+              <span className="text-xs text-white/40 uppercase tracking-widest">
+                Brief Details
+              </span>
+              <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                {metadataRows(selected.metadata).map((row) => (
+                  <div key={row.label} className="rounded-lg border border-white/5 bg-white/[0.025] p-3">
+                    <dt className="text-xs text-white/30">{row.label}</dt>
+                    <dd className="mt-1 text-sm text-white/75">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           )}
 

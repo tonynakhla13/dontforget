@@ -152,11 +152,13 @@ export default function ServicesOverview() {
                       {service.line}
                     </p>
                     <div className="flex flex-wrap gap-3">
-                      <Link href={`/services/${service.id}`} className="btn btn-primary btn-ripple px-5 py-3 text-[0.58rem]">
-                        Browse service
+                      <Link href={`/services/${service.id}`} className="btn-glass">
+                        <span className="btn-glass-blob" aria-hidden="true" />
+                        <span className="btn-glass-face">Browse service</span>
                       </Link>
-                      <Link href="/#contact" className="btn btn-outline px-5 py-3 text-[0.58rem]">
-                        Start a project →
+                      <Link href="/#contact" className="btn-glass-ghost">
+                        <span className="btn-glass-blob" aria-hidden="true" />
+                        <span className="btn-glass-face">Start a project →</span>
                       </Link>
                     </div>
                   </div>

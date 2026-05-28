@@ -158,17 +158,20 @@ export default function ServicesDFParticles() {
     window.addEventListener("mouseleave", onLeave);
     window.addEventListener("resize", onResize);
 
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer();
+    timer.connect(document);
     let frame = 0;
-    const tick = () => {
+    const tick = (timestamp: number) => {
       frame = requestAnimationFrame(tick);
-      uniforms.uTime.value = clock.getElapsedTime();
+      timer.update(timestamp);
+      uniforms.uTime.value = timer.getElapsed();
       renderer.render(scene, camera);
     };
-    tick();
+    frame = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(frame);
+      timer.dispose();
       scrollTween.scrollTrigger?.kill();
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseleave", onLeave);

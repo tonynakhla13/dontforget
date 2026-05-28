@@ -4,13 +4,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const navItems = [
-  { href: "/dashboard",           label: "Overview",     icon: "◈" },
-  { href: "/dashboard/projects",  label: "Projects",     icon: "✦" },
-  { href: "/dashboard/posts",     label: "Blog",         icon: "✍" },
-  { href: "/dashboard/team",      label: "Team",         icon: "⟡" },
-  { href: "/dashboard/services",  label: "Services",     icon: "◎" },
-  { href: "/dashboard/contact",   label: "Contact Page", icon: "✉" },
-  { href: "/dashboard/inquiries", label: "Inquiries",    icon: "⊡" },
+  { href: "/dashboard",           label: "Overview",        icon: "◈" },
+  { href: "/dashboard/projects",  label: "Projects",        icon: "✦" },
+  { href: "/dashboard/clients",   label: "Client Library",  icon: "⟡" },
+  { href: "/dashboard/tech",      label: "Tech Library",    icon: "◎" },
+  { href: "/dashboard/posts",     label: "Blog",            icon: "✍" },
+  { href: "/dashboard/team",      label: "Team",            icon: "⊟" },
+  { href: "/dashboard/services",  label: "Services",        icon: "❖" },
+  { href: "/dashboard/contact",   label: "Contact Page",    icon: "✉" },
+  { href: "/dashboard/inquiries", label: "Inquiries",       icon: "⊡" },
 ];
 
 export default function DashboardSidebar() {

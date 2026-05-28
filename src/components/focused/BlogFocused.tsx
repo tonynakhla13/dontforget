@@ -1,93 +1,135 @@
 "use client";
 
-import FocusedLayout, { C, TEKO, MONO } from "./FocusedLayout";
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Link from "next/link";
+import { NoxNavbar, NoxFooter, NoxPageIntro, TK, SANS } from "./NoxShared";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export type FocusedPost = {
-  id: string;
-  slug: string;
-  title: string;
-  tags: string[];
+  id:         string;
+  slug:       string;
+  title:      string;
+  tags:       string[];
   coverImage: string | null;
-  excerpt: string | null;
+  excerpt:    string | null;
 };
 
 const FALLBACK: FocusedPost[] = [
-  { id: "1", slug: "branding-mistakes", title: "5 branding mistakes that are costing you clients",    tags: ["Branding"], coverImage: null, excerpt: null },
-  { id: "2", slug: "web-performance",   title: "Why your website speed is your most important metric", tags: ["Web"],      coverImage: null, excerpt: null },
-  { id: "3", slug: "design-systems",    title: "What a design system actually saves you",              tags: ["Design"],   coverImage: null, excerpt: null },
-  { id: "4", slug: "seo-in-2026",       title: "SEO in 2026: what still works and what doesn't",      tags: ["Strategy"], coverImage: null, excerpt: null },
-  { id: "5", slug: "conversion-copy",   title: "Writing copy that converts without being pushy",       tags: ["Content"],  coverImage: null, excerpt: null },
-  { id: "6", slug: "gsap-animations",   title: "How we use GSAP to make interfaces feel alive",        tags: ["Dev"],      coverImage: null, excerpt: null },
+  { id: "1", slug: "website-vs-brand",    title: "A website is not a brand. Here's the difference.",          tags: ["Strategy"],  coverImage: null, excerpt: "Most founders confuse the two. Here's a fast way to know which one you're missing." },
+  { id: "2", slug: "interface-feels-slow", title: "Why your interface feels slow (even when it isn't)",        tags: ["Dev"],        coverImage: null, excerpt: "Perceived speed is a design problem, not an engineering one." },
+  { id: "3", slug: "first-impression",     title: "The 4 things clients notice before they read a word",       tags: ["Branding"],   coverImage: null, excerpt: "Color, hierarchy, whitespace, motion — in that order. Always." },
+  { id: "4", slug: "naming-your-startup",  title: "How to name your startup without hating it in six months", tags: ["Naming"],     coverImage: null, excerpt: "The framework we use when clients can't agree on anything." },
+  { id: "5", slug: "seo-for-agencies",     title: "SEO for agencies: stop writing and start building links",   tags: ["SEO"],        coverImage: null, excerpt: null },
+  { id: "6", slug: "conversion-design",    title: "The three conversion levers that actually move the needle", tags: ["Conversion"], coverImage: null, excerpt: null },
 ];
 
-function ThumbPlaceholder() {
-  return (
-    <svg width="40%" viewBox="0 0 120 80" fill="none">
-      <rect width="120" height="80" rx="8" fill={C.cream} />
-      <rect x="10" y="10" width="100" height="12" rx="6" fill={C.green} opacity="0.35" />
-      <rect x="10" y="30" width="72" height="8" rx="4" fill={C.green} opacity="0.25" />
-      <rect x="10" y="46" width="88" height="8" rx="4" fill={C.green} opacity="0.25" />
-      <rect x="10" y="62" width="56" height="8" rx="4" fill={C.green} opacity="0.25" />
-    </svg>
-  );
-}
+export default function BlogFocused({ posts }: { posts?: FocusedPost[] }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const list    = posts ?? FALLBACK;
 
-export default function BlogFocused({ posts = FALLBACK }: { posts?: FocusedPost[] }) {
-  return (
-    <FocusedLayout title="Our Latest Blog" activeNav="blog" animationClass="kbm-blog-content">
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(".tk-blog-card", {
+        y: 40, opacity: 0, stagger: 0.08, duration: 0.8, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-blog-grid", start: "top 78%" },
+      });
+    }, rootRef);
+    return () => ctx.revert();
+  }, []);
 
-      <section className="kbm-blog-content" style={{
-        margin: "0 clamp(1.5rem, 4vw, 3.75rem) clamp(4rem, 8vw, 8rem)",
-        display: "grid",
+  return (
+    <div ref={rootRef} style={{ background: TK.ink, color: TK.green, fontFamily: SANS }}>
+      <NoxNavbar />
+
+      <NoxPageIntro
+        eyebrow="/ our blog"
+        title="things we"
+        italic="think about."
+        lede="Insights on branding, web performance, design systems, SEO, and conversion from the NOX Studio team."
+      />
+
+      {/* ── Blog grid ── */}
+      <section className="tk-blog-grid" style={{
+        padding:             "clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3.5rem) clamp(5rem, 9vw, 10rem)",
+        borderTop:           `1px solid ${TK.line}`,
+        display:             "grid",
         gridTemplateColumns: "repeat(3, 1fr)",
-        gap: "clamp(2rem, 4vw, 4rem) clamp(1rem, 2vw, 2rem)",
+        gap:                 "clamp(1.5rem, 3vw, 3rem)",
       }}>
-        {posts.map((post, i) => (
-          <a key={post.id} href={`/focused/blog/${post.slug}`} style={{
-            display: "flex", flexDirection: "column", gap: 14,
-            textDecoration: "none", cursor: "pointer",
-          }}>
-            {/* thumb */}
+        {list.map((post, i) => (
+          <Link key={post.id}
+            href={`/en/focused/blog/${post.slug}`}
+            className="tk-blog-card"
+            style={{ display: "block", textDecoration: "none" }}
+          >
+            {/* Cover */}
             <div style={{
-              height: "clamp(160px, 22vw, 360px)",
-              borderRadius: 40,
-              backgroundColor: post.coverImage ? undefined : C.ph,
-              backgroundImage: post.coverImage ? `url(${post.coverImage})` : undefined,
-              backgroundSize: "cover", backgroundPosition: "center",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              overflow: "hidden",
-              transition: "transform .25s ease",
+              background:   TK.green,
+              aspectRatio:  "4 / 3",
+              marginBottom: 20,
+              overflow:     "hidden",
+              transition:   "filter 200ms ease, transform 300ms ease",
             }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = "translateY(-6px)")}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = "translateY(0)")}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.filter = "brightness(1.1)";
+              el.style.transform = "translateY(-4px)";
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLElement;
+              el.style.filter = "brightness(1)";
+              el.style.transform = "translateY(0)";
+            }}
             >
-              {!post.coverImage && <ThumbPlaceholder />}
+              {post.coverImage && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              )}
             </div>
 
-            <div style={{ fontFamily: TEKO, fontWeight: 500, fontSize: "clamp(0.85rem, 1.2vw, 1.1rem)", color: C.ink, paddingTop: 6, letterSpacing: "0.04em" }}>
-              {post.tags[0] ?? "Post"}
-            </div>
-            <div style={{ fontFamily: TEKO, fontWeight: 700, fontSize: "clamp(1rem, 1.8vw, 1.7rem)", lineHeight: 1.1, color: C.ink }}>
-              {post.title}
-            </div>
+            {/* Tag */}
+            <p style={{
+              fontFamily:    SANS,
+              fontSize:      "clamp(0.65rem, 0.82vw, 0.82rem)",
+              letterSpacing: "0.18em",
+              color:         TK.green,
+              textTransform: "uppercase",
+              margin:        "0 0 8px",
+              opacity:       0.72,
+            }}>{post.tags[0]}</p>
 
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 12, marginTop: 4,
-              fontFamily: MONO, fontWeight: 500, fontSize: "clamp(0.78rem, 1vw, 1rem)",
-              color: C.ink,
-            }}>
-              Explore Now{" "}
-              <span style={{
-                width: 32, height: 32, borderRadius: "50%",
-                backgroundColor: C.yellow, color: C.ink,
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                fontSize: 16, transition: "transform .2s",
-              }}>↗</span>
-            </span>
-          </a>
+            {/* Title */}
+            <h2 style={{
+              fontFamily:  SANS,
+              fontWeight:  700,
+              fontSize:    "clamp(1rem, 1.6vw, 1.5rem)",
+              lineHeight:  1.25,
+              color:       TK.paper,
+              margin:      "0 0 10px",
+              transition:  "color 150ms ease",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = TK.green)}
+            onMouseLeave={e => (e.currentTarget.style.color = TK.paper)}
+            >{post.title}</h2>
+
+            {post.excerpt && (
+              <p style={{
+                fontFamily: SANS,
+                fontSize:   "clamp(0.78rem, 0.95vw, 0.95rem)",
+                lineHeight: 1.55,
+                color:      TK.green,
+                margin:     0,
+                opacity:    0.8,
+              }}>{post.excerpt}</p>
+            )}
+          </Link>
         ))}
       </section>
 
-    </FocusedLayout>
+      <NoxFooter />
+    </div>
   );
 }

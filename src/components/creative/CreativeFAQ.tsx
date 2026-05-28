@@ -25,7 +25,7 @@ function PlusIcon() {
 function MinusIcon() {
   return (
     <svg viewBox="0 0 49 49" fill="none" width={49} height={49}>
-      <circle cx="24.5" cy="24.5" r="24" fill="#A8FD02" stroke="#231F20" />
+      <circle cx="24.5" cy="24.5" r="24" fill="#46D12A" stroke="#231F20" />
       <path d="M16 24.5 L33 24.5" stroke="#231F20" strokeWidth="2" />
     </svg>
   );

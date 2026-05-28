@@ -7,7 +7,9 @@ type ServiceForm = Omit<Service, "id" | "createdAt" | "updatedAt">;
 
 const empty: ServiceForm = {
   title: "",
+  titleAr: "",
   description: "",
+  descriptionAr: "",
   icon: "",
   order: 0,
   active: true,
@@ -113,6 +115,17 @@ export default function ServicesManager({ initial }: { initial: Service[] }) {
               value={form.description ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             />
+          </div>
+          <div className="border-t border-white/5 pt-4 space-y-4">
+            <h3 className="text-xs uppercase tracking-widest text-white/40">Arabic Content</h3>
+            <div>
+              <label className={labelClass}>Arabic Title</label>
+              <input dir="rtl" className={inputClass} value={form.titleAr ?? ""} onChange={(e) => setForm((f) => ({ ...f, titleAr: e.target.value }))} />
+            </div>
+            <div>
+              <label className={labelClass}>Arabic Description</label>
+              <textarea dir="rtl" className={`${inputClass} h-24 resize-none`} value={form.descriptionAr ?? ""} onChange={(e) => setForm((f) => ({ ...f, descriptionAr: e.target.value }))} />
+            </div>
           </div>
 
           <div className="flex items-center gap-6">

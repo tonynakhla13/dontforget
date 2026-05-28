@@ -24,7 +24,7 @@ type VoiceClip = {
   duration: number;
 };
 
-function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
+function VoiceHero({ onRecorded, onRecordingChange }: { onRecorded: (clips: Blob[]) => void; onRecordingChange?: (recording: boolean) => void }) {
   const [state, setState] = useState<"idle" | "rec">("idle");
   const [secs, setSecs]   = useState(0);
   const [clips, setClips] = useState<VoiceClip[]>([]);
@@ -45,10 +45,17 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
   const canRecord = clips.length < maxClips && state !== "rec";
 
   useEffect(() => { clipsRef.current = clips; }, [clips]);
+  useEffect(() => { onRecordingChange?.(state === "rec"); }, [state, onRecordingChange]);
   useEffect(() => () => {
     if (tick.current) clearInterval(tick.current);
     clipsRef.current.forEach(clip => URL.revokeObjectURL(clip.url));
   }, []);
+
+  function commitClips(next: VoiceClip[]) {
+    clipsRef.current = next;
+    setClips(next);
+    onRecorded(next.map(item => item.blob));
+  }
 
   /* Pulse rings animation — idle = slow invite, recording = fast pulse */
   useEffect(() => {
@@ -97,15 +104,11 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
           url: URL.createObjectURL(blob),
           duration: Math.max(1, secsRef.current),
         };
-        setClips(prev => {
-          if (prev.length >= maxClips) {
-            URL.revokeObjectURL(clip.url);
-            return prev;
-          }
-          const next = [...prev, clip];
-          onRecorded(next.map(item => item.blob));
-          return next;
-        });
+        if (clipsRef.current.length >= maxClips) {
+          URL.revokeObjectURL(clip.url);
+        } else {
+          commitClips([...clipsRef.current, clip]);
+        }
         setState("idle");
         setSecs(0);
         secsRef.current = 0;
@@ -128,11 +131,7 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
     audio?.pause();
     delete audioRefs.current[id];
     setPlayingId(current => current === id ? null : current);
-    setClips(prev => {
-      const next = prev.filter(clip => clip.id !== id);
-      onRecorded(next.map(item => item.blob));
-      return next;
-    });
+    commitClips(clipsRef.current.filter(clip => clip.id !== id));
   }
 
   function togglePlay(id: string) {
@@ -153,8 +152,8 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
   return (
     <div className="flex h-full flex-col justify-center gap-3 px-4 py-4"
       style={{
-        alignItems: clips.length ? "flex-start" : "center",
-        width: clips.length ? "min(430px, calc(100% - 220px))" : "100%",
+        alignItems: "center",
+        width: clips.length ? "min(480px, calc(100% - 180px))" : "100%",
         minWidth: clips.length ? 280 : "auto",
       }}>
 
@@ -174,13 +173,13 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
           {/* Rings */}
           <div ref={ring1}
             style={{ position: "absolute", inset: 0, borderRadius: "50%",
-              border: "1px solid rgba(58,191,138,0.5)", pointerEvents: "none" }} />
+              border: "1px solid rgba(var(--teal-rgb),0.5)", pointerEvents: "none" }} />
           <div ref={ring2}
             style={{ position: "absolute", inset: 0, borderRadius: "50%",
-              border: "1px solid rgba(58,191,138,0.38)", pointerEvents: "none" }} />
+              border: "1px solid rgba(var(--teal-rgb),0.38)", pointerEvents: "none" }} />
           <div ref={ring3}
             style={{ position: "absolute", inset: 0, borderRadius: "50%",
-              border: "1px solid rgba(58,191,138,0.26)", pointerEvents: "none" }} />
+              border: "1px solid rgba(var(--teal-rgb),0.26)", pointerEvents: "none" }} />
           {/* Button */}
           <button type="button"
             onClick={state === "idle" ? start : stop}
@@ -190,11 +189,11 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
               width: clips.length ? 62 : 80, height: clips.length ? 62 : 80,
               background: state === "rec"
                 ? "rgba(239,68,68,0.18)"
-                : "linear-gradient(145deg,rgba(58,191,138,0.22) 0%,rgba(58,191,138,0.08) 100%)",
-              border: `1.5px solid ${state === "rec" ? "rgba(239,68,68,0.55)" : "rgba(58,191,138,0.55)"}`,
+                : "linear-gradient(145deg,rgba(var(--teal-rgb),0.22) 0%,rgba(var(--teal-rgb),0.08) 100%)",
+              border: `1.5px solid ${state === "rec" ? "rgba(239,68,68,0.55)" : "rgba(var(--teal-rgb),0.55)"}`,
               boxShadow: state === "rec"
                 ? "0 0 32px rgba(239,68,68,0.18), inset 0 0 20px rgba(239,68,68,0.05)"
-                : "0 0 32px rgba(58,191,138,0.14), inset 0 0 20px rgba(58,191,138,0.06)",
+                : "0 0 32px rgba(var(--teal-rgb),0.14), inset 0 0 20px rgba(var(--teal-rgb),0.06)",
             }}>
             {state === "idle" ? (
               <svg width={28} height={28} viewBox="0 0 24 24" fill="none"
@@ -230,11 +229,11 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
                   gap: "0.65rem",
                   padding: "0.48rem 0.55rem",
                   borderRadius: "0.75rem",
-                  border: `1px solid ${active ? "rgba(58,191,138,0.46)" : "rgba(58,191,138,0.16)"}`,
+                  border: `1px solid ${active ? "rgba(var(--teal-rgb),0.46)" : "rgba(var(--teal-rgb),0.16)"}`,
                   background: active
-                    ? "linear-gradient(90deg,rgba(58,191,138,0.13),rgba(58,191,138,0.035))"
+                    ? "linear-gradient(90deg,rgba(var(--teal-rgb),0.13),rgba(var(--teal-rgb),0.035))"
                     : "rgba(3,8,6,0.52)",
-                  boxShadow: active ? "0 0 24px rgba(58,191,138,0.08)" : "none",
+                  boxShadow: active ? "0 0 24px rgba(var(--teal-rgb),0.08)" : "none",
                   minWidth: 0,
                 }}>
                 <audio
@@ -246,8 +245,8 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
                   aria-label={active ? `Pause voice note ${index + 1}` : `Play voice note ${index + 1}`}
                   style={{
                     width: 30, height: 30, borderRadius: "50%",
-                    border: "1px solid rgba(58,191,138,0.36)",
-                    background: "rgba(58,191,138,0.12)",
+                    border: "1px solid rgba(var(--teal-rgb),0.36)",
+                    background: "rgba(var(--teal-rgb),0.12)",
                     color: "var(--teal)",
                     display: "grid", placeItems: "center",
                     flexShrink: 0,
@@ -324,20 +323,20 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
 
       {clips.length > 0 && clips.length < maxClips && state === "idle" && (
         <button type="button" onClick={start}
+          className="relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-105"
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            border: 0,
-            background: "transparent",
-            color: "var(--teal)",
-            fontFamily: "var(--font-mono-next)",
-            fontSize: "0.48rem",
-            letterSpacing: "0.30em",
-            textTransform: "uppercase",
+            width: 52, height: 52,
+            background: "linear-gradient(145deg,rgba(var(--teal-rgb),0.18) 0%,rgba(var(--teal-rgb),0.06) 100%)",
+            border: "1.5px solid rgba(var(--teal-rgb),0.45)",
+            boxShadow: "0 0 24px rgba(var(--teal-rgb),0.1), inset 0 0 14px rgba(var(--teal-rgb),0.04)",
           }}>
-          <span style={{ fontSize: "0.8rem", lineHeight: 1 }}>+</span>
-          Record another
+          <svg width={20} height={20} viewBox="0 0 24 24" fill="none"
+            stroke="var(--teal)" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="2" width="6" height="12" rx="3" />
+            <path d="M5 10a7 7 0 0 0 14 0" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+            <line x1="9" y1="22" x2="15" y2="22" />
+          </svg>
         </button>
       )}
 
@@ -371,7 +370,6 @@ function VoiceHero({ onRecorded }: { onRecorded: (clips: Blob[]) => void }) {
     </div>
   );
 }
-
 /* ─────────────────────────────────────────────────────────────────────────
    FORM SHAPE — contact-specific 3D wireframe drawn inside the message surface
 ───────────────────────────────────────────────────────────────────────── */
@@ -456,104 +454,147 @@ function FormShapeVisualizer() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   GUIDED FORM BUTTON
+   GUIDED BRIEF CARD — compact CTA with inline 3D shape
 ───────────────────────────────────────────────────────────────────────── */
-function GuidedTextButton({ onClick }: { onClick: () => void }) {
+function GuidedBriefShape() {
+  const mountRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = mountRef.current;
+    if (!el) return;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0, 0);
+    el.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+    camera.position.z = 3.8;
+
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0x3abf8a,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.18,
+    });
+    const shape = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.9, 1),
+      mat
+    );
+    scene.add(shape);
+
+    const resize = () => {
+      const rect = el.getBoundingClientRect();
+      const w = Math.max(1, rect.width);
+      const h = Math.max(1, rect.height);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(el);
+
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      const t = (performance.now() - t0) / 1000;
+      shape.rotation.x = t * 0.35;
+      shape.rotation.y = t * 0.25;
+      shape.scale.setScalar(1 + Math.sin(t * 0.8) * 0.06);
+      renderer.render(scene, camera);
+    };
+    tick();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      shape.geometry.dispose();
+      mat.dispose();
+      renderer.dispose();
+      if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
+    };
+  }, []);
+
+  return <div ref={mountRef} aria-hidden style={{ width: 72, height: 72, flexShrink: 0 }} />;
+}
+
+function GuidedBriefCard({ onClick }: { onClick: () => void }) {
   const ref = useRef<HTMLButtonElement>(null);
-  const arrowRef = useRef<SVGSVGElement>(null);
-  const lineRef = useRef<HTMLSpanElement>(null);
 
   useGSAP(() => {
     const el = ref.current; if (!el) return;
     gsap.fromTo(el,
-      { autoAlpha: 0, y: 18 },
-      { autoAlpha: 1, y: 0, duration: 0.78, ease: "power3.out", delay: 0.35 }
+      { autoAlpha: 0, y: 14 },
+      { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out", delay: 0.5 }
     );
-    gsap.fromTo(lineRef.current,
-      { scaleX: 0, transformOrigin: "left center" },
-      { scaleX: 1, duration: 0.9, ease: "power3.out", delay: 0.55 }
-    );
-    gsap.to(arrowRef.current, {
-      x: 5,
-      duration: 0.75,
-      ease: "power2.inOut",
-      repeat: -1,
-      yoyo: true,
-      delay: 1.1,
-    });
-    el.addEventListener("mouseenter", () => {
-      gsap.to(el, { opacity: 1, duration: 0.25 });
-      gsap.to(lineRef.current, { opacity: 0.85, scaleX: 1.08, duration: 0.35, ease: "power2.out" });
-      gsap.to(arrowRef.current, { x: 10, duration: 0.25, ease: "power2.out" });
-    });
-    el.addEventListener("mouseleave", () => {
-      gsap.to(el, { opacity: 0.9, duration: 0.25 });
-      gsap.to(lineRef.current, { opacity: 0.48, scaleX: 1, duration: 0.35 });
-      gsap.to(arrowRef.current, { x: 5, duration: 0.25 });
-    });
   }, []);
 
   return (
     <button ref={ref} type="button" onClick={onClick}
-      className="group"
+      className="group guided-brief-card"
       style={{
-        width: "100%",
-        display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem",
-        padding: "1rem 1.1rem",
-        border: "1px solid rgba(58,191,138,0.18)",
+        display: "flex", alignItems: "center", gap: "0.85rem",
+        marginTop: "1.8rem",
+        padding: "0.75rem 1rem",
+        border: "1px solid rgba(var(--teal-rgb),0.22)",
         borderRadius: "0.95rem",
-        background: "linear-gradient(145deg,rgba(58,191,138,0.13),rgba(58,191,138,0.045))",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.035), 0 18px 44px rgba(0,0,0,0.16)",
-        cursor: "pointer", position: "relative",
+        background: "rgba(var(--teal-rgb),0.06)",
+        boxShadow: "0 12px 36px rgba(var(--bg-rgb),0.12)",
+        cursor: "pointer",
         textAlign: "left",
-        opacity: 0.9,
+        width: "100%",
+        position: "relative",
+        overflow: "hidden",
+        transition: "background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease",
       }}>
 
-      <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: "1rem", minWidth: 0 }}>
-        <div style={{ minWidth: 0 }}>
-          <span style={{
-            display: "block",
-            fontFamily: "var(--font-mono-next)", fontSize: "0.56rem",
-            letterSpacing: "0.38em", textTransform: "uppercase", color: "var(--teal)",
-            lineHeight: 1.1, marginBottom: "0.4rem",
-          }}>
-            guided alternative
-          </span>
-          <span className="hed" style={{
-            display: "block",
-            color: "var(--teal)",
-            fontSize: "clamp(1.45rem,2.25vw,2.35rem)",
-            lineHeight: 0.92,
-            letterSpacing: 0,
-          }}>
-            Try our new way
-          </span>
-          <span style={{
-            display: "block",
-            marginTop: "0.35rem",
-            color: "rgba(240,236,227,0.68)",
-            fontSize: "0.88rem",
-            lineHeight: 1.45,
-          }}>
-            A sharper project brief when a blank message is not enough.
-          </span>
-        </div>
+      {/* Top accent */}
+      <div style={{
+        position: "absolute", top: 0, left: "15%", right: "15%", height: 1,
+        background: "linear-gradient(90deg, transparent, rgba(var(--teal-rgb),0.3), transparent)",
+      }} />
+
+      <GuidedBriefShape />
+
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <span style={{
+          display: "block",
+          fontFamily: "var(--font-mono-next)", fontSize: "0.44rem",
+          letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--teal)",
+          marginBottom: "0.3rem",
+        }}>
+          Guided brief
+        </span>
+        <span className="hed" style={{
+          display: "block",
+          color: "var(--fg)",
+          fontSize: "clamp(1.1rem, 1.8vw, 1.4rem)",
+          lineHeight: 0.95,
+          letterSpacing: 0,
+          whiteSpace: "nowrap",
+        }}>
+          Not sure what you need?
+        </span>
+        <span style={{
+          display: "block",
+          marginTop: "0.3rem",
+          color: "rgba(240,236,227,0.5)",
+          fontSize: "0.76rem",
+          lineHeight: 1.4,
+        }}>
+          We&apos;ll walk you through it.
+        </span>
       </div>
 
-      <svg ref={arrowRef} width={22} height={22} viewBox="0 0 24 24" fill="none"
+      <svg width={18} height={18} viewBox="0 0 24 24" fill="none"
         stroke="var(--teal)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-        style={{ position: "relative", zIndex: 1, flexShrink: 0 }}>
-        <path d="M12 5l7 7-7 7M5 12h14" />
+        className="shrink-0 opacity-50 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100"
+        style={{ position: "relative", zIndex: 1 }}>
+        <path d="M5 12h14M12 5l7 7-7 7" />
       </svg>
-      <span ref={lineRef} aria-hidden style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: 1,
-        opacity: 0.48,
-        background: "linear-gradient(90deg,var(--teal),rgba(58,191,138,0.14),transparent)",
-      }} />
     </button>
   );
 }
@@ -564,6 +605,10 @@ function GuidedTextButton({ onClick }: { onClick: () => void }) {
 function StepModal({ onClose }: { onClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const [headerMeta, setHeaderMeta] = useState({
+    counter: "01 / 03",
+    label: "Start a project",
+  });
 
   useEffect(() => {
     gsap.fromTo(overlayRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 });
@@ -581,24 +626,27 @@ function StepModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div ref={overlayRef}
+      onClick={e => { if (e.target === overlayRef.current) close(); }}
+      onWheel={e => e.stopPropagation()}
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
         display: "grid", placeItems: "center",
         padding: "clamp(0.75rem,2vw,1.5rem)",
-        background: "rgba(0,0,0,0.76)",
+        background: "rgba(var(--bg-rgb),0.76)",
         backdropFilter: "blur(18px)",
+        overscrollBehavior: "contain",
       }}>
       <div ref={panelRef}
         style={{
           width: "min(960px, calc(100vw - 2rem))",
-          height: "min(680px, calc(100dvh - 2rem))",
+          height: "min(860px, calc(100dvh - 2rem))",
           maxHeight: "calc(100dvh - 2rem)",
           display: "flex", flexDirection: "column",
           overflow: "hidden",
           borderRadius: "1.25rem",
-          border: "1px solid rgba(58,191,138,0.18)",
-          background: "linear-gradient(145deg,rgba(8,13,11,0.98),rgba(4,6,5,0.98))",
-          boxShadow: "0 28px 90px rgba(0,0,0,0.48), 0 0 60px rgba(58,191,138,0.08)",
+          border: "1px solid rgba(var(--teal-rgb),0.18)",
+          background: "linear-gradient(145deg,rgba(var(--surface-rgb),0.98),rgba(var(--bg-rgb),0.98))",
+          boxShadow: "0 28px 90px rgba(var(--bg-rgb),0.48), 0 0 60px rgba(var(--teal-rgb),0.08)",
         }}>
         {/* Header bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -608,12 +656,51 @@ function StepModal({ onClose }: { onClose: () => void }) {
             {[1,2,3].map(n => (
               <div key={n} style={{ width: 6, height: 6, borderRadius: "50%",
                 background: "var(--teal)", opacity: 0.3 + n * 0.2,
-                boxShadow: "0 0 6px rgba(58,191,138,0.4)", flexShrink: 0 }} />
+                boxShadow: "0 0 6px rgba(var(--teal-rgb),0.4)", flexShrink: 0 }} />
             ))}
             <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.46rem",
               letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--teal)",
               marginLeft: "0.25rem", whiteSpace: "nowrap" }}>
               3-step form
+            </span>
+          </div>
+          <div
+            aria-live="polite"
+            style={{
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.7rem",
+              maxWidth: "min(46vw, 480px)",
+              minWidth: 0,
+              pointerEvents: "none",
+            }}
+          >
+            <span style={{
+              fontFamily: "var(--font-mono-next)",
+              fontSize: "0.52rem",
+              letterSpacing: "0.24em",
+              textTransform: "uppercase",
+              color: "rgba(var(--teal-rgb),0.78)",
+              whiteSpace: "nowrap",
+            }}>
+              {headerMeta.counter}
+            </span>
+            <span style={{
+              minWidth: 0,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              fontFamily: "var(--font-mono-next)",
+              fontSize: "0.58rem",
+              letterSpacing: "0.34em",
+              textTransform: "uppercase",
+              color: "var(--teal)",
+            }}>
+              {headerMeta.label}
             </span>
           </div>
           <button onClick={close}
@@ -629,9 +716,11 @@ function StepModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        {/* Embedded form content */}
-        <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-          <RequestForm embedded />
+        {/* Embedded form content — scrollable, contained */}
+        <div
+          onWheel={e => e.stopPropagation()}
+          style={{ flex: "1 1 auto", minHeight: 0, display: "flex", overflow: "hidden", overscrollBehavior: "contain" }}>
+          <RequestForm embedded onHeaderMetaChange={setHeaderMeta} />
         </div>
       </div>
     </div>
@@ -646,6 +735,22 @@ type ContactDetails = {
   assets: string[];
 };
 
+async function uploadVoiceClip(blob: Blob, index: number) {
+  const formData = new FormData();
+  formData.append("file", blob, `voice-note-${index + 1}.webm`);
+  try {
+    const response = await fetch("/api/inquiries/audio", {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) return null;
+    const data = await response.json() as { url?: string };
+    return data.url ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function ContactDetailsModal({
   onClose,
   onSubmit,
@@ -659,47 +764,63 @@ function ContactDetailsModal({
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLFormElement>(null);
-  const sideRef = useRef<HTMLDivElement>(null);
+  const fieldsRef = useRef<HTMLDivElement>(null);
   const [name, setName] = useState("");
   const [method, setMethod] = useState<ContactMethod>("whatsapp");
   const [value, setValue] = useState("");
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [assets, setAssets] = useState<string[]>([]);
+  const [dragOver, setDragOver] = useState(false);
 
   useEffect(() => {
-    gsap.fromTo(overlayRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 });
+    gsap.fromTo(overlayRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 });
     gsap.fromTo(panelRef.current,
-      { autoAlpha: 0, y: 24, scale: 0.98 },
-      { autoAlpha: 1, y: 0, scale: 1, duration: 0.42, ease: "power3.out" });
+      { autoAlpha: 0, y: 40, scale: 0.96 },
+      { autoAlpha: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out", delay: 0.05 });
+    if (fieldsRef.current) {
+      gsap.fromTo(fieldsRef.current.children,
+        { autoAlpha: 0, y: 16 },
+        { autoAlpha: 1, y: 0, stagger: 0.06, duration: 0.4, ease: "power2.out", delay: 0.2 });
+    }
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  useEffect(() => {
-    if (!advancedOpen || !sideRef.current) return;
-    gsap.fromTo(sideRef.current,
-      { autoAlpha: 0, x: 28 },
-      { autoAlpha: 1, x: 0, duration: 0.42, ease: "power3.out" }
-    );
-  }, [advancedOpen]);
-
   function close() {
-    gsap.to(panelRef.current, { autoAlpha: 0, y: 18, scale: 0.98, duration: 0.22, ease: "power2.in" });
-    gsap.to(overlayRef.current, { autoAlpha: 0, duration: 0.25, onComplete: onClose });
+    gsap.to(panelRef.current, { autoAlpha: 0, y: 24, scale: 0.97, duration: 0.2, ease: "power2.in" });
+    gsap.to(overlayRef.current, { autoAlpha: 0, duration: 0.22, onComplete: onClose });
   }
 
   const contactLabel = method === "email" ? "Email address" : method === "whatsapp" ? "WhatsApp number" : "Phone number";
   const contactPlaceholder = method === "email" ? "hello@you.com" : "+1 555 123 4567";
   const canSubmit = name.trim().length > 1 && value.trim().length > 3 && !submitting;
 
+  const methodIcons: Record<ContactMethod, React.ReactNode> = {
+    whatsapp: (
+      <svg width={16} height={16} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+    ),
+    phone: (
+      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+    ),
+    email: (
+      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+      </svg>
+    ),
+  };
+
   return (
     <div ref={overlayRef}
+      onClick={e => { if (e.target === overlayRef.current) close(); }}
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
         display: "grid", placeItems: "center",
-        padding: "1rem",
-        background: "rgba(0,0,0,0.72)",
-        backdropFilter: "blur(18px)",
+        padding: "clamp(0.75rem, 2vw, 1.5rem)",
+        background: "rgba(var(--bg-rgb),0.78)",
+        backdropFilter: "blur(24px)",
       }}>
       <form ref={panelRef}
         onSubmit={e => {
@@ -708,223 +829,499 @@ function ContactDetailsModal({
           onSubmit({ name: name.trim(), method, value: value.trim(), assets });
         }}
         style={{
-          width: advancedOpen ? "min(900px, calc(100vw - 2rem))" : "min(520px, calc(100vw - 2rem))",
-          borderRadius: "1.15rem",
-          border: "1px solid rgba(58,191,138,0.2)",
-          background: "linear-gradient(145deg,rgba(8,13,11,0.98),rgba(4,6,5,0.98))",
-          boxShadow: "0 28px 90px rgba(0,0,0,0.48), 0 0 60px rgba(58,191,138,0.08)",
-          padding: "1.2rem",
+          width: "min(480px, calc(100vw - 2rem))",
+          borderRadius: "1.35rem",
+          border: "1px solid rgba(var(--teal-rgb),0.16)",
+          background: "linear-gradient(165deg, rgba(var(--surface-rgb),0.98) 0%, rgba(var(--bg-rgb),0.99) 100%)",
+          boxShadow: "0 32px 100px rgba(var(--bg-rgb),0.55), 0 0 80px rgba(var(--teal-rgb),0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
           maxHeight: "calc(100dvh - 2rem)",
           overflowY: "auto",
           overflowX: "hidden",
+          position: "relative",
         }}>
-        <div className={`grid gap-5 ${advancedOpen ? "md:grid-cols-[minmax(0,1fr)_minmax(260px,320px)]" : ""}`}
-          style={{ alignItems: "stretch" }}>
+
+        {/* Top glow line */}
+        <div style={{
+          position: "absolute", top: 0, left: "10%", right: "10%", height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(var(--teal-rgb),0.4), transparent)",
+          borderRadius: "0 0 50% 50%",
+        }} />
+
+        {/* Header */}
+        <div style={{
+          padding: "1.5rem 1.5rem 0",
+          display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem",
+        }}>
           <div>
-            <div className="flex items-start justify-between gap-5">
-              <div>
-                <p className="eyebrow" style={{ marginBottom: "0.45rem" }}>Where should we reply?</p>
-                <h2 className="hed" style={{ fontSize: "clamp(1.75rem,4vw,2.55rem)", lineHeight: 0.95 }}>
-                  Contact details.
-                </h2>
-              </div>
-              <button type="button" onClick={close}
-                aria-label="Close contact details"
-                style={{
-                  width: 34, height: 34, borderRadius: "50%",
-                  border: "1px solid var(--border)",
-                  color: "var(--body)", display: "grid", placeItems: "center",
-                  flexShrink: 0,
-                }}>
-                <svg width={11} height={11} viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-                  <path d="M18 6 6 18M6 6l12 12" />
-                </svg>
-              </button>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: "0.5rem",
+              padding: "0.3rem 0.65rem", borderRadius: 999,
+              background: "rgba(var(--teal-rgb),0.1)", border: "1px solid rgba(var(--teal-rgb),0.2)",
+              marginBottom: "0.85rem",
+            }}>
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--teal)",
+                boxShadow: "0 0 8px rgba(var(--teal-rgb),0.6)" }} />
+              <span style={{
+                fontFamily: "var(--font-mono-next)", fontSize: "0.44rem",
+                letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--teal)",
+              }}>Almost done</span>
             </div>
+            <h2 className="hed" style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.2rem)", lineHeight: 0.95 }}>
+              Where do we<br />reach you?
+            </h2>
+          </div>
+          <button type="button" onClick={close}
+            aria-label="Close"
+            className="transition-colors hover:bg-white/[0.06]"
+            style={{
+              width: 36, height: 36, borderRadius: "50%",
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.03)",
+              color: "rgba(240,236,227,0.5)", display: "grid", placeItems: "center",
+              flexShrink: 0, marginTop: "0.25rem",
+            }}>
+            <svg width={12} height={12} viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-            <div className="mt-7 grid gap-4">
-              <ModalField label="Name" value={name} onChange={setName} placeholder="Tony Nakhla" autoComplete="name" />
+        {/* Form fields */}
+        <div ref={fieldsRef} style={{ padding: "1.25rem 1.5rem 0" }}>
 
-              <div>
-                <label style={{ display: "block", fontFamily: "var(--font-mono-next)", fontSize: "0.48rem",
-                  letterSpacing: "0.32em", textTransform: "uppercase", color: "var(--body)",
-                  opacity: 0.62, marginBottom: "0.55rem" }}>
-                  Contact method
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {([
-                    ["whatsapp", "WhatsApp"],
-                    ["phone", "Phone"],
-                    ["email", "Email"],
-                  ] as const).map(([id, label]) => {
-                    const active = method === id;
-                    return (
-                      <button key={id} type="button" onClick={() => setMethod(id)}
-                        style={{
-                          borderRadius: 999,
-                          border: `1px solid ${active ? "rgba(58,191,138,0.65)" : "var(--border)"}`,
-                          background: active ? "rgba(58,191,138,0.16)" : "rgba(255,255,255,0.02)",
-                          color: active ? "var(--teal)" : "var(--body)",
-                          padding: "0.72rem 0.5rem",
-                          fontFamily: "var(--font-mono-next)",
-                          fontSize: "0.58rem",
-                          letterSpacing: "0.16em",
-                          textTransform: "uppercase",
-                        }}>
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+          {/* Name */}
+          <div style={{ marginBottom: "1rem" }}>
+            <ContactField label="Your name" value={name} onChange={setName}
+              placeholder="Full name" autoComplete="name" />
+          </div>
 
-              <ModalField
-                label={contactLabel}
-                value={value}
-                onChange={setValue}
-                placeholder={contactPlaceholder}
-                autoComplete={method === "email" ? "email" : "tel"}
-                type={method === "email" ? "email" : "tel"}
-              />
-            </div>
-
-            <button type="button" onClick={() => setAdvancedOpen(open => !open)}
-              className="mt-5"
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "1rem",
-                border: "1px solid rgba(58,191,138,0.14)",
-                borderRadius: "0.8rem",
-                background: advancedOpen ? "rgba(58,191,138,0.10)" : "rgba(255,255,255,0.018)",
-                padding: "0.8rem 0.9rem",
-                textAlign: "left",
-              }}>
-              <span>
-                <span style={{
-                  display: "block",
-                  fontFamily: "var(--font-mono-next)",
-                  fontSize: "0.48rem",
-                  letterSpacing: "0.34em",
-                  textTransform: "uppercase",
-                  color: "var(--teal)",
-                  marginBottom: "0.32rem",
-                }}>
-                  Advanced info
-                </span>
-                <span style={{ display: "block", color: "rgba(240,236,227,0.58)", fontSize: "0.82rem", lineHeight: 1.4 }}>
-                  Share a logo, company profile, deck, or useful assets.
-                </span>
-              </span>
-              <svg width={18} height={18} viewBox="0 0 24 24" fill="none"
-                stroke="var(--teal)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-                style={{ transform: advancedOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.25s", flexShrink: 0 }}>
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </button>
-
-            {submitError && (
-              <p className="mt-4 text-sm text-red-400">Something went wrong. Try again or email hello@dontforget.studio.</p>
-            )}
-
-            <div className="mt-7 flex justify-end">
-              <button type="submit" disabled={!canSubmit}
-                className="btn btn-primary disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ paddingInline: "1.8rem", paddingBlock: "0.78rem", fontSize: "0.82rem" }}>
-                {submitting ? "Sending..." : "Send request ->"}
-              </button>
+          {/* Contact method selector */}
+          <div style={{ marginBottom: "1rem" }}>
+            <label style={{
+              display: "block", fontFamily: "var(--font-mono-next)", fontSize: "0.42rem",
+              letterSpacing: "0.36em", textTransform: "uppercase",
+              color: "rgba(240,236,227,0.45)", marginBottom: "0.5rem",
+            }}>How should we reach you?</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
+              {([
+                ["whatsapp", "WhatsApp"],
+                ["phone", "Phone"],
+                ["email", "Email"],
+              ] as const).map(([id, label]) => {
+                const active = method === id;
+                return (
+                  <button key={id} type="button" onClick={() => setMethod(id)}
+                    className="transition-all duration-200"
+                    style={{
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem",
+                      padding: "0.75rem 0.5rem",
+                      borderRadius: "0.85rem",
+                      border: `1.5px solid ${active ? "rgba(var(--teal-rgb),0.55)" : "rgba(255,255,255,0.06)"}`,
+                      background: active
+                        ? "linear-gradient(145deg, rgba(var(--teal-rgb),0.14), rgba(var(--teal-rgb),0.06))"
+                        : "rgba(255,255,255,0.02)",
+                      color: active ? "var(--teal)" : "rgba(240,236,227,0.4)",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}>
+                    {active && <div style={{
+                      position: "absolute", top: 0, left: "20%", right: "20%", height: 1,
+                      background: "linear-gradient(90deg, transparent, rgba(var(--teal-rgb),0.5), transparent)",
+                    }} />}
+                    {methodIcons[id]}
+                    <span style={{
+                      fontFamily: "var(--font-mono-next)", fontSize: "0.48rem",
+                      letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: active ? 600 : 400,
+                    }}>{label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {advancedOpen && (
-            <div ref={sideRef}
+          {/* Contact value */}
+          <div style={{ marginBottom: "1rem" }}>
+            <ContactField
+              label={contactLabel}
+              value={value}
+              onChange={setValue}
+              placeholder={contactPlaceholder}
+              autoComplete={method === "email" ? "email" : "tel"}
+              type={method === "email" ? "email" : "tel"}
+            />
+          </div>
+
+          {/* File drop zone */}
+          <div style={{ marginBottom: "0.25rem" }}>
+            <label
+              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={e => {
+                e.preventDefault(); setDragOver(false);
+                const files = Array.from(e.dataTransfer.files).map(f => f.name);
+                setAssets(prev => [...prev, ...files].slice(0, 6));
+              }}
+              className="transition-all duration-200"
               style={{
-                borderRadius: "0.95rem",
-                border: "1px solid rgba(58,191,138,0.18)",
-                background: "linear-gradient(180deg,rgba(58,191,138,0.075),rgba(255,255,255,0.018))",
-                padding: "1rem",
-                minHeight: "100%",
+                display: "flex", alignItems: "center", gap: "0.85rem",
+                padding: "0.75rem 0.85rem",
+                borderRadius: "0.85rem",
+                border: `1px dashed ${dragOver ? "rgba(var(--teal-rgb),0.5)" : "rgba(255,255,255,0.08)"}`,
+                background: dragOver ? "rgba(var(--teal-rgb),0.06)" : "rgba(255,255,255,0.015)",
+                cursor: "pointer",
               }}>
-              <p className="eyebrow" style={{ marginBottom: "0.55rem" }}>Optional assets</p>
-              <h3 className="hed" style={{ fontSize: "1.45rem", lineHeight: 0.96, marginBottom: "0.65rem" }}>
-                Add context.
-              </h3>
-              <p style={{ color: "rgba(240,236,227,0.56)", fontSize: "0.82rem", lineHeight: 1.55 }}>
-                Upload a logo, brand guide, company profile, pitch deck, screenshots, or anything useful.
-              </p>
-
-              <label className="mt-5 flex cursor-pointer flex-col items-center justify-center gap-3"
-                style={{
-                  minHeight: 138,
-                  borderRadius: "0.9rem",
-                  border: "1px dashed rgba(58,191,138,0.36)",
-                  background: "rgba(0,0,0,0.18)",
-                  color: "var(--teal)",
-                  textAlign: "center",
-                }}>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.key,.zip"
-                  className="sr-only"
-                  onChange={event => {
-                    const selected = Array.from(event.target.files ?? []).map(file => file.name);
-                    setAssets(selected.slice(0, 6));
-                  }}
-                />
-                <svg width={26} height={26} viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3v12" />
-                  <path d="m7 8 5-5 5 5" />
-                  <path d="M5 15v3a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3" />
+              <input type="file" multiple
+                accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.key,.zip"
+                className="sr-only"
+                onChange={event => {
+                  const selected = Array.from(event.target.files ?? []).map(file => file.name);
+                  setAssets(prev => [...prev, ...selected].slice(0, 6));
+                }}
+              />
+              <div style={{
+                width: 36, height: 36, borderRadius: "0.65rem",
+                background: "rgba(var(--teal-rgb),0.08)", border: "1px solid rgba(var(--teal-rgb),0.15)",
+                display: "grid", placeItems: "center", flexShrink: 0,
+              }}>
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
+                  stroke="var(--teal)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 5v14M5 12h14" />
                 </svg>
+              </div>
+              <div style={{ minWidth: 0 }}>
                 <span style={{
-                  fontFamily: "var(--font-mono-next)",
-                  fontSize: "0.52rem",
-                  letterSpacing: "0.24em",
-                  textTransform: "uppercase",
-                }}>
-                  Upload files
-                </span>
-              </label>
+                  display: "block", fontSize: "0.82rem", color: "rgba(240,236,227,0.65)",
+                }}>Attach files</span>
+                <span style={{
+                  display: "block", fontFamily: "var(--font-mono-next)", fontSize: "0.42rem",
+                  letterSpacing: "0.2em", textTransform: "uppercase",
+                  color: "rgba(240,236,227,0.3)", marginTop: "0.15rem",
+                }}>Logo, deck, screenshots — optional</span>
+              </div>
+            </label>
+          </div>
 
-              {assets.length > 0 && (
-                <div className="mt-4 grid gap-2">
-                  {assets.map(asset => (
-                    <div key={asset}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "0.75rem",
-                        borderRadius: "0.55rem",
-                        background: "rgba(0,0,0,0.18)",
-                        border: "1px solid rgba(255,255,255,0.06)",
-                        padding: "0.55rem 0.65rem",
-                      }}>
-                      <span style={{
-                        minWidth: 0,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        color: "rgba(240,236,227,0.68)",
-                        fontSize: "0.78rem",
-                      }}>
-                        {asset}
-                      </span>
-                      <span style={{ color: "var(--teal)", fontSize: "0.7rem" }}>ready</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+          {assets.length > 0 && (
+            <div style={{
+              display: "flex", flexWrap: "wrap", gap: "0.35rem",
+              padding: "0 0.25rem", marginBottom: "0.5rem",
+            }}>
+              {assets.map((asset, i) => (
+                <span key={`${asset}-${i}`}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                    padding: "0.3rem 0.55rem", borderRadius: 999,
+                    background: "rgba(var(--teal-rgb),0.08)", border: "1px solid rgba(var(--teal-rgb),0.15)",
+                    fontSize: "0.72rem", color: "rgba(240,236,227,0.6)",
+                    maxWidth: "100%",
+                  }}>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {asset}
+                  </span>
+                  <button type="button"
+                    onClick={() => setAssets(prev => prev.filter((_, idx) => idx !== i))}
+                    style={{ color: "rgba(240,236,227,0.35)", flexShrink: 0, lineHeight: 1 }}>
+                    <svg width={10} height={10} viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+                      <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
             </div>
           )}
         </div>
+
+        {submitError && (
+          <div style={{ padding: "0 1.5rem" }}>
+            <div style={{
+              padding: "0.65rem 0.85rem", borderRadius: "0.65rem",
+              background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+              fontSize: "0.82rem", color: "#f87171",
+            }}>
+              Something went wrong. Try again or email hello@dontforget.studio.
+            </div>
+          </div>
+        )}
+
+        {/* Submit */}
+        <div style={{
+          padding: "1.15rem 1.5rem 1.5rem",
+        }}>
+          <button type="submit" disabled={!canSubmit}
+            className="transition-all duration-300 disabled:cursor-not-allowed"
+            style={{
+              width: "100%",
+              padding: "0.95rem 1.5rem",
+              borderRadius: "0.85rem",
+              border: "none",
+              background: canSubmit
+                ? "linear-gradient(135deg, rgba(var(--teal-rgb),0.9), rgba(45,160,115,0.9))"
+                : "rgba(255,255,255,0.04)",
+              color: canSubmit ? "rgba(0,20,10,0.95)" : "rgba(240,236,227,0.25)",
+              fontSize: "0.88rem",
+              fontWeight: 600,
+              letterSpacing: "0.02em",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+              boxShadow: canSubmit ? "0 8px 32px rgba(var(--teal-rgb),0.25), 0 0 0 1px rgba(var(--teal-rgb),0.3)" : "none",
+              position: "relative",
+              overflow: "hidden",
+            }}>
+            {canSubmit && <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)",
+              animation: "contactShimmer 2.5s ease-in-out infinite",
+            }} />}
+            <span style={{ position: "relative", zIndex: 1 }}>
+              {submitting ? "Sending..." : "Send request"}
+            </span>
+            {!submitting && (
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+                style={{ position: "relative", zIndex: 1 }}>
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            )}
+          </button>
+          <p style={{
+            textAlign: "center", marginTop: "0.75rem",
+            fontFamily: "var(--font-mono-next)", fontSize: "0.4rem",
+            letterSpacing: "0.2em", textTransform: "uppercase",
+            color: "rgba(240,236,227,0.25)",
+          }}>
+            A real person replies within 24 hours
+          </p>
+        </div>
+
+        <style>{`@keyframes contactShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}`}</style>
       </form>
     </div>
+  );
+}
+
+function ContactField({ label, type = "text", placeholder, value, onChange, autoComplete }: {
+  label: string; type?: string; placeholder: string;
+  value: string; onChange: (v: string) => void; autoComplete: string;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div>
+      <label style={{
+        display: "block", fontFamily: "var(--font-mono-next)", fontSize: "0.42rem",
+        letterSpacing: "0.36em", textTransform: "uppercase",
+        color: "rgba(240,236,227,0.45)", marginBottom: "0.5rem",
+      }}>{label}</label>
+      <input type={type} placeholder={placeholder} required
+        autoComplete={autoComplete} value={value}
+        onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+        className="transition-all duration-200"
+        style={{
+          width: "100%", padding: "0.72rem 0.9rem", borderRadius: "0.7rem",
+          border: `1.5px solid ${focused ? "rgba(var(--teal-rgb),0.4)" : "rgba(255,255,255,0.07)"}`,
+          background: focused ? "rgba(var(--teal-rgb),0.04)" : "rgba(255,255,255,0.025)",
+          color: "var(--fg)", outline: "none",
+          fontSize: "0.9rem", fontFamily: "inherit",
+          boxShadow: focused ? "0 0 0 3px rgba(var(--teal-rgb),0.08)" : "none",
+        }} />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   SUCCESS STATE — animated confirmation after submission
+───────────────────────────────────────────────────────────────────────── */
+function SuccessState() {
+  const containerRef = useRef<HTMLElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const checkRef = useRef<SVGSVGElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const particlesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+    // Particles burst
+    if (particlesRef.current) {
+      const particles = particlesRef.current.children;
+      tl.fromTo(particles,
+        { scale: 0, opacity: 1 },
+        { scale: 1, opacity: 0, duration: 1.2, stagger: { each: 0.03, from: "center" }, ease: "power2.out" },
+        0
+      );
+    }
+
+    // Ring scales in with elastic feel
+    tl.fromTo(ringRef.current,
+      { scale: 0, rotation: -90 },
+      { scale: 1, rotation: 0, duration: 0.7, ease: "back.out(1.7)" },
+      0.1
+    );
+
+    // Check mark draws in
+    tl.fromTo(checkRef.current,
+      { autoAlpha: 0, scale: 0.5 },
+      { autoAlpha: 1, scale: 1, duration: 0.4, ease: "back.out(2)" },
+      0.45
+    );
+
+    // Text stagger
+    if (textRef.current) {
+      tl.fromTo(textRef.current.children,
+        { autoAlpha: 0, y: 20 },
+        { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.55 },
+        0.5
+      );
+    }
+
+    // Subtle pulse on ring
+    gsap.to(ringRef.current, {
+      boxShadow: "0 0 60px rgba(var(--teal-rgb),0.25), 0 0 120px rgba(var(--teal-rgb),0.08)",
+      duration: 1.5,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+      delay: 1,
+    });
+  }, []);
+
+  const particleCount = 16;
+  const particles = Array.from({ length: particleCount }, (_, i) => {
+    const angle = (i / particleCount) * Math.PI * 2;
+    const radius = 60 + Math.random() * 40;
+    return {
+      x: Math.cos(angle) * radius,
+      y: Math.sin(angle) * radius,
+      size: 2 + Math.random() * 3,
+    };
+  });
+
+  return (
+    <section ref={containerRef}
+      style={{
+        height: "calc(100vh - 86px)",
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        position: "relative", overflow: "hidden",
+      }}>
+
+      {/* Background glow */}
+      <div style={{
+        position: "absolute",
+        width: "clamp(300px, 50vw, 600px)", height: "clamp(300px, 50vw, 600px)",
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(var(--teal-rgb),0.08) 0%, transparent 70%)",
+        filter: "blur(60px)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Particle burst */}
+      <div ref={particlesRef} style={{
+        position: "absolute",
+        width: 1, height: 1,
+        pointerEvents: "none",
+      }}>
+        {particles.map((p, i) => (
+          <div key={i} style={{
+            position: "absolute",
+            width: p.size, height: p.size,
+            borderRadius: "50%",
+            background: "var(--teal)",
+            left: p.x, top: p.y,
+            opacity: 0,
+          }} />
+        ))}
+      </div>
+
+      {/* Animated ring + check */}
+      <div ref={ringRef}
+        style={{
+          width: 88, height: 88, borderRadius: "50%",
+          border: "2px solid var(--teal)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgba(var(--teal-rgb),0.06)",
+          boxShadow: "0 0 48px rgba(var(--teal-rgb),0.15), 0 0 96px rgba(var(--teal-rgb),0.05)",
+          marginBottom: "2.5rem",
+          position: "relative",
+        }}>
+        {/* Inner glow ring */}
+        <div style={{
+          position: "absolute", inset: 4, borderRadius: "50%",
+          border: "1px solid rgba(var(--teal-rgb),0.15)",
+        }} />
+        <svg ref={checkRef} width={32} height={32} viewBox="0 0 24 24" fill="none"
+          stroke="var(--teal)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+          style={{ opacity: 0 }}>
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      </div>
+
+      {/* Text content */}
+      <div ref={textRef} style={{ textAlign: "center", maxWidth: 460, padding: "0 1.5rem" }}>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: "0.5rem",
+          padding: "0.32rem 0.75rem", borderRadius: 999,
+          background: "rgba(var(--teal-rgb),0.08)", border: "1px solid rgba(var(--teal-rgb),0.18)",
+          marginBottom: "1.25rem", opacity: 0,
+        }}>
+          <div style={{
+            width: 6, height: 6, borderRadius: "50%",
+            background: "var(--teal)", boxShadow: "0 0 10px rgba(var(--teal-rgb),0.5)",
+          }} />
+          <span style={{
+            fontFamily: "var(--font-mono-next)", fontSize: "0.46rem",
+            letterSpacing: "0.32em", textTransform: "uppercase", color: "var(--teal)",
+          }}>Message received</span>
+        </div>
+
+        <h1 className="hed" style={{
+          fontSize: "clamp(2.4rem, 5vw, 4.2rem)", lineHeight: 0.9,
+          marginBottom: "1rem", opacity: 0,
+        }}>
+          We&apos;re on it.
+        </h1>
+
+        <p style={{
+          color: "rgba(240,236,227,0.6)", fontSize: "1rem", lineHeight: 1.75,
+          marginBottom: "2.5rem", opacity: 0,
+        }}>
+          Your request just landed with a real human on our team.
+          <br />
+          Expect a reply within 24 hours.
+        </p>
+
+        <div style={{ opacity: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
+          <a href="/immersive"
+            className="transition-all duration-200"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "0.5rem",
+              padding: "0.78rem 1.6rem",
+              borderRadius: "0.75rem",
+              border: "1px solid rgba(var(--teal-rgb),0.25)",
+              background: "rgba(var(--teal-rgb),0.06)",
+              color: "var(--teal)",
+              fontSize: "0.85rem",
+              fontWeight: 500,
+              textDecoration: "none",
+            }}>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to home
+          </a>
+
+          <span style={{
+            fontFamily: "var(--font-mono-next)", fontSize: "0.4rem",
+            letterSpacing: "0.25em", textTransform: "uppercase",
+            color: "rgba(240,236,227,0.22)",
+          }}>
+            or close this tab — we&apos;ll find you
+          </span>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -940,9 +1337,9 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
   const [modal, setModal]   = useState(false);
   const [contactModal, setContactModal] = useState(false);
   const [showMessageSuggestions, setShowMessageSuggestions] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   const sectionRef  = useRef<HTMLElement>(null);
-  const ctaRef      = useRef<HTMLDivElement>(null);
   const hasMessage = form.message.trim().length > 0;
   const hasVoice = voiceClips.length > 0;
   const hasPayload = hasMessage || hasVoice;
@@ -961,22 +1358,20 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
     );
   }, { scope: sectionRef });
 
-  useEffect(() => {
-    if (!hasPayload || !ctaRef.current) return;
-    gsap.fromTo(ctaRef.current,
-      { autoAlpha: 0, x: 54, scale: 0.98 },
-      { autoAlpha: 1, x: 0, scale: 1, duration: 0.55, ease: "power3.out" }
-    );
-  }, [hasPayload]);
 
   async function handleSubmit(details: ContactDetails) {
     if (!hasPayload) return;
     setSub(true); setErr(false);
     try {
+      const audioUrls = hasVoice
+        ? await Promise.all(voiceClips.map((clip, index) => uploadVoiceClip(clip, index)))
+        : [];
+      const uploadedAudioUrls = audioUrls.filter((url): url is string => Boolean(url));
+      const failedAudioCount = voiceClips.length - uploadedAudioUrls.length;
       const message = hasMessage ? form.message.trim() : `${voiceClips.length} voice note${voiceClips.length === 1 ? "" : "s"} attached.`;
       const contactLine = `Preferred contact: ${details.method} | ${details.value}`;
       const voiceLine = hasVoice
-        ? `\n\n[${voiceClips.length} voice note${voiceClips.length === 1 ? "" : "s"} attached]`
+        ? `\n\n[${uploadedAudioUrls.length} voice note${uploadedAudioUrls.length === 1 ? "" : "s"} uploaded${failedAudioCount ? `, ${failedAudioCount} failed to upload` : ""}]`
         : "";
       const assetLine = details.assets.length
         ? `\n\nShared assets:\n${details.assets.map(asset => `- ${asset}`).join("\n")}`
@@ -988,6 +1383,17 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
           name: details.name,
           email: details.method === "email" ? details.value : `${details.method}@dontforget.local`,
           projectType: "Open inquiry",
+          contactMethod: details.method,
+          contactValue: details.value,
+          source: "immersive-contact",
+          audioUrls: uploadedAudioUrls,
+          assetNames: details.assets,
+          metadata: {
+            hasMessage,
+            voiceCount: uploadedAudioUrls.length,
+            failedAudioCount,
+            assetCount: details.assets.length,
+          },
           message: `${message}${voiceLine}${assetLine}\n\n${contactLine}`,
         }),
       });
@@ -997,27 +1403,7 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
   }
 
   /* ── Success ── */
-  if (done) return (
-    <section style={{ height: "calc(100vh - 86px)", display: "flex",
-      flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2rem" }}>
-      <div style={{ width: 72, height: 72, borderRadius: "50%",
-        border: "1.5px solid var(--teal)", display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "0 0 48px rgba(58,191,138,0.18)" }}>
-        <svg width={28} height={28} viewBox="0 0 24 24" fill="none"
-          stroke="var(--teal)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 6 9 17l-5-5" />
-        </svg>
-      </div>
-      <div style={{ textAlign: "center" }}>
-        <p className="eyebrow" style={{ marginBottom: "0.5rem" }}>Received</p>
-        <h1 className="hed" style={{ fontSize: "clamp(2rem,4vw,3.5rem)" }}>We&apos;ll be in touch.</h1>
-        <p style={{ color: "var(--body)", fontSize: "0.875rem", marginTop: "0.5rem" }}>
-          A real person replies within 24 hours.
-        </p>
-      </div>
-      <a href="/immersive" className="btn btn-outline">← Back</a>
-    </section>
-  );
+  if (done) return <SuccessState />;
 
   return (
     <section ref={sectionRef} id="contact"
@@ -1032,13 +1418,13 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
 
       {/* Ambient glow */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 55% 65% at 25% 50%, rgba(58,191,138,0.05) 0%, transparent 65%)" }} />
+        background: "radial-gradient(ellipse 55% 65% at 25% 50%, rgba(var(--teal-rgb),0.05) 0%, transparent 65%)" }} />
 
       {/* ══════════ LEFT: heading / RIGHT: form ══════════ */}
-      <div className="grid gap-8 lg:grid-cols-[0.42fr_0.58fr] lg:items-center"
+      <div className="grid gap-8 lg:grid-cols-[0.42fr_0.58fr] lg:items-stretch"
         style={{ width: "100%", maxWidth: 1180, minWidth: 0, zIndex: 1 }}>
 
-        <div data-in style={{ opacity: 0 }}>
+        <div data-in style={{ opacity: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <p className="eyebrow" style={{ marginBottom: "0.6rem" }}>Immersive contact</p>
           <h1 className="hed" style={{ fontSize: "clamp(2.35rem,5.8vw,5.4rem)", lineHeight: 0.88 }}>
             Start with<br />
@@ -1048,22 +1434,24 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
             fontSize: "clamp(0.95rem,1.4vw,1.06rem)", lineHeight: 1.75 }}>
             Write a message, record a voice note, or use the guided brief.
           </p>
+
+          <GuidedBriefCard onClick={() => setModal(true)} />
         </div>
 
         <form onSubmit={e => e.preventDefault()}
-          style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+          style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: "0.85rem", height: "100%" }}>
 
-          <div data-in className="grid gap-4" style={{ opacity: 0 }}>
+          <div data-in className="grid gap-4" style={{ opacity: 0, flex: 1 }}>
 
-            <div style={{ minHeight: embedded ? "clamp(260px,34vh,320px)" : "clamp(330px,48vh,390px)", minWidth: 0, display: "flex", flexDirection: "column",
+            <div style={{ height: "100%", minHeight: embedded ? "clamp(260px,34vh,320px)" : "clamp(330px,48vh,390px)", minWidth: 0, display: "flex", flexDirection: "column",
               borderRadius: "1rem", overflow: "hidden",
-              border: "1px solid rgba(58,191,138,0.20)",
-              background: "linear-gradient(145deg,rgba(15,20,18,0.92),rgba(8,9,9,0.86))",
+              border: "1px solid rgba(var(--teal-rgb),0.20)",
+              background: "linear-gradient(145deg,rgba(var(--surface2-rgb),0.92),rgba(var(--bg-rgb),0.86))",
               backdropFilter: "blur(12px)",
               position: "relative",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.035), 0 24px 60px rgba(0,0,0,0.22)" }}>
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.035), 0 24px 60px rgba(var(--bg-rgb),0.22)" }}>
               <div style={{ position: "absolute", inset: "0 0 auto 0", height: 1,
-                background: "linear-gradient(90deg,transparent,rgba(58,191,138,0.35),transparent)" }} />
+                background: "linear-gradient(90deg,transparent,rgba(var(--teal-rgb),0.35),transparent)" }} />
               <FormShapeVisualizer />
               <textarea
                 placeholder="Describe the project, idea, problem, or dream. Voice-only is fine too."
@@ -1084,68 +1472,91 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
                   fontFamily: "inherit", lineHeight: 1.75,
                   position: "relative", zIndex: 1,
                   overflow: "hidden" }} />
-              {showMessageSuggestions && (
-                <div className="flex flex-wrap gap-2 px-5 pb-4" style={{ position: "relative", zIndex: 2 }}>
-                  {messageSuggestions.map(sentence => (
-                    <button key={sentence} type="button"
-                      onMouseDown={e => e.preventDefault()}
-                      onClick={() => setForm(f => ({ ...f, message: f.message.trim() ? `${f.message}\n${sentence}` : sentence }))}
-                      style={{
-                        borderRadius: 999,
-                        border: "1px solid rgba(58,191,138,0.16)",
-                        background: "rgba(58,191,138,0.055)",
-                        color: "rgba(240,236,227,0.58)",
-                        padding: "0.42rem 0.65rem",
-                        fontSize: "0.72rem",
-                        lineHeight: 1.25,
-                      }}>
-                      {sentence}
-                    </button>
-                  ))}
+              {/* Suggestions — fade without changing height */}
+              <div
+                style={{
+                  position: "relative", zIndex: 2,
+                  opacity: !hasMessage && !isRecording ? 1 : 0,
+                  visibility: !hasMessage && !isRecording ? "visible" as const : "hidden" as const,
+                  transition: "opacity 0.3s ease, visibility 0.3s ease",
+                }}>
+                <div>
+                  <div className="flex flex-wrap gap-2 px-5 pb-4 pt-1">
+                    {messageSuggestions.map(sentence => (
+                      <button key={sentence} type="button"
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={() => setForm(f => ({ ...f, message: sentence }))}
+                        style={{
+                          borderRadius: 999,
+                          border: "1px solid rgba(var(--teal-rgb),0.16)",
+                          background: "rgba(var(--teal-rgb),0.055)",
+                          color: "rgba(240,236,227,0.58)",
+                          padding: "0.42rem 0.65rem",
+                          fontSize: "0.72rem",
+                          lineHeight: 1.25,
+                        }}>
+                        {sentence}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              )}
+              </div>
+
               <div style={{
                 position: "relative", zIndex: 1,
                 minHeight: 142,
-                background: "linear-gradient(180deg,rgba(58,191,138,0.035),rgba(4,7,6,0.5))",
+                background: "linear-gradient(180deg,rgba(var(--teal-rgb),0.035),rgba(4,7,6,0.5))",
               }}>
-                <VoiceHero onRecorded={setVoiceClips} />
+                <VoiceHero onRecorded={setVoiceClips} onRecordingChange={setIsRecording} />
               </div>
 
-              {hasPayload && (
-                <div ref={ctaRef}
+              {/* Send button — hidden while recording */}
+              <div
+                className="transition-all duration-300"
+                style={{
+                  position: "absolute",
+                  right: "clamp(0.75rem,2vw,1.15rem)",
+                  bottom: "clamp(0.75rem,2vw,1.15rem)",
+                  zIndex: 4,
+                  opacity: hasPayload && !isRecording ? 1 : 0,
+                  pointerEvents: hasPayload && !isRecording ? "auto" : "none",
+                  transform: hasPayload && !isRecording ? "translateY(0) scale(1)" : "translateY(8px) scale(0.95)",
+                }}>
+                <button type="button"
+                  onClick={() => setContactModal(true)}
                   style={{
-                    position: "absolute",
-                    right: "clamp(0.75rem,2vw,1.15rem)",
-                    bottom: "clamp(0.75rem,2vw,1.15rem)",
-                    zIndex: 4,
-                    opacity: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.65rem",
-                    padding: "0.34rem",
-                    borderRadius: 999,
-                    border: "1px solid rgba(58,191,138,0.22)",
-                    background: "rgba(3,7,6,0.78)",
-                    backdropFilter: "blur(16px)",
-                    boxShadow: "0 18px 48px rgba(0,0,0,0.28), 0 0 30px rgba(58,191,138,0.10)",
+                    display: "flex", alignItems: "center", gap: "0.5rem",
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "0.75rem",
+                    border: "none",
+                    background: "linear-gradient(135deg, rgba(var(--teal-rgb),0.88), rgba(42,155,110,0.88))",
+                    color: "rgba(0,20,10,0.95)",
+                    fontSize: "0.82rem",
+                    fontWeight: 600,
+                    letterSpacing: "0.02em",
+                    boxShadow: "0 8px 28px rgba(var(--teal-rgb),0.22), 0 0 0 1px rgba(var(--teal-rgb),0.25)",
+                    backdropFilter: "blur(12px)",
+                    position: "relative",
+                    overflow: "hidden",
                   }}>
-                  <button type="button"
-                    onClick={() => setContactModal(true)}
-                    className="btn btn-primary"
-                    style={{
-                      paddingInline: "clamp(1.45rem,3vw,2rem)",
-                      paddingBlock: "0.82rem",
-                      fontSize: "0.82rem",
-                      boxShadow: "0 0 0 6px rgba(58,191,138,0.08)",
-                    }}>
-                    Send →
-                  </button>
-                </div>
-              )}
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.14) 50%, transparent 100%)",
+                    animation: "sendShimmer 2.8s ease-in-out infinite",
+                  }} />
+                  <span style={{ position: "relative", zIndex: 1 }}>Send</span>
+                  <svg width={15} height={15} viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+                    style={{ position: "relative", zIndex: 1 }}>
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+              <style>{`@keyframes sendShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.guided-brief-card{transition:background 0.3s ease,border-color 0.3s ease,box-shadow 0.3s ease,transform 0.3s ease}
+.guided-brief-card:hover{background:rgba(var(--teal-rgb),0.12) !important;border-color:rgba(var(--teal-rgb),0.35) !important;box-shadow:0 12px 36px rgba(var(--bg-rgb),0.12),0 0 20px rgba(var(--teal-rgb),0.08) !important;transform:scale(1.02)}`}</style>
             </div>
 
-            <GuidedTextButton onClick={() => setModal(true)} />
 
           </div>
 
@@ -1164,32 +1575,5 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
       )}
 
     </section>
-  );
-}
-
-/* Small input helper */
-function ModalField({ label, type = "text", placeholder, value, onChange, autoComplete }: {
-  label: string; type?: string; placeholder: string;
-  value: string; onChange: (v: string) => void; autoComplete: string;
-}) {
-  const [f, setF] = useState(false);
-  return (
-    <div>
-      <label style={{ display: "block", fontFamily: "var(--font-mono-next)", fontSize: "0.40rem",
-        letterSpacing: "0.40em", textTransform: "uppercase", color: "var(--body)",
-        opacity: 0.5, marginBottom: "0.4rem" }}>{label}</label>
-      <input type={type} placeholder={placeholder} required
-        autoComplete={autoComplete} value={value}
-        onChange={e => onChange(e.target.value)}
-        onFocus={() => setF(true)} onBlur={() => setF(false)}
-        style={{
-          width: "100%", padding: "0.65rem 0.85rem", borderRadius: "0.6rem",
-          border: `1px solid ${f ? "rgba(58,191,138,0.45)" : "var(--border)"}`,
-          background: f ? "rgba(58,191,138,0.04)" : "var(--surface)",
-          color: "var(--fg)", outline: "none",
-          fontSize: "0.875rem", fontFamily: "inherit",
-          transition: "border-color 0.2s, background 0.2s",
-        }} />
-    </div>
   );
 }

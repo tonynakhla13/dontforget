@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 
 /* ─────────────────────────────────────────────────────────────────────────
    LOGO DATA
@@ -11,7 +11,6 @@ import { motion, useScroll, useTransform } from "framer-motion";
 type Client = { name: string; icon: React.ReactNode };
 
 const TEAL = "rgba(58,191,138,0.70)";
-const DIM  = "rgba(255,255,255,0.18)";
 
 const mkIcon = (children: React.ReactNode) => (
   <svg width="52" height="52" viewBox="0 0 36 36" fill="none">
@@ -104,16 +103,121 @@ function LogoCard({ client }: { client: Client }) {
 /* ─────────────────────────────────────────────────────────────────────────
    MARQUEE ROW
 ───────────────────────────────────────────────────────────────────────── */
-function MarqueeRow({ clients, reverse = false, duration = 38 }: { clients: Client[]; reverse?: boolean; duration?: number }) {
+function wrapOffset(x: number, width: number) {
+  if (!width) return x;
+  while (x <= -width) x += width;
+  while (x > 0) x -= width;
+  return x;
+}
+
+function MarqueeRow({ clients, reverse = false, speed = 145 }: { clients: Client[]; reverse?: boolean; speed?: number }) {
+  const reduceMotion = useReducedMotion();
+  const trackRef = useRef<HTMLDivElement>(null);
+  const xRef = useRef(0);
+  const loopWidthRef = useRef(0);
+  const hoveredRef = useRef(false);
+  const draggingRef = useRef(false);
+  const impulseRef = useRef(0);
+  const pointerRef = useRef({ id: -1, x: 0, time: 0 });
+  const [dragging, setDragging] = useState(false);
+
+  function paint() {
+    if (trackRef.current) trackRef.current.style.transform = `translate3d(${xRef.current}px, 0, 0)`;
+  }
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    let initialised = false;
+    let raf = 0;
+    let last = performance.now();
+
+    const measure = () => {
+      loopWidthRef.current = track.scrollWidth / 2;
+      if (!initialised) {
+        xRef.current = reverse ? -loopWidthRef.current : 0;
+        initialised = true;
+      }
+      xRef.current = wrapOffset(xRef.current, loopWidthRef.current);
+      paint();
+    };
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(track);
+    measure();
+
+    const tick = (now: number) => {
+      const seconds = Math.min((now - last) / 1000, 0.05);
+      last = now;
+
+      if (!draggingRef.current && !hoveredRef.current) {
+        const cruise = reduceMotion ? 0 : (reverse ? speed : -speed);
+        xRef.current = wrapOffset(
+          xRef.current + (cruise + impulseRef.current) * seconds,
+          loopWidthRef.current,
+        );
+        impulseRef.current *= Math.pow(0.05, seconds);
+        if (Math.abs(impulseRef.current) < 1) impulseRef.current = 0;
+        paint();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+    };
+  }, [reduceMotion, reverse, speed]);
+
+  function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    draggingRef.current = true;
+    impulseRef.current = 0;
+    pointerRef.current = { id: event.pointerId, x: event.clientX, time: performance.now() };
+    setDragging(true);
+  }
+
+  function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (!draggingRef.current || pointerRef.current.id !== event.pointerId) return;
+    const now = performance.now();
+    const delta = event.clientX - pointerRef.current.x;
+    const seconds = Math.max(now - pointerRef.current.time, 16) / 1000;
+    xRef.current = wrapOffset(xRef.current + delta, loopWidthRef.current);
+    impulseRef.current = Math.max(-1800, Math.min(1800, delta / seconds));
+    pointerRef.current = { id: event.pointerId, x: event.clientX, time: now };
+    paint();
+  }
+
+  function handlePointerEnd(event: React.PointerEvent<HTMLDivElement>) {
+    if (pointerRef.current.id !== event.pointerId) return;
+    draggingRef.current = false;
+    pointerRef.current.id = -1;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setDragging(false);
+  }
+
   return (
     <div
-      className="relative overflow-hidden"
-      style={{ maskImage: "linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%)" }}
+      className={`relative overflow-hidden select-none ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
+      style={{
+        maskImage: "linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%)",
+        touchAction: "pan-y",
+      }}
+      onPointerEnter={() => { hoveredRef.current = true; }}
+      onPointerLeave={() => { hoveredRef.current = false; }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerEnd}
+      onPointerCancel={handlePointerEnd}
     >
       <div
+        ref={trackRef}
         className="flex"
         style={{
-          animation: `marquee-${reverse ? "rev" : "fwd"} ${duration}s linear infinite`,
           willChange: "transform",
         }}
       >
@@ -137,18 +241,6 @@ export default function ClientsMarquee() {
 
   return (
     <>
-      {/* inject keyframes once */}
-      <style>{`
-        @keyframes marquee-fwd {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-        @keyframes marquee-rev {
-          from { transform: translateX(-50%); }
-          to   { transform: translateX(0); }
-        }
-      `}</style>
-
       <section
         ref={ref}
         className="relative overflow-hidden border-t border-[var(--border)]"
@@ -174,11 +266,11 @@ export default function ClientsMarquee() {
 
           {/* Row 1 — scrolls left */}
           <div className="mb-4">
-            <MarqueeRow clients={ROW_A} reverse={false} duration={52} />
+            <MarqueeRow clients={ROW_A} speed={165} />
           </div>
 
           {/* Row 2 — scrolls right, slower */}
-          <MarqueeRow clients={ROW_B} reverse={true} duration={68} />
+          <MarqueeRow clients={ROW_B} reverse speed={140} />
 
         </motion.div>
 

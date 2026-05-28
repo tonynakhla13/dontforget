@@ -32,7 +32,7 @@ export default function AmbientGlow() {
     <div
       ref={glowRef}
       aria-hidden="true"
-      className="pointer-events-none fixed left-0 top-0 z-0 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(0,200,176,0.16),transparent_68%)] blur-2xl"
+      className="pointer-events-none fixed left-0 top-0 z-0 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(var(--teal-rgb),0.16),transparent_68%)] blur-2xl"
     />
   );
 }

@@ -10,6 +10,7 @@ import * as THREE from "three";
 
 type RulePipeShape = "clarity" | "motion" | "systems-rule" | "honesty";
 type StrokeSpec = { points: THREE.Vector3[]; radius?: number; bright?: boolean; closed?: boolean };
+type RulePipeMaterial = THREE.MeshBasicMaterial & { color: THREE.Color };
 
 function v(x: number, y: number, z: number) { return new THREE.Vector3(x, y, z); }
 
@@ -29,7 +30,7 @@ function roundedRectPoints(w: number, h: number, z: number, r: number): THREE.Ve
   return pts;
 }
 
-function makeMat(color: number, opacity: number) {
+function makeMat(color: THREE.ColorRepresentation, opacity: number) {
   return new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
 }
 
@@ -75,12 +76,12 @@ function ruleStrokes(shape: RulePipeShape): StrokeSpec[] {
   }
 }
 
-function createRulePipeHologram(shape: RulePipeShape): THREE.Group {
+function createRulePipeHologram(shape: RulePipeShape, color: THREE.ColorRepresentation): THREE.Group {
   const group = new THREE.Group();
-  const mat = makeMat(0x35c592, 0.055);
-  const bright = makeMat(0x53e6b2, 0.105);
-  const echoMat = makeMat(0x35c592, 0.026);
-  const echoBright = makeMat(0x53e6b2, 0.04);
+  const mat = makeMat(color, 0.055);
+  const bright = makeMat(color, 0.105);
+  const echoMat = makeMat(color, 0.026);
+  const echoBright = makeMat(color, 0.04);
 
   const echo = new THREE.Group();
   echo.position.set(0.12, -0.1, -0.32);
@@ -107,6 +108,8 @@ function RuleMeshCanvas({ shape }: { shape: RulePipeShape }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    const getParticleColor = () =>
+      getComputedStyle(el).getPropertyValue("--immersive-particles").trim() || "#46D12A";
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0, 0);
@@ -116,8 +119,18 @@ function RuleMeshCanvas({ shape }: { shape: RulePipeShape }) {
     const cam = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
     cam.position.set(0, 0, 6.5);
 
-    const group = createRulePipeHologram(shape);
+    const group = createRulePipeHologram(shape, getParticleColor());
     scene.add(group);
+
+    const syncParticleColor = () => {
+      const color = getParticleColor();
+      group.traverse((object) => {
+        if (object instanceof THREE.Mesh && object.material instanceof THREE.MeshBasicMaterial) {
+          (object.material as RulePipeMaterial).color.set(color);
+        }
+      });
+    };
+    window.addEventListener("immersive-theme-change", syncParticleColor);
 
     const resize = () => {
       const { width: w, height: h } = el.getBoundingClientRect();
@@ -143,6 +156,7 @@ function RuleMeshCanvas({ shape }: { shape: RulePipeShape }) {
 
     return () => {
       cancelAnimationFrame(raf);
+      window.removeEventListener("immersive-theme-change", syncParticleColor);
       ro.disconnect();
       scene.traverse(o => {
         if (o instanceof THREE.Mesh) {
@@ -200,6 +214,7 @@ export default function Principles() {
     const musts   = mustsRef.current;
     const grid    = gridRef.current;
     const cards   = cardRefs.current.filter(Boolean) as HTMLElement[];
+    const timers  = timersRef.current;
     if (!section || !musts || !grid || cards.length < 4) return;
 
     gsap.set(cards, { autoAlpha: 0, y: 48, scale: 0.962, filter: "blur(10px)" });
@@ -243,9 +258,8 @@ export default function Principles() {
 
     return () => {
       ctx.revert();
-      timersRef.current.forEach(t => { if (t) window.clearInterval(t); });
+      timers.forEach(t => { if (t) window.clearInterval(t); });
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -254,7 +268,7 @@ export default function Principles() {
       ref={sectionRef}
       className="relative h-screen overflow-hidden border-t border-[var(--border)]"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_70%_at_56%_52%,rgba(58,191,138,0.06),transparent_68%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_70%_at_56%_52%,rgba(var(--teal-rgb),0.06),transparent_68%)]" />
 
       {/* ── OUR MUSTS slide (full-viewport, exits on scroll) ── */}
       <div ref={mustsRef} className="absolute inset-0 z-20 flex items-center px-[var(--gutter)]">
@@ -279,13 +293,13 @@ export default function Principles() {
             <article
               key={rule.n}
               ref={el => { cardRefs.current[index] = el; }}
-              className="group relative overflow-hidden rounded-[1.5rem] border border-[rgba(58,191,138,0.14)] bg-[rgba(6,9,8,0.55)] shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-md transition-[border-color,box-shadow] duration-500 hover:border-[rgba(58,191,138,0.38)] hover:shadow-[0_24px_80px_rgba(0,0,0,0.35),0_0_60px_rgba(58,191,138,0.14),inset_0_0_0_1px_rgba(58,191,138,0.08)]"
+              className="group relative overflow-hidden rounded-[1.5rem] border border-[rgba(var(--teal-rgb),0.14)] bg-[rgba(var(--bg-rgb),0.55)] shadow-[0_24px_80px_rgba(var(--bg-rgb),0.35)] backdrop-blur-md transition-[border-color,box-shadow] duration-500 hover:border-[rgba(var(--teal-rgb),0.38)] hover:shadow-[0_24px_80px_rgba(var(--bg-rgb),0.35),0_0_60px_rgba(var(--teal-rgb),0.14),inset_0_0_0_1px_rgba(var(--teal-rgb),0.08)]"
             >
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(58,191,138,0.08),transparent_46%,rgba(248,245,238,0.015))]" />
-              <div className="absolute inset-0 [background-image:linear-gradient(90deg,rgba(58,191,138,0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(58,191,138,0.04)_1px,transparent_1px)] [background-size:36px_36px] opacity-30" />
+              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(var(--teal-rgb),0.08),transparent_46%,rgba(248,245,238,0.015))]" />
+              <div className="absolute inset-0 [background-image:linear-gradient(90deg,rgba(var(--teal-rgb),0.06)_1px,transparent_1px),linear-gradient(180deg,rgba(var(--teal-rgb),0.04)_1px,transparent_1px)] [background-size:36px_36px] opacity-30" />
               {/* Hover glow */}
-              <div className="pointer-events-none absolute inset-0 rounded-[1.5rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(58,191,138,0.13) 0%, transparent 68%)" }} />
+              <div className="pointer-events-none absolute inset-0 rounded-[1.5rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ background: "radial-gradient(ellipse at 60% 50%, rgba(var(--teal-rgb),0.13) 0%, transparent 68%)" }} />
 
               <div className="relative h-full grid grid-cols-[1fr_0.72fr] p-5 gap-3">
                 {/* ── Left: text ── */}
@@ -304,7 +318,7 @@ export default function Principles() {
                     <p className="mt-3 text-[clamp(0.72rem,0.9vw,0.88rem)] leading-[1.8] text-[var(--body)] max-w-[34ch]">
                       {typedLines[index]}
                       {typedLines[index].length > 0 && typedLines[index].length < rule.line.length && (
-                        <span className="ml-0.5 inline-block h-[0.75em] w-[0.06em] translate-y-[0.08em] bg-[var(--teal)] shadow-[0_0_10px_rgba(58,191,138,0.8)]" />
+                        <span className="ml-0.5 inline-block h-[0.75em] w-[0.06em] translate-y-[0.08em] bg-[var(--teal)] shadow-[0_0_10px_rgba(var(--teal-rgb),0.8)]" />
                       )}
                     </p>
                   </div>

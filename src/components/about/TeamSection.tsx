@@ -42,6 +42,15 @@ const CARDS: CardData[] = [
 ];
 
 const GAP = 20;
+const CARD_COUNT = CARDS.length;
+const LOOPED_CARDS = Array.from({ length: CARD_COUNT * 3 }, (_, position) => ({
+  card: CARDS[position % CARD_COUNT],
+  position,
+}));
+
+function logicalIndex(position: number) {
+  return ((position % CARD_COUNT) + CARD_COUNT) % CARD_COUNT;
+}
 
 /* ─────────────────────────────────────────────────────────────────────────
    CARD SHELL STYLE
@@ -177,8 +186,10 @@ function OpenCardEl({ card, active }: { card: OpenCard; active: boolean }) {
         <div style={{ width: 76, height: 76, borderRadius: "50%", display: "flex",
           alignItems: "center", justifyContent: "center",
           border: `1px ${active ? "solid" : "dashed"} ${active ? teal(0.65) : white(0.12)}`,
-          background: active ? `radial-gradient(circle at 50% 50%,${teal(0.15)} 0%,transparent 70%)` : "none",
-          backgroundImage: active ? undefined : `radial-gradient(${white(0.04)} 1px,transparent 1px)`,
+          backgroundColor: "transparent",
+          backgroundImage: active
+            ? `radial-gradient(circle at 50% 50%,${teal(0.15)} 0%,transparent 70%)`
+            : `radial-gradient(${white(0.04)} 1px,transparent 1px)`,
           backgroundSize: "12px 12px", transition: "all .45s" }}>
           <span className="hed" style={{ fontSize: "2rem", color: active ? teal(0.55) : white(0.08) }}>?</span>
         </div>
@@ -217,60 +228,93 @@ function OpenCardEl({ card, active }: { card: OpenCard; active: boolean }) {
    MAIN EXPORT
 ───────────────────────────────────────────────────────────────────────── */
 export default function TeamSection() {
-  const [active, setActive] = useState(0);
-  const activeRef           = useRef(0);
+  const [position, setPosition] = useState(CARD_COUNT);
+  const positionRef         = useRef(CARD_COUNT);
   const containerRef        = useRef<HTMLDivElement>(null);
   const trackRef            = useRef<HTMLDivElement>(null);
   const cardRefs            = useRef<(HTMLDivElement | null)[]>([]);
-  const dragStart           = useRef<{ x: number; trackX: number } | null>(null);
+  const dragStart           = useRef<{ x: number; trackX: number; moved: boolean } | null>(null);
+  const suppressClick       = useRef(false);
+  const active              = logicalIndex(position);
 
-  const animateTrack = useCallback((idx: number) => {
+  const positionTrack = useCallback((nextPosition: number, immediate = false) => {
     const container = containerRef.current;
     const track     = trackRef.current;
     if (!container || !track) return;
     const cW    = container.offsetWidth;
     const cardW = cardRefs.current[0]?.offsetWidth ?? Math.min(460, cW * 0.78);
-    const raw   = idx * (cardW + GAP) - (cW - cardW) / 2;
-    const max   = CARDS.length * (cardW + GAP) - GAP - cW;
-    gsap.to(track, { x: -Math.max(0, Math.min(raw, max)), duration: 0.75, ease: "expo.out" });
+    const offset = nextPosition * (cardW + GAP) - (cW - cardW) / 2;
+    gsap.to(track, { x: -offset, duration: immediate ? 0 : 0.72, ease: "expo.out", overwrite: true });
     cardRefs.current.forEach((el, i) => {
       if (!el) return;
-      gsap.to(el, { scale: i === idx ? 1 : 0.88, opacity: i === idx ? 1 : 0.35, duration: 0.65, ease: "expo.out" });
+      gsap.to(el, {
+        scale: i === nextPosition ? 1 : 0.88,
+        opacity: i === nextPosition ? 1 : 0.35,
+        duration: immediate ? 0 : 0.62,
+        ease: "expo.out",
+        overwrite: true,
+      });
     });
   }, []);
 
-  const goTo = useCallback((raw: number) => {
-    const idx = Math.max(0, Math.min(CARDS.length - 1, raw));
-    activeRef.current = idx;
-    setActive(idx);
-    animateTrack(idx);
-  }, [animateTrack]);
+  const goToPosition = useCallback((nextPosition: number) => {
+    positionRef.current = nextPosition;
+    setPosition(nextPosition);
+    positionTrack(nextPosition);
 
-  useEffect(() => { animateTrack(0); }, []); // eslint-disable-line
+    if (nextPosition < CARD_COUNT || nextPosition >= CARD_COUNT * 2) {
+      const normalized = CARD_COUNT + logicalIndex(nextPosition);
+      gsap.delayedCall(0.73, () => {
+        if (positionRef.current !== nextPosition) return;
+        positionRef.current = normalized;
+        setPosition(normalized);
+        positionTrack(normalized, true);
+      });
+    }
+  }, [positionTrack]);
+
+  const goToCard = useCallback((nextActive: number) => {
+    const current = logicalIndex(positionRef.current);
+    let delta = nextActive - current;
+    if (delta > CARD_COUNT / 2) delta -= CARD_COUNT;
+    if (delta < -CARD_COUNT / 2) delta += CARD_COUNT;
+    goToPosition(positionRef.current + delta);
+  }, [goToPosition]);
+
+  useEffect(() => {
+    positionTrack(CARD_COUNT, true);
+    const onResize = () => positionTrack(positionRef.current, true);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [positionTrack]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft")  goTo(activeRef.current - 1);
-      if (e.key === "ArrowRight") goTo(activeRef.current + 1);
+      if (e.key === "ArrowLeft") goToPosition(positionRef.current - 1);
+      if (e.key === "ArrowRight") goToPosition(positionRef.current + 1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [goTo]);
+  }, [goToPosition]);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const currentX = (gsap.getProperty(trackRef.current, "x") as number) || 0;
-    dragStart.current = { x: e.clientX, trackX: currentX };
+    suppressClick.current = false;
+    dragStart.current = { x: e.clientX, trackX: currentX, moved: false };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragStart.current || !trackRef.current) return;
-    gsap.set(trackRef.current, { x: dragStart.current.trackX + (e.clientX - dragStart.current.x) });
+    const dx = e.clientX - dragStart.current.x;
+    if (Math.abs(dx) > 5) dragStart.current.moved = true;
+    gsap.set(trackRef.current, { x: dragStart.current.trackX + dx });
   };
   const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragStart.current) return;
     const dx = e.clientX - dragStart.current.x;
-    if (Math.abs(dx) > 55) goTo(activeRef.current + (dx < 0 ? 1 : -1));
-    else animateTrack(activeRef.current);
+    suppressClick.current = dragStart.current.moved;
+    if (Math.abs(dx) > 55) goToPosition(positionRef.current + (dx < 0 ? 1 : -1));
+    else positionTrack(positionRef.current);
     dragStart.current = null;
   };
 
@@ -307,8 +351,7 @@ export default function TeamSection() {
         <div
           ref={containerRef}
           style={{
-            overflow: "hidden", cursor: "grab",
-            paddingLeft: "max(1.5rem, calc((100vw - min(1280px, 100vw - 3rem)) / 2 + 1.5rem))",
+            overflow: "hidden", cursor: "grab", touchAction: "pan-y",
           }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -316,11 +359,18 @@ export default function TeamSection() {
           onPointerCancel={onPointerUp}
         >
           <div ref={trackRef} style={{ display: "flex", gap: GAP, willChange: "transform" }}>
-            {CARDS.map((card, i) => (
-              <div key={card.num} ref={el => { cardRefs.current[i] = el; }} onClick={() => goTo(i)}>
+            {LOOPED_CARDS.map(({ card, position: cardPosition }) => (
+              <div
+                key={`${card.num}-${cardPosition}`}
+                ref={el => { cardRefs.current[cardPosition] = el; }}
+                onClick={() => {
+                  if (!suppressClick.current) goToPosition(cardPosition);
+                  suppressClick.current = false;
+                }}
+              >
                 {card.type === "founder"
-                  ? <FounderCardEl card={card as FounderCard} active={i === active} />
-                  : <OpenCardEl    card={card as OpenCard}    active={i === active} />
+                  ? <FounderCardEl card={card as FounderCard} active={cardPosition === position} />
+                  : <OpenCardEl    card={card as OpenCard}    active={cardPosition === position} />
                 }
               </div>
             ))}
@@ -331,7 +381,7 @@ export default function TeamSection() {
         <div className="wrap mt-8" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {CARDS.map((_, i) => (
-              <button key={i} aria-label={`Card ${i + 1}`} onClick={() => goTo(i)} style={{
+              <button key={i} aria-label={`Card ${i + 1}`} onClick={() => goToCard(i)} style={{
                 width: i === active ? 30 : 8, height: 8, padding: 0, borderRadius: 99,
                 border: "none", cursor: "pointer",
                 background: i === active ? "var(--teal)" : "rgba(255,255,255,0.14)",
@@ -346,16 +396,13 @@ export default function TeamSection() {
 
           <div style={{ display: "flex", gap: 12 }}>
             {([[-1, "←"], [1, "→"]] as [number, string][]).map(([dir, label]) => {
-              const off = dir < 0 ? active === 0 : active === CARDS.length - 1;
               return (
-                <button key={dir} onClick={() => goTo(active + dir)} disabled={off} style={{
+                <button key={dir} onClick={() => goToPosition(positionRef.current + dir)} style={{
                   width: 48, height: 48, borderRadius: "50%", fontSize: "1rem",
-                  border: off ? "1px solid rgba(255,255,255,0.07)"
-                    : dir > 0 ? "1px solid rgba(58,191,138,0.48)" : "1px solid rgba(255,255,255,0.15)",
-                  background: off ? "transparent"
-                    : dir > 0 ? "rgba(58,191,138,0.11)" : "rgba(255,255,255,0.04)",
-                  color: off ? "rgba(255,255,255,0.18)" : dir > 0 ? "var(--teal)" : "var(--fg)",
-                  cursor: off ? "not-allowed" : "pointer",
+                  border: dir > 0 ? "1px solid rgba(58,191,138,0.48)" : "1px solid rgba(255,255,255,0.15)",
+                  background: dir > 0 ? "rgba(58,191,138,0.11)" : "rgba(255,255,255,0.04)",
+                  color: dir > 0 ? "var(--teal)" : "var(--fg)",
+                  cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   transition: "all .3s",
                 }}>{label}</button>

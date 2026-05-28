@@ -4,8 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { gsap } from "@/lib/gsap";
+import { isLocale } from "@/lib/site-routing";
+import { LocaleControl } from "@/components/site/SiteControls";
+import ImmersiveLogo from "@/components/immersive/ImmersiveLogo";
 
 const NAV_H = 86;
+const LANGUAGE_LABELS = {
+  language: "Switch language",
+  theme: "Switch theme",
+  current: "Current",
+};
 
 export default function Navbar({ inner = false }: { inner?: boolean }) {
   const primaryRef = useRef<HTMLElement>(null);
@@ -17,17 +25,29 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
   const pathname = usePathname();
 
   /* ── Resolve nav links based on current path ── */
-  const mode = pathname.startsWith("/focused")   ? "focused"
+  const segments = pathname.split("/").filter(Boolean);
+  const canonicalMode = segments[0] === "en" || segments[0] === "ar" ? segments[1] : null;
+  const mode = canonicalMode === "focused" || canonicalMode === "creative" || canonicalMode === "immersive"
+             ? canonicalMode
+             : pathname.startsWith("/focused")   ? "focused"
              : pathname.startsWith("/creative")  ? "creative"
              : pathname.startsWith("/immersive") ? "immersive"
              : null;
+  const canonicalBase = mode && canonicalMode === mode ? `/${segments[0]}/${mode}` : null;
 
   // On inner pages that aren't mode-prefixed (e.g. /work, /about, /services)
   // use full route links instead of homepage anchor links
   const isInnerPage = !mode && pathname !== "/";
+  const localeSegment = segments[0] ?? "";
+  const locale = isLocale(localeSegment) ? localeSegment : null;
 
   const navLinks = mode
-    ? [
+    ? canonicalBase ? [
+        { label: "Work",     href: `${canonicalBase}/work`     },
+        { label: "Services", href: `${canonicalBase}/services` },
+        { label: "About",    href: `${canonicalBase}/about`    },
+        { label: "Contact",  href: `${canonicalBase}/contact`  },
+      ] : [
         { label: "Work",     href: `/${mode}/work`    },
         { label: "Services", href: `/services`        },
         { label: "About",    href: `/about`           },
@@ -48,8 +68,11 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         { label: "Contact",  href: "#contact"  },
       ];
 
-  const ctaHref = mode ? `/${mode}/contact` : isInnerPage ? "/#contact" : "#contact";
+  const homeHref = canonicalBase ?? (mode ? `/${mode}` : "/");
+  const ctaHref = canonicalBase ? `${canonicalBase}/contact` : mode ? `/${mode}/contact` : isInnerPage ? "/#contact" : "#contact";
   const isImmersive = mode === "immersive";
+  const logoSrc = isImmersive ? "/immersive/nokx-studio-logo.svg" : "/dont%20forget%20logo.png";
+  const logoAlt = isImmersive ? "NOKX Studio" : "DON'T FORGET";
 
   /* ── Full-screen overlay animation ── */
   useEffect(() => {
@@ -75,14 +98,9 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
   /* ── Entrance + scroll-swap ── */
   useEffect(() => {
-    // Only delay entrance on home pages to sync with Loader.
-    // On inner pages (or if Loader already ran), show immediately.
-    const isFirstLoad = !sessionStorage.getItem("df_loader_shown");
-    const delay = (!inner && isFirstLoad) ? 2.2 : 0;
-
     gsap.fromTo(primaryRef.current,
       { autoAlpha: 0, y: -16 },
-      { autoAlpha: 1, y: 0, duration: 1, ease: "power3.out", delay }
+      { autoAlpha: 1, y: 0, duration: 1, ease: "power3.out" }
     );
 
     if (isImmersive) {
@@ -137,13 +155,19 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         style={{ background: "var(--bg)", visibility: "hidden" }}
       >
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
-          <a href={mode ? `/${mode}` : "/"} onClick={() => setMenuOpen(false)}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
-          </a>
+          <Link href={homeHref} onClick={() => setMenuOpen(false)} aria-label="DON'T FORGET home" className={isImmersive ? "immersive-logo-link" : undefined}>
+            {isImmersive ? (
+              <ImmersiveLogo />
+            ) : (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
+              </>
+            )}
+          </Link>
           <button
             onClick={() => setMenuOpen(false)}
-            className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7"
+            className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(var(--surface2-rgb),0.96)] px-7"
           >
             <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">Close</span>
             <span className="flex flex-col gap-[5px]" aria-hidden="true">
@@ -167,10 +191,15 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
           ))}
         </div>
 
-        <div className="wrap flex items-center justify-between border-t border-[var(--border)] py-6">
+        <div className="wrap flex items-center justify-between gap-4 border-t border-[var(--border)] py-6">
           <span className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[var(--body)]">
             © {new Date().getFullYear()} Don&apos;t Forget
           </span>
+          {isImmersive && locale ? (
+            <div className="immersive-menu-locale md:hidden">
+              <LocaleControl locale={locale} theme="immersive" labels={LANGUAGE_LABELS} />
+            </div>
+          ) : null}
           <span className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[var(--body)]">
             hello@dontforget.studio
           </span>
@@ -184,25 +213,26 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         style={{
           height: isImmersive ? (compact ? 66 : NAV_H) : NAV_H,
           visibility: "hidden",
-          background: isImmersive && compact ? "rgba(4,10,8,0.72)" : "transparent",
-          borderBottom: isImmersive && compact ? "1px solid rgba(58,191,138,0.16)" : "1px solid transparent",
+          background: isImmersive && compact ? "rgba(var(--bg-rgb),0.72)" : "transparent",
+          borderBottom: isImmersive && compact ? "1px solid rgba(var(--teal-rgb),0.16)" : "1px solid transparent",
           backdropFilter: isImmersive && compact ? "blur(16px)" : "blur(0px)",
         }}
       >
         <div className="wrap flex w-full items-center justify-between">
-          <a href={mode ? `/${mode}` : "/"}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/dont%20forget%20logo.png"
-              alt="DON'T FORGET"
-              className="transition-[height,filter] duration-500"
-              style={{
-                height: isImmersive ? (compact ? 64 : 134) : 134,
-                width: "auto",
-                filter: isImmersive && compact ? "drop-shadow(0 0 18px rgba(58,191,138,0.24))" : "none",
-              }}
-            />
-          </a>
+          <Link href={homeHref} aria-label="DON'T FORGET home" className={isImmersive ? "immersive-logo-link" : undefined}>
+            {isImmersive ? (
+              <ImmersiveLogo compact={compact} />
+            ) : (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/dont%20forget%20logo.png"
+                  alt="DON'T FORGET"
+                  style={{ height: 134, width: "auto" }}
+                />
+              </>
+            )}
+          </Link>
 
           <ul className="hidden items-center gap-8 md:flex">
             {navLinks.slice(0, navLinks.length - 1).map(({ label, href }) => (
@@ -220,14 +250,26 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className={`${isImmersive ? "md:hidden" : "hidden"} h-11 items-center gap-3 rounded-[8px] border border-[rgba(58,191,138,0.2)] bg-[rgba(8,14,11,0.7)] px-5 font-mono text-[0.58rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] backdrop-blur-xl`}
+            className={`${isImmersive ? "md:hidden" : "hidden"} h-11 items-center gap-3 rounded-[8px] border border-[rgba(var(--teal-rgb),0.2)] bg-[rgba(var(--surface-rgb),0.7)] px-5 font-mono text-[0.58rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] backdrop-blur-xl`}
           >
             Menu
           </button>
 
-          <Link href={ctaHref} className={`btn btn-primary px-5 text-[0.62rem] transition-[padding,transform] duration-500 ${isImmersive && compact ? "py-2 scale-[0.94]" : "py-2.5"}`}>
-            Let&apos;s talk
-          </Link>
+          <div className="immersive-header-actions">
+            {isImmersive && locale ? (
+              <div className="immersive-locale-control">
+                <LocaleControl
+                  locale={locale}
+                  theme="immersive"
+                  labels={LANGUAGE_LABELS}
+                />
+              </div>
+            ) : null}
+            <Link href={ctaHref} className={`btn-glass transition-[transform] duration-500 ${isImmersive && compact ? "scale-[0.94]" : ""}`}>
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face" style={{ padding: "0.48rem 1.1rem", fontSize: "0.78rem" }}>Let&apos;s talk</span>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -240,14 +282,14 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         >
           <div className="py-[18px]">
             <div className="wrap flex w-full items-center justify-between">
-              <Link href={mode ? `/${mode}` : "/"} className="flex shrink-0 items-center">
+              <Link href={homeHref} className="flex shrink-0 items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
+                <img src={logoSrc} alt={logoAlt} style={{ height: 134, width: "auto" }} />
               </Link>
 
               <button
                 onClick={() => setMenuOpen(o => !o)}
-                className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
+                className="flex h-[54px] items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[rgba(var(--surface2-rgb),0.96)] px-7 backdrop-blur-xl transition-colors hover:border-[var(--teal-mid)]"
               >
                 <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)]">
                   Menu
@@ -262,7 +304,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
               <Link
                 href={ctaHref}
-                className="flex h-[54px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(14,14,14,0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
+                className="flex h-[54px] items-center rounded-[8px] border border-[var(--border)] bg-[rgba(var(--surface2-rgb),0.96)] px-7 backdrop-blur-xl font-mono text-[0.65rem] font-bold uppercase tracking-[0.22em] text-[var(--fg)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
               >
                 Let&apos;s talk
               </Link>
