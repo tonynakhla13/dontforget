@@ -18,6 +18,7 @@ import FocusedWork from "@/themes/focused/work/page";
 import FocusedServices from "@/themes/focused/services/page";
 import FocusedBlog from "@/themes/focused/blog/page";
 import FocusedContact from "@/themes/focused/contact/page";
+import ServiceDetailFocused from "@/components/focused/ServiceDetailFocused";
 import CreativeThemeLayout from "@/themes/creative/layout";
 import CreativeHome from "@/themes/creative/page";
 import CreativeAbout from "@/themes/creative/about/page";
@@ -79,6 +80,7 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
       page === "about" && !tail[1] ? <FocusedAbout /> :
       page === "work" && !tail[1] ? <FocusedWork /> :
       page === "services" && !tail[1] ? <FocusedServices /> :
+      page === "services" && tail[1] ? <ServiceDetailFocused slug={tail[1]} /> :
       page === "blog" && !tail[1] ? <FocusedBlog /> :
       page === "contact" && !tail[1] ? <FocusedContact /> : null;
     return view ? <FocusedThemeLayout>{view}</FocusedThemeLayout> : null;
