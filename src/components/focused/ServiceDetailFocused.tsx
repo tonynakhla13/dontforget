@@ -163,12 +163,12 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "2rem", flexWrap: "wrap" }}>
           <div style={{ flex: "1 1 60%" }}>
-            <p className="sdf-hero-num" style={{ fontFamily: TK.bold, fontSize: "clamp(1rem,1.8vw,1.4rem)", color: C.green, letterSpacing: "0.08em", margin: "0 0 0.5rem" }}>
+            <p className="sdf-hero-num" style={{ fontFamily: SANS, fontSize: "clamp(1rem,1.8vw,1.4rem)", color: C.green, letterSpacing: "0.08em", margin: "0 0 0.5rem" }}>
               {svc.n}
             </p>
             <h1
               className="sdf-hero-title"
-              style={{ fontFamily: TK.bold, fontSize: "clamp(3.5rem,10vw,9rem)", lineHeight: 0.9, letterSpacing: "-0.02em", textTransform: "uppercase", margin: "0 0 1.5rem", color: C.ink }}
+              style={{ fontFamily: SANS, fontSize: "clamp(3.5rem,10vw,9rem)", lineHeight: 0.9, letterSpacing: "-0.02em", textTransform: "uppercase", margin: "0 0 1.5rem", color: C.ink }}
             >
               {svc.title}
             </h1>
@@ -179,7 +179,7 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
 
           {/* large number watermark */}
           <p aria-hidden style={{
-            fontFamily: TK.bold, fontSize: "clamp(6rem,18vw,18rem)", lineHeight: 1,
+            fontFamily: SANS, fontSize: "clamp(6rem,18vw,18rem)", lineHeight: 1,
             color: "transparent", WebkitTextStroke: `2px ${C.green}`, opacity: 0.08,
             userSelect: "none", flexShrink: 0,
           }}>
@@ -207,9 +207,9 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
             </p>
             {svc.process.map((p, i) => (
               <div key={p.step} style={{ display: "grid", gridTemplateColumns: "1.5rem 1fr", gap: "1rem", marginBottom: "1.25rem", alignItems: "start" }}>
-                <span style={{ fontFamily: TK.bold, fontSize: "0.85rem", color: C.green, paddingTop: 3 }}>{String(i + 1).padStart(2, "0")}</span>
+                <span style={{ fontFamily: SANS, fontSize: "0.85rem", color: C.green, paddingTop: 3 }}>{String(i + 1).padStart(2, "0")}</span>
                 <div>
-                  <p style={{ fontFamily: TK.bold, fontSize: "1rem", textTransform: "uppercase", color: C.ink, margin: "0 0 0.2rem", letterSpacing: "0.04em" }}>{p.step}</p>
+                  <p style={{ fontFamily: SANS, fontSize: "1rem", textTransform: "uppercase", color: C.ink, margin: "0 0 0.2rem", letterSpacing: "0.04em" }}>{p.step}</p>
                   <p style={{ fontFamily: SANS, fontSize: "0.9rem", color: C.ink, opacity: 0.6, margin: 0, lineHeight: 1.5 }}>{p.desc}</p>
                 </div>
               </div>
@@ -292,8 +292,8 @@ function ServiceNotFound() {
     <div style={{ background: "var(--nox-paper)", minHeight: "100vh", color: "var(--nox-ink)" }}>
       <NoxNavbar active="services" />
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "70vh", gap: "1.5rem", textAlign: "center", padding: "2rem" }}>
-        <p style={{ fontFamily: TK.bold, fontSize: "6rem", color: "var(--nox-green)", opacity: 0.2, margin: 0 }}>404</p>
-        <h1 style={{ fontFamily: TK.bold, fontSize: "clamp(2rem,6vw,4rem)", textTransform: "uppercase", margin: 0 }}>Service not found</h1>
+        <p style={{ fontFamily: SANS, fontSize: "6rem", color: "var(--nox-green)", opacity: 0.2, margin: 0 }}>404</p>
+        <h1 style={{ fontFamily: SANS, fontSize: "clamp(2rem,6vw,4rem)", textTransform: "uppercase", margin: 0 }}>Service not found</h1>
         <Link href="/en/focused/services" style={{ fontFamily: SANS, color: "var(--nox-green)", textDecoration: "none", borderBottom: "1px solid", paddingBottom: 2 }}>
           View all services →
         </Link>
