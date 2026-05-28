@@ -146,6 +146,83 @@ export function NoxLogo({ height = 36 }: { height?: number }) {
   );
 }
 
+/* ── NoxLogoLoader — eye orbits + blinks autonomously ──────────────── */
+export function NoxLogoLoader({ height = 160 }: { height?: number }) {
+  const clipId   = useRef(`nox-clip-loader-${++_noxLogoCount}`).current;
+  const svgRef   = useRef<SVGSVGElement>(null);
+  const pupilRef = useRef<SVGGElement>(null);
+  const scaleRef = useRef<SVGGElement>(null);
+  const blinking = useRef(false);
+
+  useEffect(() => {
+    const OX = 610, OY = 181, ORBIT_R = 28;
+    let rafId  = 0;
+    let angle  = 0;
+    let currentX = 0, currentY = 0;
+    let scaleY = 1;
+
+    function doBlink() {
+      if (blinking.current) return;
+      blinking.current = true;
+      let phaseT = 0, phase = 0;
+      const seq = setInterval(() => {
+        phaseT++;
+        if (phase === 0) {
+          scaleY = Math.max(0, 1 - phaseT / 6);
+          if (scaleY <= 0) { phase = 1; phaseT = 0; }
+        } else {
+          scaleY = Math.min(1, phaseT / 6);
+          if (scaleY >= 1) { clearInterval(seq); blinking.current = false; }
+        }
+      }, 16);
+    }
+
+    let blinkTimer: ReturnType<typeof setTimeout>;
+    function scheduleBlink() {
+      blinkTimer = setTimeout(() => { doBlink(); scheduleBlink(); }, 1800 + Math.random() * 800);
+    }
+    scheduleBlink();
+
+    function animate() {
+      // Orbit: smooth circular motion
+      angle += 0.022;
+      const targetX = Math.cos(angle) * ORBIT_R;
+      const targetY = Math.sin(angle) * ORBIT_R;
+      currentX += (targetX - currentX) * 0.1;
+      currentY += (targetY - currentY) * 0.1;
+      if (!blinking.current) scaleY += (1 - scaleY) * 0.18;
+
+      pupilRef.current?.setAttribute("transform", `translate(${currentX.toFixed(2)} ${currentY.toFixed(2)})`);
+      scaleRef.current?.setAttribute("transform", `translate(0 ${(OY * (1 - scaleY)).toFixed(2)}) scale(1 ${scaleY.toFixed(4)})`);
+      rafId = requestAnimationFrame(animate);
+    }
+
+    rafId = requestAnimationFrame(animate);
+    return () => { cancelAnimationFrame(rafId); clearTimeout(blinkTimer); };
+  }, []);
+
+  return (
+    <svg ref={svgRef} viewBox="0 0 1224.36 362" fill="none" xmlns="http://www.w3.org/2000/svg"
+      style={{ height, width: "auto", display: "block" }}>
+      <defs>
+        <clipPath id={clipId}>
+          <path d="M610.48,1.55c148.49-12.15,244.49,141.46,171.28,270.23-79.21,139.33-286.71,111.03-325.72-43.43C429.83,124.54,501.53,10.47,610.48,1.55Z"/>
+        </clipPath>
+      </defs>
+      <path fill="#fff" d="M326.83,361.07v-174.4C311.9,10.26,63.25,14.4,51.98,189.67v171.4H0v-182.39C12.84,12.64,218.29-64.44,331.34,65.21c59.25,67.94,46.42,147.87,45.41,231.35-.25,20.82.7,41.69.64,62.47,0,1.17-.07,1.29-1.09,2.04h-49.47Z"/>
+      <path fill="#fff" d="M610.48,1.55c148.49-12.15,244.49,141.46,171.28,270.23-79.21,139.33-286.71,111.03-325.72-43.43C429.83,124.54,501.53,10.47,610.48,1.55Z"/>
+      <g ref={pupilRef} clipPath={`url(#${clipId})`}>
+        <g ref={scaleRef}>
+          <path fill="#000" d="M746.24,265.73c77.26-70.56,54.62-197.48-39.64-239.96-118.98-53.62-229.75,70.86-181.05,186.05,36.05,85.28,149.89,118.57,220.69,53.91Z"/>
+        </g>
+      </g>
+      <path fill="#fff" d="M912.02,1.25c55.05,59.15,109.74,118.76,163.28,179.22-18.41,23.68-40.14,44.54-60.35,66.64-34.38,37.59-68.37,75.54-102.88,113.01-.85.85-1.9.85-3,1-16.05,2.14-38.93-.72-56.06-.09-1.38.05-8.67,2.44-7.45-.44l162.74-179.91L845.56,1.25h66.47Z"/>
+      <polygon fill="#46D12A" points="1224.36 1.25 1100.96 136.19 1067.9 101.22 1067.56 98.88 1156.9 1.25 1224.36 1.25"/>
+      <path fill="#fff" d="M1157.9,361.07l-90.38-96.59,32.43-38.36c1.62,0,2.93,1.9,4,3,17.15,17.75,33.13,36.91,49.95,55,21.93,23.6,47.34,47.61,67.45,72.47.66.82,5.13,6.31,1.67,5.34-.53-.15-.88-.87-1.15-.87h-63.97Z"/>
+    </svg>
+  );
+}
+
 /* ── arrow svg ─────────────────────────────────────────────────────── */
 export function Arrow({ color = "#000", size = 11 }: { color?: string; size?: number }) {
   return (

@@ -298,8 +298,8 @@
 }
 .theme-loading-screen--leaving { animation: theme-loading-out .42s cubic-bezier(.16,1,.3,1) both; }
 .theme-loading-screen--focused {
-  --loader-bg: #eadfce;
-  --loader-panel: #f8f0e5;
+  --loader-bg: transparent;
+  --loader-panel: transparent;
   --loader-fg: #211f1a;
   --loader-muted: rgba(33,31,26,.58);
   --loader-accent: #d95b2f;

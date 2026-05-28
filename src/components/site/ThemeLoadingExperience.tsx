@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import Image from "next/image";
+import FocusedLoaderContent from "@/components/focused/FocusedLoaderContent";
 import { usePathname, useRouter } from "next/navigation";
 import { parseCanonicalPath, type Theme } from "@/lib/site-routing";
 
@@ -202,7 +203,9 @@ function ThemeLoadingScreen({ mode, phase, fromTheme, toTheme }: Omit<Transition
       aria-live="polite"
       aria-label={label}
     >
-      {backgroundThemes ? (
+      {activeTheme === "focused" && mode === "page" ? (
+        <FocusedLoaderContent />
+      ) : backgroundThemes ? (
         <div className="theme-loading-backgrounds" aria-hidden="true">
           {backgroundThemes.map((theme, index) => (
             <div className="theme-loading-background" key={`${index}-${theme}`}>
@@ -222,19 +225,19 @@ function ThemeLoadingScreen({ mode, phase, fromTheme, toTheme }: Omit<Transition
           ))}
         </div>
       ) : (
-        <div className="theme-loading-field" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
+        <>
+          <div className="theme-loading-field" aria-hidden="true">
+            <span /><span /><span />
+          </div>
+          <div className="theme-loading-copy">
+            <p>{mode === "theme" ? "Changing theme" : `${THEME_LABELS[activeTheme]} mode`}</p>
+            <h2>{mode === "theme" ? label : "Loading page"}</h2>
+          </div>
+          <div className="theme-loading-meter" aria-hidden="true">
+            <span />
+          </div>
+        </>
       )}
-      <div className="theme-loading-copy">
-        <p>{mode === "theme" ? "Changing theme" : `${THEME_LABELS[activeTheme]} mode`}</p>
-        <h2>{mode === "theme" ? label : "Loading page"}</h2>
-      </div>
-      <div className="theme-loading-meter" aria-hidden="true">
-        <span />
-      </div>
     </div>
   );
 }
