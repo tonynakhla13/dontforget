@@ -1,19 +1,10 @@
-"use client";
-
 import Link from "next/link";
+import { getServices } from "@/lib/public-content";
+import type { Locale } from "@/i18n/config";
 import CreativeNavbar from "@/components/creative/CreativeNavbar";
 import CreativePageHero from "@/components/creative/CreativePageHero";
 import CreativeFAQ from "@/components/creative/CreativeFAQ";
 import CreativeFooter from "@/components/creative/CreativeFooter";
-
-const SERVICES = [
-  { n: "01", id: "webdev", t: "Web\nDev", d: "Fast, scalable, interactive websites and applications built around performance, clarity, CMS needs, SEO, and measurable results." },
-  { n: "02", id: "uiux", t: "UI /\nUX", d: "Research, competitive analysis, wireframes, prototypes, design systems, interaction design, and usability refinement." },
-  { n: "03", id: "ecomm", t: "E-\nCommerce", d: "Custom storefronts, payments, inventory, retention flows, analytics, reporting, and SEO-ready sales paths." },
-  { n: "04", id: "mobile", t: "Mobile", d: "iOS and Android product flows with native-feeling interaction, push notifications, offline support, and release preparation." },
-  { n: "05", id: "seo", t: "SEO", d: "Technical audits, keyword strategy, content planning, link building, Core Web Vitals, and AI-powered search visibility." },
-  { n: "06", id: "crm", t: "CRM", d: "Custom workflow platforms with role-based access, dashboards, reporting, integrations, automation, and data migration." },
-];
 
 const PROCESS = [
   { n: "01", t: "Listen.", d: "A 60-minute call. You talk, we take a lot of notes and ask the questions you weren't expecting." },
@@ -36,7 +27,9 @@ function ArrowSvg() {
   );
 }
 
-export default function CreativeServicesPage() {
+export default async function CreativeServicesPage({ locale }: { locale: Locale }) {
+  const services = await getServices(locale);
+
   return (
     <>
       <CreativeNavbar active="services" />
@@ -49,12 +42,16 @@ export default function CreativeServicesPage() {
 
       {/* Service list rows */}
       <section className="c-svc-list">
-        {SERVICES.map(({ n, id, t, d }) => (
-          <div key={n} className="c-svc-row">
-            <div className="c-svc-row__n">{n}</div>
-            <div className="c-svc-row__t" style={{ whiteSpace: "pre-line" }}>{t}</div>
-            <p className="c-svc-row__d">{d}</p>
-            <Link href={`/services/${id}`} className="c-iconbtn c-svc-row__arr" aria-label={`More about ${t.replace(/\s+/g, " ")}`}>
+        {services.map((service, i) => (
+          <div key={service.id} className="c-svc-row">
+            <div className="c-svc-row__n">{String(i + 1).padStart(2, "0")}</div>
+            <div className="c-svc-row__t">{service.title}</div>
+            <p className="c-svc-row__d">{service.shortDescription ?? service.description ?? ""}</p>
+            <Link
+              href={`/${locale}/creative/services/${service.slug ?? service.id}`}
+              className="c-iconbtn c-svc-row__arr"
+              aria-label={`More about ${service.title}`}
+            >
               <ArrowSvg />
             </Link>
           </div>
@@ -74,7 +71,7 @@ export default function CreativeServicesPage() {
                   <p className="c-tier__period">{period}</p>
                 </div>
                 <p className="c-tier__desc">{desc}</p>
-                <Link href="/creative/contact" className="c-btn" style={{ marginTop: 20 }}>{cta}</Link>
+                <Link href={`/${locale}/creative/contact`} className="c-btn" style={{ marginTop: 20 }}>{cta}</Link>
               </div>
             ))}
           </div>

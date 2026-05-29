@@ -364,7 +364,7 @@ function GuidedCard({ onClick }: { onClick: () => void }) {
           fontFamily: SANS,
           fontSize:   "clamp(0.78rem, 0.95vw, 0.92rem)",
           color:      TK.green, marginTop: "0.3rem",
-        }}>We&apos;ll walk you through it — 3 quick steps.</span>
+        }}>We will walk you through it — 3 quick questions.</span>
       </div>
       <span style={{
         fontFamily: SANS,
@@ -853,23 +853,34 @@ export default function NoxContactHome() {
         <h2 style={{
           fontFamily:    SANS,
           fontWeight:    700,
-          fontSize:      "clamp(4rem, 10vw, 11rem)",
+          fontSize:      "clamp(3rem, 7vw, 8rem)",
           lineHeight:    0.92,
           color:         TK.paper,
           textTransform: "uppercase",
           letterSpacing: "-0.03em",
           margin:        "0 0 0.2em",
-        }}>start a</h2>
+        }}>Have something</h2>
         <h2 style={{
           fontFamily:  DISPLAY,
           fontStyle:   "italic",
           fontWeight:  700,
-          fontSize:    "clamp(4.2rem, 11vw, 12rem)",
+          fontSize:    "clamp(3.2rem, 8vw, 9rem)",
           lineHeight:  0.9,
           color:       TK.green,
           letterSpacing: "-0.03em",
-          margin:      0,
-        }}>project.</h2>
+          margin:      "0 0 clamp(1rem,2vw,2rem)",
+        }}>you want to build?</h2>
+        <p style={{
+          fontFamily: SANS,
+          fontSize:   "clamp(0.85rem, 1.05vw, 1.05rem)",
+          lineHeight: 1.7,
+          color:      TK.green,
+          opacity:    0.65,
+          maxWidth:   520,
+          margin:     "0 auto",
+        }}>
+          No pressure. No confusing sales performance. Just a useful conversation.
+        </p>
       </div>
 
       {/* Two-column layout */}
@@ -884,7 +895,7 @@ export default function NoxContactHome() {
         {/* LEFT — description + guided brief card */}
         <div>
           <p style={{ fontFamily: SANS, fontSize: "clamp(0.95rem, 1.4vw, 1.4rem)", lineHeight: 1.65, color: TK.green, margin: 0 }}>
-            Write a message, record a voice note, or use the guided brief — takes under two minutes.
+            Clear brief? Great. Messy idea? Also great. Tell us what you are trying to create, fix, launch, or finally understand — and we will help you find the next smart step.
           </p>
           <GuidedCard onClick={() => setStepModal(true)} />
         </div>

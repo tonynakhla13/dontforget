@@ -17,6 +17,7 @@ import FocusedAbout from "@/themes/focused/about/page";
 import FocusedWork from "@/themes/focused/work/page";
 import FocusedServices from "@/themes/focused/services/page";
 import FocusedBlog from "@/themes/focused/blog/page";
+import ServiceDetailFocused from "@/components/focused/ServiceDetailFocused";
 import FocusedContact from "@/themes/focused/contact/page";
 import CreativeThemeLayout from "@/themes/creative/layout";
 import CreativeHome from "@/themes/creative/page";
@@ -25,6 +26,7 @@ import CreativeWork from "@/themes/creative/work/page";
 import CreativeServices from "@/themes/creative/services/page";
 import CreativeBlog from "@/themes/creative/blog/page";
 import CreativeContact from "@/themes/creative/contact/page";
+import ServiceDetailCreative from "@/components/creative/ServiceDetailCreative";
 import ImmersiveHome from "@/themes/immersive/page";
 import ImmersiveAbout from "@/themes/immersive/about/page";
 import ImmersiveWork from "@/themes/immersive/work/page";
@@ -75,6 +77,11 @@ export default async function ThemePage({ params }: { params: Params }) {
 async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: string[]) {
   const page = tail[0] ?? "home";
   if (theme === "focused") {
+    if (page === "services" && tail[1]) {
+      const service = await getService(locale, tail[1]);
+      if (!service) return null;
+      return <FocusedThemeLayout><ServiceDetailFocused service={service} locale={locale} /></FocusedThemeLayout>;
+    }
     const view = page === "home" ? <FocusedHome /> :
       page === "about" && !tail[1] ? <FocusedAbout /> :
       page === "work" && !tail[1] ? <FocusedWork /> :
@@ -84,10 +91,15 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
     return view ? <FocusedThemeLayout>{view}</FocusedThemeLayout> : null;
   }
   if (theme === "creative") {
+    if (page === "services" && tail[1]) {
+      const service = await getService(locale, tail[1]);
+      if (!service) return null;
+      return <CreativeThemeLayout><ServiceDetailCreative service={service} locale={locale} /></CreativeThemeLayout>;
+    }
     const view = page === "home" ? <CreativeHome /> :
       page === "about" && !tail[1] ? <CreativeAbout /> :
       page === "work" && !tail[1] ? <CreativeWork /> :
-      page === "services" && !tail[1] ? <CreativeServices /> :
+      page === "services" && !tail[1] ? <CreativeServices locale={locale} /> :
       page === "blog" && !tail[1] ? <CreativeBlog /> :
       page === "contact" && !tail[1] ? <CreativeContact /> : null;
     return view ? <CreativeThemeLayout>{view}</CreativeThemeLayout> : null;

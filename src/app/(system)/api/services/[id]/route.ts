@@ -15,7 +15,7 @@ export async function PUT(
   const service = await prisma.service.update({
     where: { id },
     data: serviceUpdateData(body),
-    include: { attachments: { include: { media: true }, orderBy: { order: "asc" } } },
+    include: { attachments: { include: { media: true }, orderBy: { order: "asc" } }, projects: { orderBy: { order: "asc" } } },
   });
   return NextResponse.json(service);
 }
