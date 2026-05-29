@@ -77,139 +77,70 @@ function ServiceCard({ s, index }: { s: (typeof SERVICES)[0]; index: number }) {
   return (
     <>
       <style>{`
-        .sf-card-${index} { transition: border-color 280ms ease, box-shadow 280ms ease, background 280ms ease; }
-        .sf-card-${index}:hover { border-color: ${C.accent} !important; background: ${C.card} !important; box-shadow: 0 0 0 1px ${C.accent}, 0 8px 40px rgba(${C.accentRgb},0.08) !important; }
-        .sf-del-item-${index} { display:flex; align-items:center; gap:0.5rem; }
-        .sf-pill-${index} { display:inline-flex; align-items:center; padding:0.22rem 0.65rem; border:1px solid ${C.border}; background:rgba(${C.accentRgb},0.04); font-family:${SANS}; font-size:0.6rem; letter-spacing:0.05em; color:${C.accent}; transition:border-color 200ms,background 200ms,color 200ms; cursor:default; }
-        .sf-card-${index}:hover .sf-pill-${index} { border-color:rgba(${C.accentRgb},0.35); background:rgba(${C.accentRgb},0.1); }
+        .sf-card-${index} {
+          transition: box-shadow 300ms ease, background 300ms ease;
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,0.09);
+        }
+        .sf-card-${index}:hover {
+          box-shadow: inset 0 0 0 2px ${C.accent}, 0 12px 48px rgba(${C.accentRgb},0.1);
+        }
+        .sf-pill-${index} { display:inline-flex; align-items:center; padding:0.4rem 0.9rem; border:1px solid rgba(255,255,255,0.12); background:rgba(${C.accentRgb},0.06); font-family:${SANS}; font-size:0.75rem; letter-spacing:0.05em; color:${C.accent}; }
+        .sf-card-${index}:hover .sf-pill-${index} { border-color:rgba(${C.accentRgb},0.4); background:rgba(${C.accentRgb},0.13); }
+        .sf-del-${index} { display:flex; align-items:flex-start; gap:0.5rem; }
       `}</style>
 
       <div
         className={`sf-service-card sf-card-${index}`}
         onMouseEnter={() => setHov(true)}
         onMouseLeave={() => setHov(false)}
-        style={{
-          position: "relative",
-          border: `1px solid ${C.border}`,
-          background: "transparent",
-          overflow: "hidden",
-        }}
+        style={{ position: "relative", background: C.card, overflow: "hidden" }}
       >
-        {/* green left accent bar */}
-        <div aria-hidden style={{
-          position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
-          background: C.accent,
-          transform: hov ? "scaleY(1)" : "scaleY(0)",
-          transformOrigin: "bottom",
-          transition: "transform 350ms cubic-bezier(0.22,1,0.36,1)",
-        }} />
-
-        {/* ── card header ── */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: `clamp(1.4rem,2.5vw,2rem) clamp(1.8rem,3.5vw,3rem)`,
-          borderBottom: `1px solid ${C.border}`,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "clamp(0.75rem,1.2vw,1rem)" }}>
-            {/* number */}
-            <span style={{
-              fontFamily: SANS, fontSize: "0.55rem", letterSpacing: "0.22em",
-              color: hov ? C.accent : C.faint,
-              transition: "color 260ms",
-            }}>{s.n}</span>
-            {/* divider */}
-            <span style={{ width: 1, height: 14, background: C.border, display: "block" }} />
-            {/* icon */}
-            <span style={{
-              color: hov ? C.accent : `rgba(255,255,255,0.35)`,
-              lineHeight: 0,
-              transition: "color 260ms",
-            }}>{s.icon}</span>
+        {/* ── title + icon row ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr clamp(100px,12vw,160px)", borderBottom: `1px solid ${C.border}` }}>
+          <div style={{ padding: `clamp(1.8rem,2.8vw,3rem) clamp(1.8rem,3.5vw,3rem)`, borderRight: `1px solid ${C.border}` }}>
+            <h2 style={{
+              fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
+              fontSize: "clamp(2rem,4vw,5rem)", lineHeight: 0.9, letterSpacing: "-0.03em",
+              color: "transparent",
+              WebkitTextStroke: hov ? `1.5px ${C.accent}` : `1.5px ${C.text}`,
+              margin: 0, transition: "-webkit-text-stroke-color 280ms ease",
+            }}>{s.title}</h2>
           </div>
-
-          {/* tag */}
-          <span style={{
-            fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: hov ? C.accent : C.faint,
-            transition: "color 260ms",
-          }}>{s.tag}</span>
+          <div aria-hidden style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{
+              color: hov ? C.accent : "rgba(255,255,255,0.13)",
+              lineHeight: 0, display: "block",
+              transform: hov ? "scale(1.1)" : "scale(1)",
+              transition: "color 350ms, transform 350ms cubic-bezier(0.22,1,0.36,1)",
+            }}>
+              <span style={{ display: "block", transform: "scale(4.5)", transformOrigin: "center" }}>{s.icon}</span>
+            </span>
+          </div>
         </div>
 
-        {/* ── card title band ── */}
-        <div style={{
-          padding: `clamp(2rem,3.5vw,3.5rem) clamp(1.8rem,3.5vw,3rem)`,
-          borderBottom: `1px solid ${C.border}`,
-        }}>
-          <h2 style={{
-            fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
-            fontSize: "clamp(2.8rem,5.5vw,7rem)", lineHeight: 0.88, letterSpacing: "-0.03em",
-            color: "transparent",
-            WebkitTextStroke: hov ? `1.5px ${C.accent}` : `1.5px ${C.text}`,
-            margin: 0,
-            transition: "-webkit-text-stroke-color 280ms ease",
-          }}>{s.title}</h2>
-        </div>
+        {/* ── body: description → deliverables → tech ── */}
+        <div style={{ padding: `clamp(1.8rem,2.8vw,3rem) clamp(1.8rem,3.5vw,3rem)`, borderBottom: `1px solid ${C.border}`, display: "flex", flexDirection: "column", gap: "clamp(1.5rem,2.2vw,2.2rem)" }}>
+          <p style={{
+            fontFamily: SANS, fontSize: "clamp(0.92rem,1.05vw,1.05rem)",
+            lineHeight: 1.75, color: hov ? C.muted : "rgba(255,255,255,0.5)",
+            margin: 0, transition: "color 260ms",
+          }}>{s.body}</p>
 
-        {/* ── card body: description | deliverables | tech ── */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "1fr clamp(160px,22vw,240px) clamp(160px,22vw,240px)",
-          borderBottom: `1px solid ${C.border}`,
-        }}>
-          {/* description */}
-          <div style={{
-            padding: `clamp(1.8rem,3vw,3rem) clamp(1.8rem,3.5vw,3rem)`,
-            borderRight: `1px solid ${C.border}`,
-          }}>
-            <p style={{
-              fontFamily: SANS, fontSize: "clamp(0.88rem,1vw,1rem)",
-              lineHeight: 1.78, color: hov ? C.muted : `rgba(255,255,255,0.42)`,
-              margin: 0, maxWidth: "50ch",
-              transition: "color 260ms",
-            }}>{s.body}</p>
-          </div>
-
-          {/* deliverables */}
-          <div style={{
-            padding: `clamp(1.8rem,3vw,3rem) clamp(1.2rem,2vw,2rem)`,
-            borderRight: `1px solid ${C.border}`,
-          }}>
-            <p style={{
-              fontFamily: SANS, fontSize: "0.5rem", letterSpacing: "0.26em", textTransform: "uppercase",
-              color: hov ? C.accent : C.faint, opacity: hov ? 1 : 0.7,
-              margin: "0 0 clamp(0.9rem,1.4vw,1.4rem)",
-              transition: "color 260ms, opacity 260ms",
-            }}>Deliverables</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+          <div>
+            <p style={{ fontFamily: SANS, fontSize: "0.48rem", letterSpacing: "0.26em", textTransform: "uppercase", color: hov ? C.accent : C.faint, margin: "0 0 0.75rem", transition: "color 260ms" }}>Deliverables</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 2rem" }}>
               {s.delivers.map((d, i) => (
-                <div key={i} className={`sf-del-item-${index}`}>
-                  <span style={{
-                    width: 3, height: 3, borderRadius: "50%", flexShrink: 0,
-                    background: hov ? C.accent : C.faint,
-                    transition: "background 260ms",
-                  }} />
-                  <span style={{
-                    fontFamily: SANS, fontSize: "clamp(0.72rem,0.82vw,0.82rem)", lineHeight: 1.5,
-                    color: hov ? C.text : C.muted,
-                    transition: "color 260ms",
-                  }}>{d}</span>
+                <div key={i} className={`sf-del-${index}`}>
+                  <span style={{ width: 3, height: 3, borderRadius: "50%", flexShrink: 0, marginTop: "0.42em", background: hov ? C.accent : C.faint, transition: "background 260ms" }} />
+                  <span style={{ fontFamily: SANS, fontSize: "clamp(0.82rem,0.95vw,0.95rem)", lineHeight: 1.5, color: hov ? C.text : C.muted, transition: "color 260ms" }}>{d}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* tech */}
-          <div style={{
-            padding: `clamp(1.8rem,3vw,3rem) clamp(1.2rem,2vw,2rem)`,
-          }}>
-            <p style={{
-              fontFamily: SANS, fontSize: "0.5rem", letterSpacing: "0.26em", textTransform: "uppercase",
-              color: hov ? C.accent : C.faint, opacity: hov ? 1 : 0.7,
-              margin: "0 0 clamp(0.9rem,1.4vw,1.4rem)",
-              transition: "color 260ms, opacity 260ms",
-            }}>Tech &amp; tools</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
+          <div>
+            <p style={{ fontFamily: SANS, fontSize: "0.48rem", letterSpacing: "0.26em", textTransform: "uppercase", color: hov ? C.accent : C.faint, margin: "0 0 0.75rem", transition: "color 260ms" }}>Tech &amp; tools</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
               {s.tech.map((t, i) => (
                 <span key={i} className={`sf-pill-${index}`}>{t}</span>
               ))}
@@ -217,40 +148,32 @@ function ServiceCard({ s, index }: { s: (typeof SERVICES)[0]; index: number }) {
           </div>
         </div>
 
-        {/* ── card footer ── */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: `clamp(1.2rem,2vw,1.8rem) clamp(1.8rem,3.5vw,3rem)`,
-        }}>
-          <Link
-            href="/en/focused/contact"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 7,
-              padding: "0.55rem 1.3rem",
-              background: hov ? C.accent : `rgba(${C.accentRgb},0.1)`,
-              border: `1px solid ${hov ? C.accent : `rgba(${C.accentRgb},0.3)`}`,
-              color: hov ? "#000" : C.accent,
-              fontFamily: SANS, fontWeight: 700, fontSize: "0.6rem",
-              letterSpacing: "0.1em", textTransform: "uppercase",
-              textDecoration: "none",
-              transition: "background 260ms, border-color 260ms, color 260ms",
-            }}
-          >
+        {/* ── footer ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: `clamp(1.1rem,1.8vw,1.8rem) clamp(1.8rem,3.5vw,3rem)` }}>
+          <Link href="/en/focused/contact" style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            padding: "0.6rem 1.4rem",
+            background: hov ? C.accent : `rgba(${C.accentRgb},0.08)`,
+            border: `1px solid ${hov ? C.accent : `rgba(${C.accentRgb},0.25)`}`,
+            color: hov ? "#000" : C.accent,
+            fontFamily: SANS, fontWeight: 700, fontSize: "0.62rem",
+            letterSpacing: "0.1em", textTransform: "uppercase",
+            textDecoration: "none", transition: "background 260ms, border-color 260ms, color 260ms",
+          }}>
             Start a project
             <svg width={9} height={9} viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M2 8L8 2M8 2H4M8 2v4"/></svg>
           </Link>
-
-          <Link
-            href={`/en/focused/services/${s.slug}`}
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 5,
-              fontFamily: SANS, fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase",
-              color: hov ? C.accent : C.faint,
-              textDecoration: "none",
-              transition: "color 260ms",
-            }}
-          >
-            View service
+          <Link href={`/en/focused/services/${s.slug}`} style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            padding: "0.6rem 1.4rem",
+            background: "transparent",
+            border: `1px solid ${C.border}`,
+            color: hov ? C.text : C.muted,
+            fontFamily: SANS, fontWeight: 600, fontSize: "0.62rem",
+            letterSpacing: "0.1em", textTransform: "uppercase",
+            textDecoration: "none", transition: "border-color 260ms, color 260ms",
+          }}>
+            Full service
             <svg width={9} height={9} viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M2 5h6M5 2l3 3-3 3"/></svg>
           </Link>
         </div>
