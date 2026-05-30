@@ -380,6 +380,13 @@ export default function BlogPostFocused({ post, locale = "en" }: { post: FullPos
       {/* ══════════════════════════════════════════════════
           BODY — prose + TOC sidebar
       ══════════════════════════════════════════════════ */}
+      <section style={{
+        background:      "rgba(70,174,34,0.028)",
+        backgroundImage: "linear-gradient(rgba(70,209,42,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(70,209,42,0.045) 1px, transparent 1px)",
+        backgroundSize:  "52px 52px",
+        borderTop:       "1px solid rgba(70,174,34,0.14)",
+        borderBottom:    "1px solid rgba(70,174,34,0.14)",
+      }}>
       <div
         className="bpf-body"
         style={{
@@ -394,7 +401,17 @@ export default function BlogPostFocused({ post, locale = "en" }: { post: FullPos
         }}
       >
         {/* ── Prose ── */}
-        <article className="bpf-prose-col">
+        <article
+          className="bpf-prose-col"
+          style={{
+            background:   "rgba(4, 14, 6, 0.72)",
+            border:       "1px solid rgba(70,174,34,0.13)",
+            borderLeft:   "3px solid rgba(70,174,34,0.55)",
+            padding:      "clamp(2rem, 4vw, 4rem) clamp(1.5rem, 3.5vw, 3.5rem)",
+            boxSizing:    "border-box",
+            backdropFilter: "blur(2px)",
+          }}
+        >
           <style>{`
             /* ── Reset inherited opacity from parent ── */
             .bpf-prose-col { color: ${TK.green}; }
@@ -571,11 +588,15 @@ export default function BlogPostFocused({ post, locale = "en" }: { post: FullPos
           <aside
             className="bpf-toc-col"
             style={{
-              position:   "sticky",
-              top:        "6rem",
-              maxHeight:  "calc(100dvh - 8rem)",
-              overflowY:  "auto",
-              paddingTop: "0.25rem",
+              position:      "sticky",
+              top:           "6rem",
+              maxHeight:     "calc(100dvh - 8rem)",
+              overflowY:     "auto",
+              padding:       "clamp(1.2rem, 2vw, 1.8rem)",
+              background:    "rgba(4,14,6,0.6)",
+              border:        "1px solid rgba(70,174,34,0.13)",
+              borderTop:     "2px solid rgba(70,174,34,0.45)",
+              backdropFilter:"blur(2px)",
             }}
           >
             <p style={{
@@ -648,6 +669,7 @@ export default function BlogPostFocused({ post, locale = "en" }: { post: FullPos
           </aside>
         )}
       </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════
           CTA bar
