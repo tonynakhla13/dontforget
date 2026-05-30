@@ -114,10 +114,10 @@ function ProjectCard({
   const num    = String(index + 1).padStart(2, "0");
   const href   = `/${locale ?? "en"}/focused/work/${project.slug}`;
   const isWide = span === 2;
-  // wide cards are the hero — tall and dominant; narrow cards are compact
+  // narrow cards are portrait-taller, wide cards are landscape
   const cardH  = isWide
-    ? "clamp(540px,62vw,780px)"
-    : "clamp(300px,34vw,440px)";
+    ? "clamp(360px,42vw,540px)"
+    : "clamp(480px,58vw,700px)";
 
   function enter() {
     if (cardRef.current)   { cardRef.current.style.transform = isWide ? "scale(1.03)" : "scale(1.04)"; cardRef.current.style.zIndex = "10"; }
