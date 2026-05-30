@@ -1,13 +1,13 @@
 import HomeFocused from "@/components/home/HomeFocused";
 import SmoothScroll from "@/components/SmoothScroll";
-import { getClients } from "@/lib/public-content";
+import { getClients, getPosts } from "@/lib/public-content";
 
 export default async function FocusedPage() {
-  const clients = await getClients();
+  const [clients, posts] = await Promise.all([getClients(), getPosts("en")]);
   return (
     <>
       <SmoothScroll />
-      <HomeFocused clients={clients} />
+      <HomeFocused clients={clients} posts={posts} />
     </>
   );
 }

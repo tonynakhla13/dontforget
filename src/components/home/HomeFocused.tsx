@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import Link from "next/link";
 import { NoxNavbar, NoxFooter, ClientCarousel, NoxMusts, NoxLogo, TK, SANS, DISPLAY } from "@/components/focused/NoxShared";
@@ -169,7 +169,15 @@ function PxPair({ style, className }: { style: React.CSSProperties; className?: 
 /* ═══════════════════════════════════════════════════════════════════
    HOME
 ═══════════════════════════════════════════════════════════════════ */
-export default function HomeFocused({ clients }: { clients?: { name: string; company: string | null; logo?: string | null }[] }) {
+type BlogPreview = { id: string; slug: string; title: string; tags: string[]; excerpt: string | null; coverImage: string | null };
+
+export default function HomeFocused({
+  clients,
+  posts,
+}: {
+  clients?: { name: string; company: string | null; logo?: string | null }[];
+  posts?:   BlogPreview[];
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -344,6 +352,24 @@ export default function HomeFocused({ clients }: { clients?: { name: string; com
             once:    true,
           },
         });
+      });
+
+      // ── Blog section ──────────────────────────────────────────────
+      gsap.from(".tk-blog-heading", {
+        y: 44, opacity: 0, duration: 0.85, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-blog-home", start: "top 82%", once: true },
+      });
+      gsap.from(".tk-blog-sub", {
+        y: 22, opacity: 0, duration: 0.7, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-blog-home", start: "top 80%", once: true },
+      });
+      gsap.from(".tk-blog-home-card", {
+        y: 52, opacity: 0, stagger: 0.1, duration: 0.9, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-blog-home-grid", start: "top 80%", once: true },
+      });
+      gsap.from(".tk-blog-more", {
+        y: 20, opacity: 0, duration: 0.6, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-blog-more", start: "top 90%", once: true },
       });
 
     }, rootRef);
@@ -881,6 +907,176 @@ export default function HomeFocused({ clients }: { clients?: { name: string; com
           ))}
         </div>
       </section>
+
+      {/* ════════════════ BLOG ════════════════ */}
+      {posts && posts.length > 0 && (() => {
+        const shown = posts.slice(0, 3);
+        return (
+          <section className="tk-blog-home" style={{
+            padding:   "clamp(4rem, 8vw, 9rem) clamp(1.5rem, 4vw, 3.5rem)",
+            borderTop: `1px solid ${TK.line}`,
+          }}>
+
+            {/* Header row */}
+            <div style={{
+              display:        "flex",
+              alignItems:     "flex-end",
+              justifyContent: "space-between",
+              gap:            "1.5rem",
+              marginBottom:   "clamp(2.5rem, 5vw, 5rem)",
+              flexWrap:       "wrap",
+            }}>
+              <div>
+                <p style={{
+                  fontFamily:    SANS,
+                  fontSize:      "clamp(0.68rem, 0.84vw, 0.84rem)",
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  color:         TK.green,
+                  opacity:       0.6,
+                  margin:        "0 0 0.5rem",
+                }}>/ from the studio</p>
+                <h2 className="tk-blog-heading" style={{
+                  fontFamily:    SANS,
+                  fontWeight:    700,
+                  fontSize:      "clamp(2rem, 5vw, 5rem)",
+                  lineHeight:    1,
+                  color:         TK.paper,
+                  margin:        0,
+                  letterSpacing: "-0.01em",
+                }}>Things we think about.</h2>
+              </div>
+              <Link
+                href="/en/focused/blog"
+                className="tk-blog-more"
+                style={{
+                  fontFamily:     SANS,
+                  fontWeight:     600,
+                  fontSize:       "clamp(0.82rem, 1vw, 1rem)",
+                  letterSpacing:  "0.06em",
+                  color:          TK.green,
+                  textDecoration: "none",
+                  opacity:        0.72,
+                  transition:     "opacity 150ms ease",
+                  flexShrink:     0,
+                  paddingBottom:  2,
+                  borderBottom:   `1px solid rgba(70,174,34,0.4)`,
+                  whiteSpace:     "nowrap",
+                }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "0.72")}
+              >View all posts →</Link>
+            </div>
+
+            {/* Grid */}
+            <div className="tk-blog-home-grid" style={{
+              display:             "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap:                 "clamp(1rem, 1.8vw, 2rem)",
+            }}>
+              {shown.map((post, i) => (
+                <Link
+                  key={post.id}
+                  href={`/en/focused/blog/${post.slug}`}
+                  className="tk-blog-home-card"
+                  style={{ display: "block", textDecoration: "none" }}
+                  onMouseEnter={e => {
+                    const card = e.currentTarget.querySelector<HTMLElement>(".bh-thumb");
+                    const title = e.currentTarget.querySelector<HTMLElement>(".bh-title");
+                    if (card) { card.style.filter = "brightness(1.12)"; card.style.transform = "scale(1.025)"; }
+                    if (title) title.style.color = TK.green;
+                  }}
+                  onMouseLeave={e => {
+                    const card = e.currentTarget.querySelector<HTMLElement>(".bh-thumb");
+                    const title = e.currentTarget.querySelector<HTMLElement>(".bh-title");
+                    if (card) { card.style.filter = "brightness(1)"; card.style.transform = "scale(1)"; }
+                    if (title) title.style.color = TK.paper;
+                  }}
+                >
+                  {/* Thumbnail */}
+                  <div style={{ overflow: "hidden", marginBottom: "clamp(0.9rem, 1.4vw, 1.4rem)" }}>
+                    <div
+                      className="bh-thumb"
+                      style={{
+                        width:       "100%",
+                        aspectRatio: "16 / 10",
+                        background:  i % 3 === 0
+                          ? `linear-gradient(135deg, rgba(70,174,34,0.18) 0%, rgba(70,174,34,0.06) 100%)`
+                          : i % 3 === 1
+                            ? `linear-gradient(135deg, rgba(70,174,34,0.1) 0%, rgba(70,174,34,0.22) 100%)`
+                            : `linear-gradient(135deg, rgba(70,174,34,0.06) 0%, rgba(70,174,34,0.16) 100%)`,
+                        border:      `1px solid rgba(70,174,34,0.18)`,
+                        overflow:    "hidden",
+                        transition:  "filter 280ms ease, transform 360ms ease",
+                        display:     "flex",
+                        alignItems:  "center",
+                        justifyContent:"center",
+                      }}
+                    >
+                      {post.coverImage
+                        ? <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        : (
+                          <span style={{
+                            fontFamily:    SANS,
+                            fontWeight:    700,
+                            fontSize:      "clamp(2.5rem, 4vw, 5rem)",
+                            color:         `rgba(70,174,34,0.22)`,
+                            letterSpacing: "-0.04em",
+                            userSelect:    "none",
+                          }}>{String(i + 1).padStart(2, "0")}</span>
+                        )
+                      }
+                    </div>
+                  </div>
+
+                  {/* Tag */}
+                  {post.tags[0] && (
+                    <p style={{
+                      fontFamily:    SANS,
+                      fontSize:      "clamp(0.62rem, 0.8vw, 0.8rem)",
+                      letterSpacing: "0.2em",
+                      textTransform: "uppercase",
+                      color:         TK.green,
+                      opacity:       0.65,
+                      margin:        "0 0 clamp(0.4rem, 0.6vw, 0.6rem)",
+                    }}>{post.tags[0]}</p>
+                  )}
+
+                  {/* Title */}
+                  <h3
+                    className="bh-title"
+                    style={{
+                      fontFamily:  SANS,
+                      fontWeight:  700,
+                      fontSize:    "clamp(1rem, 1.5vw, 1.5rem)",
+                      lineHeight:  1.22,
+                      color:       TK.paper,
+                      margin:      "0 0 clamp(0.5rem, 0.8vw, 0.8rem)",
+                      transition:  "color 180ms ease",
+                    }}
+                  >{post.title}</h3>
+
+                  {/* Excerpt */}
+                  {post.excerpt && (
+                    <p style={{
+                      fontFamily: SANS,
+                      fontSize:   "clamp(0.78rem, 0.95vw, 0.95rem)",
+                      lineHeight: 1.6,
+                      color:      TK.green,
+                      opacity:    0.72,
+                      margin:     0,
+                      display:    "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow:   "hidden",
+                    } as React.CSSProperties}>{post.excerpt}</p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {clients && clients.length > 0 && (
         <section style={{ borderTop: `1px solid ${TK.line}`, borderBottom: `1px solid ${TK.line}`, background: TK.ink }}>
