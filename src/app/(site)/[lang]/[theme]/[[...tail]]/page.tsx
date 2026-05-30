@@ -48,10 +48,41 @@ async function routeParams(params: Params) {
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { locale, theme, tail } = await routeParams(params);
+  const tailPath = tail.length ? `/${tail.join("/")}` : "";
+
+  /* ── Individual blog post — rich OG metadata ── */
+  if (tail[0] === "blog" && tail[1]) {
+    const post = await getPost(locale, tail[1]);
+    if (post) {
+      const desc = post.excerpt ?? post.content.replace(/[#*`]/g, "").substring(0, 155).trimEnd() + "…";
+      return {
+        title:       `${post.title} — NOX Studio`,
+        description: desc,
+        keywords:    post.tags.join(", "),
+        openGraph: {
+          type:             "article",
+          title:            post.title,
+          description:      desc,
+          ...(post.coverImage && { images: [{ url: post.coverImage, width: 1200, height: 630, alt: post.title }] }),
+          ...(post.publishedAt && { publishedTime: new Date(post.publishedAt).toISOString() }),
+          tags:             post.tags,
+          siteName:         "NOX Studio",
+        },
+        twitter: {
+          card:        "summary_large_image",
+          title:       post.title,
+          description: desc,
+          ...(post.coverImage && { images: [post.coverImage] }),
+        },
+        alternates: { languages: { en: `/en/${theme}${tailPath}`, ar: `/ar/${theme}${tailPath}` } },
+      };
+    }
+  }
+
+  /* ── Default page metadata ── */
   const d = await getDictionary(locale);
   const page = tail[0] as keyof typeof d.pages | undefined;
   const title = page ? `${d.pages[page][0]} - ${d.brand}` : d.meta.title;
-  const tailPath = tail.length ? `/${tail.join("/")}` : "";
   return {
     title,
     description: page ? d.pages[page][1] : d.meta.description,
