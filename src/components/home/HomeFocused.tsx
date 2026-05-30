@@ -908,6 +908,24 @@ export default function HomeFocused({
         </div>
       </section>
 
+      {clients && clients.length > 0 && (
+        <section style={{ borderTop: `1px solid ${TK.line}`, borderBottom: `1px solid ${TK.line}`, background: TK.ink }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: "1.2rem",
+            padding: `clamp(1.4rem,2.2vw,2.2rem) clamp(1.5rem,4vw,3.5rem)`,
+            borderBottom: `1px solid var(--nox-border-faint, rgba(255,255,255,0.05))`,
+          }}>
+            <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--nox-text-faint, rgba(255,255,255,0.32))", flexShrink: 0 }}>
+              Trusted by founders &amp; growing teams
+            </span>
+            <div style={{ flex: 1, height: 1, background: TK.line }} />
+          </div>
+          <ClientCarousel clients={clients} />
+        </section>
+      )}
+      <NoxMusts />
+      <NoxContactHome />
+
       {/* ════════════════ BLOG ════════════════ */}
       {posts && posts.length > 0 && (() => {
         const shown = posts.slice(0, 3);
@@ -1000,32 +1018,45 @@ export default function HomeFocused({
                       style={{
                         width:       "100%",
                         aspectRatio: "16 / 10",
-                        background:  i % 3 === 0
-                          ? `linear-gradient(135deg, rgba(70,174,34,0.18) 0%, rgba(70,174,34,0.06) 100%)`
-                          : i % 3 === 1
-                            ? `linear-gradient(135deg, rgba(70,174,34,0.1) 0%, rgba(70,174,34,0.22) 100%)`
-                            : `linear-gradient(135deg, rgba(70,174,34,0.06) 0%, rgba(70,174,34,0.16) 100%)`,
-                        border:      `1px solid rgba(70,174,34,0.18)`,
                         overflow:    "hidden",
                         transition:  "filter 280ms ease, transform 360ms ease",
-                        display:     "flex",
-                        alignItems:  "center",
-                        justifyContent:"center",
+                        position:    "relative",
                       }}
                     >
-                      {post.coverImage
-                        ? <img src={post.coverImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                        : (
+                      {post.coverImage ? (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={post.coverImage}
+                            alt={post.title}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "absolute", inset: 0 }}
+                          />
+                          {/* dark tint overlay so text stays readable on hover */}
+                          <div style={{
+                            position: "absolute", inset: 0,
+                            background: "rgba(5,14,7,0.38)",
+                            transition: "background 280ms ease",
+                          }} />
+                        </>
+                      ) : (
+                        <div style={{
+                          width: "100%", height: "100%",
+                          background: i % 3 === 0
+                            ? `linear-gradient(135deg, rgba(70,174,34,0.18) 0%, rgba(70,174,34,0.06) 100%)`
+                            : i % 3 === 1
+                              ? `linear-gradient(135deg, rgba(70,174,34,0.1) 0%, rgba(70,174,34,0.22) 100%)`
+                              : `linear-gradient(135deg, rgba(70,174,34,0.06) 0%, rgba(70,174,34,0.16) 100%)`,
+                          border:   `1px solid rgba(70,174,34,0.18)`,
+                          display:  "flex", alignItems: "center", justifyContent: "center",
+                        }}>
                           <span style={{
-                            fontFamily:    SANS,
-                            fontWeight:    700,
+                            fontFamily:    SANS, fontWeight: 700,
                             fontSize:      "clamp(2.5rem, 4vw, 5rem)",
-                            color:         `rgba(70,174,34,0.22)`,
-                            letterSpacing: "-0.04em",
-                            userSelect:    "none",
+                            color:         "rgba(70,174,34,0.22)",
+                            letterSpacing: "-0.04em", userSelect: "none",
                           }}>{String(i + 1).padStart(2, "0")}</span>
-                        )
-                      }
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1046,11 +1077,9 @@ export default function HomeFocused({
                   <h3
                     className="bh-title"
                     style={{
-                      fontFamily:  SANS,
-                      fontWeight:  700,
+                      fontFamily:  SANS, fontWeight: 700,
                       fontSize:    "clamp(1rem, 1.5vw, 1.5rem)",
-                      lineHeight:  1.22,
-                      color:       TK.paper,
+                      lineHeight:  1.22, color: TK.paper,
                       margin:      "0 0 clamp(0.5rem, 0.8vw, 0.8rem)",
                       transition:  "color 180ms ease",
                     }}
@@ -1059,16 +1088,10 @@ export default function HomeFocused({
                   {/* Excerpt */}
                   {post.excerpt && (
                     <p style={{
-                      fontFamily: SANS,
-                      fontSize:   "clamp(0.78rem, 0.95vw, 0.95rem)",
-                      lineHeight: 1.6,
-                      color:      TK.green,
-                      opacity:    0.72,
-                      margin:     0,
-                      display:    "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow:   "hidden",
+                      fontFamily: SANS, fontSize: "clamp(0.78rem, 0.95vw, 0.95rem)",
+                      lineHeight: 1.6, color: TK.green, opacity: 0.72, margin: 0,
+                      display: "-webkit-box", WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical", overflow: "hidden",
                     } as React.CSSProperties}>{post.excerpt}</p>
                   )}
                 </Link>
@@ -1078,23 +1101,6 @@ export default function HomeFocused({
         );
       })()}
 
-      {clients && clients.length > 0 && (
-        <section style={{ borderTop: `1px solid ${TK.line}`, borderBottom: `1px solid ${TK.line}`, background: TK.ink }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: "1.2rem",
-            padding: `clamp(1.4rem,2.2vw,2.2rem) clamp(1.5rem,4vw,3.5rem)`,
-            borderBottom: `1px solid var(--nox-border-faint, rgba(255,255,255,0.05))`,
-          }}>
-            <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--nox-text-faint, rgba(255,255,255,0.32))", flexShrink: 0 }}>
-              Trusted by founders &amp; growing teams
-            </span>
-            <div style={{ flex: 1, height: 1, background: TK.line }} />
-          </div>
-          <ClientCarousel clients={clients} />
-        </section>
-      )}
-      <NoxMusts />
-      <NoxContactHome />
       <NoxFooter />
     </div>
   );

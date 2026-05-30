@@ -17,9 +17,20 @@ const prisma = new PrismaClient({ adapter });
 
 const now = new Date();
 
+// Unsplash direct photo URLs — free, no auth needed
+const IMG = {
+  speed:      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80&fit=crop",
+  strategy:   "https://images.unsplash.com/photo-1553484771-047a44eee27b?w=1200&q=80&fit=crop",
+  design:     "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=1200&q=80&fit=crop",
+  seo:        "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=1200&q=80&fit=crop",
+  conversion: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80&fit=crop",
+  process:    "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?w=1200&q=80&fit=crop",
+};
+
 const POSTS = [
   {
     slug: "why-slow-websites-lose-more-than-rankings",
+    coverImage: IMG.speed,
     title: "Why slow websites lose more than just rankings",
     titleAr: "لماذا تخسر المواقع البطيئة أكثر من مجرد ترتيب في البحث",
     excerpt: "Speed is not just a technical metric — it is the first impression your brand makes on every visitor.",
@@ -79,6 +90,7 @@ We help with this as part of our SEO and site health work. If you have a website
   },
   {
     slug: "what-every-small-business-website-is-missing",
+    coverImage: IMG.strategy,
     title: "The one thing every small business website is missing",
     titleAr: "الشيء الوحيد الذي يفتقده موقع كل شركة صغيرة",
     excerpt: "It is not a new design, more pages, or better photography. It is a clear answer to the question every visitor is asking silently.",
@@ -131,6 +143,7 @@ We do this as part of most of our web projects — not as a copywriting service,
   },
   {
     slug: "design-systems-that-stay-useful",
+    coverImage: IMG.design,
     title: "Design systems that actually stay useful",
     titleAr: "أنظمة التصميم التي تبقى مفيدة فعلاً",
     excerpt: "The smallest system that a growing product team can actually maintain is almost always better than the largest one they cannot.",
@@ -174,6 +187,7 @@ That foundation will serve you well even before you have a single component defi
   },
   {
     slug: "seo-basics-that-actually-move-the-needle",
+    coverImage: IMG.seo,
     title: "The SEO basics that actually move the needle",
     titleAr: "أساسيات السيو التي تحدث فرقاً فعلياً",
     excerpt: "Most SEO advice is either too vague to act on or too tactical to apply without context. Here is what we actually focus on first.",
@@ -234,6 +248,7 @@ SEO takes time. Meaningful movement in competitive searches often takes six mont
   },
   {
     slug: "what-makes-a-homepage-convert",
+    coverImage: IMG.conversion,
     title: "What actually makes a homepage convert",
     titleAr: "ما الذي يجعل الصفحة الرئيسية تحوّل الزوار فعلاً",
     excerpt: "Conversion rate is not a design metric. It is a clarity metric. Here is what we look at when a homepage is not performing.",
@@ -295,6 +310,7 @@ Design makes the message easier to receive. It does not replace having a clear m
   },
   {
     slug: "why-we-stopped-using-templates",
+    coverImage: IMG.process,
     title: "Why we stopped using templates for client work",
     titleAr: "لماذا توقفنا عن استخدام القوالب في مشاريع العملاء",
     excerpt: "Templates are fast. They are also the reason most websites in the same industry look like they were built in the same afternoon.",
