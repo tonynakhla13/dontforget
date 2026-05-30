@@ -37,7 +37,7 @@ async function getProjects(): Promise<FocusedProject[]> {
   }
 }
 
-export default async function FocusedWorkPage() {
+export default async function FocusedWorkPage({ locale = "en" }: { locale?: string }) {
   const projects = await getProjects();
-  return <ProjectsFocused projects={projects} />;
+  return <ProjectsFocused projects={projects} locale={locale} />;
 }

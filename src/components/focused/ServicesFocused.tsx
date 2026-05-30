@@ -185,79 +185,237 @@ function ServiceCard({ s, index }: { s: (typeof SERVICES)[0]; index: number }) {
 /* ── Page ────────────────────────────────────────────────────────────────── */
 export default function ServicesFocused() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".sf-eyebrow", { x: -16, opacity: 0, duration: 0.5, ease: "power2.out", delay: 0.08 });
-      gsap.from(".sf-title",   { y: 55,  opacity: 0, duration: 1.1, ease: "power4.out", delay: 0.18 });
-      gsap.from(".sf-lede",    { y: 22,  opacity: 0, duration: 0.75, ease: "power2.out", delay: 0.48 });
+      /* ── Entrance animations ── */
+      gsap.from(".sf-eyebrow", { x: -20, autoAlpha: 0, duration: 0.55, ease: "power2.out", delay: 0.08 });
+      gsap.from(".sf-title",   { y: 60,  autoAlpha: 0, duration: 1.15, ease: "power4.out", delay: 0.2 });
+      gsap.from(".sf-lede",    { y: 28,  autoAlpha: 0, duration: 0.8,  ease: "power2.out", delay: 0.5 });
+      gsap.from(".sf-stat",    { y: 24,  autoAlpha: 0, duration: 0.65, ease: "power3.out", stagger: 0.1, delay: 0.35 });
+      gsap.from(".sf-ticker-item", { x: 30, autoAlpha: 0, duration: 0.5, ease: "power2.out", stagger: 0.07, delay: 0.6 });
 
+      /* ── Scroll parallax (scrub) ── */
+      const hero = heroRef.current;
+      if (hero) {
+        // Title drifts up as you scroll past
+        gsap.to(".sf-title", {
+          y: -70, ease: "none",
+          scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 1.4 },
+        });
+        // Lede fades earlier
+        gsap.to(".sf-lede", {
+          y: -40, autoAlpha: 0, ease: "none",
+          scrollTrigger: { trigger: hero, start: "25% top", end: "75% top", scrub: 1 },
+        });
+        // Glow drifts up faster
+        gsap.to(".sf-glow", {
+          y: -130, scale: 1.35, ease: "none",
+          scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 2 },
+        });
+        // Stats slide off
+        gsap.to(".sf-stats-col", {
+          y: -45, autoAlpha: 0, ease: "none",
+          scrollTrigger: { trigger: hero, start: "20% top", end: "60% top", scrub: 1 },
+        });
+      }
+
+      /* ── Service cards scroll-in ── */
       gsap.utils.toArray<HTMLElement>(".sf-service-card").forEach((card, i) => {
         gsap.from(card, {
-          y: 40, opacity: 0,
+          y: 40, autoAlpha: 0,
           duration: 0.75, ease: "power3.out",
           delay: i * 0.06,
           scrollTrigger: { trigger: card, start: "top 88%", once: true },
         });
       });
 
-      gsap.from(".sf-hw-head", { y: 36, opacity: 0, duration: 0.9, ease: "power3.out", scrollTrigger: { trigger: ".sf-hw-head", start: "top 85%", once: true } });
+      gsap.from(".sf-hw-head", { y: 36, autoAlpha: 0, duration: 0.9, ease: "power3.out", scrollTrigger: { trigger: ".sf-hw-head", start: "top 85%", once: true } });
       gsap.utils.toArray<HTMLElement>(".tk-hw-item").forEach((el, i) => {
-        gsap.from(el, { x: -24, opacity: 0, duration: 0.62, ease: "power2.out", delay: i * 0.09, scrollTrigger: { trigger: el, start: "top 88%", once: true } });
+        gsap.from(el, { x: -24, autoAlpha: 0, duration: 0.62, ease: "power2.out", delay: i * 0.09, scrollTrigger: { trigger: el, start: "top 88%", once: true } });
       });
     }, rootRef);
     return () => ctx.revert();
   }, []);
 
   return (
-    <div ref={rootRef} style={{ background: C.bg, color: C.text, fontFamily: SANS }}>
+    <>
+      <style>{`
+        @media (max-width: 820px) {
+          .sf-hero-grid { grid-template-columns: 1fr !important; }
+          .sf-stats-col { display: none !important; }
+        }
+        @media (max-width: 640px) {
+          .sf-ticker { flex-wrap: wrap; }
+        }
+      `}</style>
 
-      {/* sticky navbar */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: `1px solid ${C.border}`, background: "rgba(0,0,0,0.82)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}>
-        <NoxNavbar active="services" />
-      </div>
+      <div ref={rootRef} style={{ background: C.bg, color: C.text, fontFamily: SANS }}>
 
-      {/* ══ HERO ══════════════════════════════════════════════════════════ */}
-      <section style={{ position: "relative", overflow: "hidden", borderBottom: `1px solid ${C.border}` }}>
-        <div aria-hidden style={{
-          position: "absolute", inset: 0, pointerEvents: "none",
-          backgroundImage: `linear-gradient(var(--nox-border-faint, rgba(255,255,255,0.03)) 1px,transparent 1px),linear-gradient(90deg,var(--nox-border-faint, rgba(255,255,255,0.03)) 1px,transparent 1px)`,
-          backgroundSize: "48px 48px",
-        }} />
-        <div aria-hidden style={{
-          position: "absolute", top: "-6rem", left: "-4rem",
-          width: "clamp(300px,45vw,600px)", height: "clamp(300px,45vw,600px)",
-          borderRadius: "50%",
-          background: `radial-gradient(circle, rgba(${C.accentRgb},0.11) 0%, transparent 65%)`,
-          filter: "blur(90px)", pointerEvents: "none",
-        }} />
-        <div aria-hidden style={{
-          position: "absolute", bottom: 0, left: 0, right: 0, height: "30%",
-          background: `linear-gradient(to bottom, transparent, ${C.bg})`, pointerEvents: "none",
-        }} />
-
-        <div style={{ position: "relative", zIndex: 1, padding: `clamp(5.5rem,10vw,11rem) ${WRAP} clamp(5rem,9vw,10rem)` }}>
-          <div className="sf-eyebrow" style={{ marginBottom: "clamp(2rem,3.5vw,3.5rem)" }}>
-            <span style={{ fontFamily: SANS, fontSize: "0.65rem", letterSpacing: "0.3em", textTransform: "uppercase", color: C.accent, fontWeight: 600 }}>
-              / our services
-            </span>
-          </div>
-          <h1 className="sf-title" style={{
-            fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
-            fontSize: "clamp(3.5rem,9vw,11rem)", lineHeight: 0.88, letterSpacing: "-0.03em",
-            color: C.text, margin: "0 0 clamp(1.8rem,3vw,3rem)", maxWidth: "16ch",
-          }}>
-            six disciplines,{" "}
-            <span style={{ color: TK.textFaint }}>one studio.</span>
-          </h1>
-          <p className="sf-lede" style={{
-            fontFamily: SANS, fontSize: "clamp(1rem,1.35vw,1.35rem)",
-            lineHeight: 1.65, color: C.muted, margin: 0, maxWidth: "52ch",
-          }}>
-            From naming the thing to launching it — we cover the full spectrum of what makes a brand impossible to forget.
-          </p>
+        {/* sticky navbar */}
+        <div style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: `1px solid ${C.border}`, background: "rgba(0,0,0,0.82)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}>
+          <NoxNavbar active="services" />
         </div>
-      </section>
+
+        {/* ══ HERO ══════════════════════════════════════════════════════════ */}
+        <section
+          ref={heroRef}
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            borderBottom: `1px solid ${C.border}`,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Grid background */}
+          <div aria-hidden style={{
+            position: "absolute", inset: 0, pointerEvents: "none",
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)`,
+            backgroundSize: "48px 48px",
+          }} />
+
+          {/* Green glow — receives parallax via .sf-glow */}
+          <div className="sf-glow" aria-hidden style={{
+            position: "absolute", top: "-8rem", left: "-5rem",
+            width: "clamp(400px,55vw,700px)", height: "clamp(400px,55vw,700px)",
+            borderRadius: "50%",
+            background: `radial-gradient(circle, rgba(${C.accentRgb},0.13) 0%, transparent 65%)`,
+            filter: "blur(100px)", pointerEvents: "none",
+            willChange: "transform",
+          }} />
+
+          {/* Second accent glow bottom-right */}
+          <div aria-hidden style={{
+            position: "absolute", bottom: "10%", right: "-8%",
+            width: "clamp(200px,28vw,380px)", height: "clamp(200px,28vw,380px)",
+            borderRadius: "50%",
+            background: `radial-gradient(circle, rgba(${C.accentRgb},0.07) 0%, transparent 65%)`,
+            filter: "blur(60px)", pointerEvents: "none",
+          }} />
+
+          {/* Bottom fade to next section */}
+          <div aria-hidden style={{
+            position: "absolute", bottom: 0, left: 0, right: 0, height: "35%",
+            background: `linear-gradient(to bottom, transparent, ${C.bg})`, pointerEvents: "none",
+          }} />
+
+          {/* ── Main content ── */}
+          <div
+            className="sf-hero-grid"
+            style={{
+              position: "relative", zIndex: 1,
+              padding: `clamp(5.5rem,10vw,11rem) ${WRAP} clamp(3.5rem,6vw,6rem)`,
+              display: "grid",
+              gridTemplateColumns: "1fr clamp(180px,20vw,260px)",
+              alignItems: "end",
+              gap: "clamp(2rem,5vw,6rem)",
+            }}
+          >
+            {/* Left: copy */}
+            <div>
+              <div className="sf-eyebrow" style={{ marginBottom: "clamp(1.8rem,3vw,3rem)" }}>
+                <span style={{
+                  fontFamily: SANS, fontSize: "0.65rem",
+                  letterSpacing: "0.3em", textTransform: "uppercase",
+                  color: C.accent, fontWeight: 600,
+                }}>
+                  / what we build
+                </span>
+              </div>
+
+              <h1 className="sf-title" style={{
+                fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
+                fontSize: "clamp(3.5rem,9vw,11rem)", lineHeight: 0.88,
+                letterSpacing: "-0.03em",
+                color: C.text,
+                margin: "0 0 clamp(1.8rem,3vw,3rem)",
+                willChange: "transform",
+              }}>
+                strategy to<br />
+                <em style={{ color: C.accent }}>launch.</em>
+              </h1>
+
+              <p className="sf-lede" style={{
+                fontFamily: SANS, fontSize: "clamp(1rem,1.3vw,1.3rem)",
+                lineHeight: 1.7, color: C.muted, margin: 0,
+                maxWidth: "50ch",
+                willChange: "transform, opacity",
+              }}>
+                Six disciplines. One integrated team. We move from brand
+                strategy and design to code, commerce, and growth — under
+                one roof, no handoffs, no gaps.
+              </p>
+            </div>
+
+            {/* Right: stats */}
+            <div className="sf-stats-col" style={{ display: "flex", flexDirection: "column", gap: 0, willChange: "transform, opacity" }}>
+              {[
+                { n: "06", label: "capabilities" },
+                { n: "14+", label: "projects shipped" },
+                { n: "0",  label: "boring sites made" },
+              ].map(({ n, label }) => (
+                <div
+                  key={label}
+                  className="sf-stat"
+                  style={{
+                    padding: "clamp(1.2rem,1.8vw,1.8rem) 0",
+                    borderTop: `1px solid ${C.border}`,
+                  }}
+                >
+                  <div style={{
+                    fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
+                    fontSize: "clamp(2.5rem,4vw,4.5rem)", lineHeight: 1,
+                    letterSpacing: "-0.04em",
+                    color: C.accent,
+                  }}>
+                    {n}
+                  </div>
+                  <div style={{
+                    fontFamily: SANS, fontSize: "0.6rem",
+                    letterSpacing: "0.2em", textTransform: "uppercase",
+                    color: C.faint, marginTop: 6,
+                  }}>
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Service name ticker ── */}
+          <div
+            className="sf-ticker"
+            style={{
+              position: "relative", zIndex: 1,
+              display: "flex", alignItems: "center",
+              gap: "clamp(1rem,2.5vw,2rem)",
+              padding: `clamp(1.2rem,2vw,1.8rem) ${WRAP}`,
+              borderTop: `1px solid ${C.border}`,
+              overflowX: "auto",
+            }}
+          >
+            {SERVICES.map((s, i) => (
+              <span key={s.n} className="sf-ticker-item" style={{ display: "flex", alignItems: "center", gap: "clamp(1rem,2.5vw,2rem)", flexShrink: 0 }}>
+                <span style={{
+                  fontFamily: SANS, fontSize: "clamp(0.72rem,0.88vw,0.88rem)",
+                  letterSpacing: "0.15em", textTransform: "uppercase",
+                  color: C.muted, whiteSpace: "nowrap",
+                  transition: "color 200ms ease",
+                }}
+                  onMouseEnter={e => (e.currentTarget.style.color = C.accent)}
+                  onMouseLeave={e => (e.currentTarget.style.color = C.muted)}
+                >
+                  {s.title}
+                </span>
+                {i < SERVICES.length - 1 && (
+                  <span aria-hidden style={{ width: 3, height: 3, borderRadius: "50%", background: C.border, flexShrink: 0 }} />
+                )}
+              </span>
+            ))}
+          </div>
+        </section>
 
       {/* ══ SERVICE CARDS ═════════════════════════════════════════════════ */}
       <section style={{ padding: `clamp(3rem,6vw,6rem) ${WRAP}`, display: "flex", flexDirection: "column", gap: "clamp(0.75rem,1.2vw,1.2rem)" }}>
@@ -318,5 +476,6 @@ export default function ServicesFocused() {
       <NoxCTABar label="Start a project →" />
       <NoxFooter />
     </div>
+  </>
   );
 }

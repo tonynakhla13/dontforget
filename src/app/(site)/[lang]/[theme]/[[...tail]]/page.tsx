@@ -28,6 +28,8 @@ import CreativeServices from "@/themes/creative/services/page";
 import CreativeBlog from "@/themes/creative/blog/page";
 import CreativeContact from "@/themes/creative/contact/page";
 import ServiceDetailCreative from "@/components/creative/ServiceDetailCreative";
+import BlogPostCreative from "@/components/creative/BlogPostCreative";
+import BlogPostImmersive from "@/components/immersive/BlogPostImmersive";
 import ImmersiveHome from "@/themes/immersive/page";
 import ImmersiveAbout from "@/themes/immersive/about/page";
 import ImmersiveWork from "@/themes/immersive/work/page";
@@ -121,7 +123,7 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
     }
     const view = page === "home" ? <FocusedHome /> :
       page === "about" && !tail[1] ? <FocusedAbout /> :
-      page === "work" && !tail[1] ? <FocusedWork /> :
+      page === "work" && !tail[1] ? <FocusedWork locale={locale} /> :
       page === "services" && !tail[1] ? <FocusedServices /> :
       page === "blog" && !tail[1] ? <FocusedBlog /> :
       page === "contact" && !tail[1] ? <FocusedContact /> : null;
@@ -133,11 +135,16 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
       if (!service) return null;
       return <CreativeThemeLayout><ServiceDetailCreative service={service} locale={locale} /></CreativeThemeLayout>;
     }
-    const view = page === "home" ? <CreativeHome /> :
+    if (page === "blog" && tail[1]) {
+      const post = await getPost(locale, tail[1]);
+      if (!post) return null;
+      return <CreativeThemeLayout><BlogPostCreative post={post} locale={locale} /></CreativeThemeLayout>;
+    }
+    const view = page === "home" ? <CreativeHome locale={locale} /> :
       page === "about" && !tail[1] ? <CreativeAbout /> :
       page === "work" && !tail[1] ? <CreativeWork /> :
       page === "services" && !tail[1] ? <CreativeServices locale={locale} /> :
-      page === "blog" && !tail[1] ? <CreativeBlog /> :
+      page === "blog" && !tail[1] ? <CreativeBlog locale={locale} /> :
       page === "contact" && !tail[1] ? <CreativeContact /> : null;
     return view ? <CreativeThemeLayout>{view}</CreativeThemeLayout> : null;
   }
@@ -149,7 +156,12 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
     if (page === "about" && !tail[1]) return <ImmersiveAbout />;
     if (page === "work" && !tail[1]) return <ImmersiveWork />;
     if (page === "services" && !tail[1]) return <ImmersiveServices />;
-    if (page === "blog" && !tail[1]) return <ImmersiveBlog />;
+    if (page === "blog" && !tail[1]) return <ImmersiveBlog locale={locale} />;
+    if (page === "blog" && tail[1]) {
+      const post = await getPost(locale, tail[1]);
+      if (!post) return null;
+      return <BlogPostImmersive post={post} locale={locale} />;
+    }
     if (page === "contact" && !tail[1]) return <ImmersiveContact />;
     if (page === "work" && tail[1]) return <ImmersiveProject params={Promise.resolve({ slug: tail[1] })} />;
     if (page === "services" && tail[1]) return <ImmersiveService params={Promise.resolve({ id: tail[1] })} />;

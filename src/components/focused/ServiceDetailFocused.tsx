@@ -769,43 +769,41 @@ export default function ServiceDetailFocused({ service, locale }: { service: Pub
 
       {/* ══ ABOUT + DESCRIPTION ═══════════════════════════════════════════ */}
       {(service.shortDescription || service.description) && (
-        <section style={{ background: C.bg, borderBottom: `1px solid ${C.border}`, padding: `clamp(4.5rem,8vw,9rem) ${P}` }}>
+        <section style={{ background: C.bg, borderBottom: `1px solid ${C.border}`, padding: `clamp(2.5rem,4vw,5rem) ${P}` }}>
           <div style={{ maxWidth: MAX, margin: "0 auto" }}>
-            {/* label + short description — full width */}
-            <div className="sd-section-label" style={{ marginBottom: "clamp(1.5rem,2.5vw,2.5rem)" }}>
-              <Label text="About this service" />
-            </div>
-            {service.shortDescription && (
-              <p className="sd-overview-text" style={{
-                fontFamily: SANS, fontSize: "clamp(1.4rem,2.4vw,2.5rem)",
-                lineHeight: 1.48, color: C.text,
-                letterSpacing: "-0.02em", maxWidth: "68ch", margin: 0,
-              }}>{service.shortDescription}</p>
-            )}
-            {/* two-column split: big O left, prose right */}
-            {service.description && (
-              <div style={{
-                display: "grid", gridTemplateColumns: "clamp(260px,28vw,420px) 1fr",
-                gap: "clamp(3rem,5vw,7rem)", alignItems: "center",
-                marginTop: "clamp(3rem,5vw,6rem)",
-                paddingTop: "clamp(3rem,5vw,6rem)",
-                borderTop: `1px solid ${C.border}`,
-              }}>
-                {/* left: animated brand O with mouse-tracking pupil */}
-                <div aria-hidden style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <NoxO size={380} bg={C.bg} />
-                </div>
-                {/* right: prose */}
-                <div
-                  className="sd-prose"
-                  dangerouslySetInnerHTML={{ __html: service.description }}
-                  style={{
-                    fontFamily: SANS, fontSize: "clamp(0.95rem,1.12vw,1.15rem)",
-                    lineHeight: 1.88, color: C.muted,
-                  }}
-                />
+            {/* two-column: O left, text right */}
+            <div style={{ display: "grid", gridTemplateColumns: "clamp(160px,16vw,220px) 1fr", gap: "clamp(2rem,4vw,5rem)", alignItems: "center" }}>
+              {/* left: animated brand O */}
+              <div aria-hidden style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <NoxO size={200} bg={C.bg} />
               </div>
-            )}
+              {/* right: label + short desc + prose */}
+              <div>
+                <div className="sd-section-label" style={{ marginBottom: "clamp(1rem,1.8vw,1.8rem)" }}>
+                  <Label text="About this service" />
+                </div>
+                {service.shortDescription && (
+                  <p className="sd-overview-text" style={{
+                    fontFamily: SANS, fontSize: "clamp(1.2rem,1.8vw,2rem)",
+                    lineHeight: 1.48, color: C.text,
+                    letterSpacing: "-0.02em", maxWidth: "60ch", margin: 0,
+                  }}>{service.shortDescription}</p>
+                )}
+                {service.description && (
+                  <div
+                    className="sd-prose"
+                    dangerouslySetInnerHTML={{ __html: service.description }}
+                    style={{
+                      fontFamily: SANS, fontSize: "clamp(0.88rem,1vw,1rem)",
+                      lineHeight: 1.85, color: C.muted,
+                      marginTop: service.shortDescription ? "clamp(1.5rem,2.5vw,2.5rem)" : 0,
+                      paddingTop: service.shortDescription ? "clamp(1.5rem,2.5vw,2.5rem)" : 0,
+                      borderTop: service.shortDescription ? `1px solid ${C.border}` : "none",
+                    }}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </section>
       )}

@@ -46,7 +46,12 @@ export default async function CreativeServicesPage({ locale }: { locale: Locale 
           <div key={service.id} className="c-svc-row">
             <div className="c-svc-row__n">{String(i + 1).padStart(2, "0")}</div>
             <div className="c-svc-row__t">{service.title}</div>
-            <p className="c-svc-row__d">{service.shortDescription ?? service.description ?? ""}</p>
+            <p className="c-svc-row__d" style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 4,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}>{(service.shortDescription ?? service.description ?? "").replace(/<[^>]*>/g, " ").replace(/\s{2,}/g, " ").trim()}</p>
             <Link
               href={`/${locale}/creative/services/${service.slug ?? service.id}`}
               className="c-iconbtn c-svc-row__arr"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -68,6 +68,51 @@ function Label({ text }: { text: string }) {
     <span style={{ fontFamily: SANS, fontSize: "0.62rem", letterSpacing: "0.32em", textTransform: "uppercase", color: C.accent, fontWeight: 600 }}>
       {text}
     </span>
+  );
+}
+
+/* ── process card ────────────────────────────────────────────────────────── */
+function ProcessCard({ step, C }: { step: (typeof PROCESS)[0]; index: number; C: { panel: string; panelSoft: string; border: string; text: string; muted: string; accent: string } }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      className="ab-process-card"
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        borderRight: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`,
+        padding: "clamp(1.8rem,3vw,3rem) clamp(1.2rem,1.8vw,2rem)",
+        display: "flex", flexDirection: "column",
+        gap: "clamp(1rem,1.8vw,1.8rem)",
+        background: hov ? C.panelSoft : C.panel,
+        transition: "background 220ms ease",
+        minHeight: "clamp(240px,28vw,320px)",
+        position: "relative", overflow: "hidden",
+      }}
+    >
+      {/* green top border that grows in on hover */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 2,
+        background: C.accent,
+        transform: hov ? "scaleX(1)" : "scaleX(0)",
+        transformOrigin: "left center",
+        transition: "transform 320ms cubic-bezier(0.22,1,0.36,1)",
+      }} />
+      <span style={{
+        fontFamily: SANS, fontSize: "0.5rem", letterSpacing: "0.24em",
+        color: hov ? C.accent : C.accent,
+        opacity: hov ? 1 : 0.6,
+        transition: "opacity 220ms",
+      }}>{step.n}</span>
+      <h3 style={{
+        fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
+        fontSize: "clamp(1.6rem,3vw,3.2rem)", lineHeight: 1, letterSpacing: "-0.02em",
+        color: hov ? C.accent : C.text,
+        margin: 0, flex: 1,
+        transition: "color 250ms ease",
+      }}>{step.title}</h3>
+      <p style={{ fontFamily: SANS, fontSize: "clamp(0.78rem,0.9vw,0.9rem)", lineHeight: 1.65, color: C.muted, margin: 0 }}>{step.body}</p>
+    </div>
   );
 }
 
@@ -154,14 +199,27 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      /* hero */
+      /* hero entrance */
       gsap.from(".ab-hero-eye",   { x: -18, opacity: 0, duration: 0.5, ease: "power2.out", delay: 0.05 });
       gsap.from(".ab-hero-title", { y: 55,  opacity: 0, duration: 1.1, ease: "power4.out", delay: 0.15 });
       gsap.from(".ab-hero-lede",  { y: 22,  opacity: 0, duration: 0.75, ease: "power2.out", delay: 0.45 });
 
-      /* stats */
+      /* hero title parallax — drifts upward as you scroll out */
+      gsap.to(".ab-hero-title", {
+        y: -80, ease: "none",
+        scrollTrigger: { trigger: ".ab-hero-section", start: "top top", end: "bottom top", scrub: 1.2 },
+      });
+      gsap.to(".ab-hero-lede", {
+        y: -40, opacity: 0.3, ease: "none",
+        scrollTrigger: { trigger: ".ab-hero-section", start: "20% top", end: "bottom top", scrub: 1.5 },
+      });
+
+      /* stats — counter-scale pop */
       gsap.utils.toArray<HTMLElement>(".ab-stat").forEach((el, i) => {
         gsap.from(el, { y: 32, opacity: 0, duration: 0.65, ease: "power3.out", delay: i * 0.08, scrollTrigger: { trigger: el, start: "top 85%", once: true } });
+      });
+      gsap.utils.toArray<HTMLElement>(".ab-stat-n").forEach((el) => {
+        gsap.from(el, { scale: 0.72, opacity: 0, duration: 0.75, ease: "back.out(1.4)", scrollTrigger: { trigger: el, start: "top 88%", once: true } });
       });
 
       /* section labels */
@@ -169,25 +227,39 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
         gsap.from(el, { x: -14, opacity: 0, duration: 0.5, ease: "power2.out", scrollTrigger: { trigger: el, start: "top 88%", once: true } });
       });
 
-      /* story */
+      /* story — clip-path line reveal */
       gsap.utils.toArray<HTMLElement>(".ab-story-head").forEach((el) => {
         gsap.from(el, { y: 36, opacity: 0, duration: 0.95, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 85%", once: true } });
       });
       gsap.utils.toArray<HTMLElement>(".ab-story-col").forEach((el, i) => {
-        gsap.from(el, { y: 24, opacity: 0, duration: 0.75, ease: "power2.out", delay: i * 0.1, scrollTrigger: { trigger: el, start: "top 86%", once: true } });
+        gsap.fromTo(el,
+          { clipPath: "inset(0 0 100% 0)", y: 16 },
+          { clipPath: "inset(0 0 0% 0)", y: 0, duration: 0.9, ease: "power3.out", delay: i * 0.14, scrollTrigger: { trigger: el, start: "top 86%", once: true } }
+        );
+      });
+      /* green accent line that grows in */
+      gsap.from(".ab-story-line", {
+        scaleX: 0, transformOrigin: "left center",
+        duration: 1.2, ease: "expo.out",
+        scrollTrigger: { trigger: ".ab-story-line", start: "top 88%", once: true },
       });
 
       /* mission / vision */
       gsap.utils.toArray<HTMLElement>(".ab-mv-col").forEach((el, i) => {
         gsap.from(el, { y: 30, opacity: 0, duration: 0.85, ease: "power3.out", delay: i * 0.12, scrollTrigger: { trigger: el, start: "top 82%", once: true } });
       });
+      gsap.from(".ab-mission-bar", {
+        scaleY: 0, transformOrigin: "top center",
+        duration: 1.1, ease: "expo.out",
+        scrollTrigger: { trigger: ".ab-mission-bar", start: "top 85%", once: true },
+      });
 
-      /* process header + cards */
+      /* process header + cards — slide in from alternating sides */
       gsap.utils.toArray<HTMLElement>(".ab-process-head").forEach((el) => {
         gsap.from(el, { y: 36, opacity: 0, duration: 0.9, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 85%", once: true } });
       });
       gsap.utils.toArray<HTMLElement>(".ab-process-card").forEach((el, i) => {
-        gsap.from(el, { y: 28, opacity: 0, duration: 0.6, ease: "power2.out", delay: i * 0.06, scrollTrigger: { trigger: el, start: "top 88%", once: true } });
+        gsap.from(el, { x: i % 2 === 0 ? -24 : 24, opacity: 0, duration: 0.65, ease: "power2.out", delay: i * 0.07, scrollTrigger: { trigger: el, start: "top 88%", once: true } });
       });
 
       /* team */
@@ -210,7 +282,7 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
       </div>
 
       {/* ══ HERO ══════════════════════════════════════════════════════════ */}
-      <section style={{ position: "relative", overflow: "hidden", borderBottom: `1px solid ${C.border}`, background: C.bg }}>
+      <section className="ab-hero-section" style={{ position: "relative", overflow: "hidden", borderBottom: `1px solid ${C.border}`, background: C.bg }}>
         {/* grid */}
         <div aria-hidden style={{
           position: "absolute", inset: 0, pointerEvents: "none",
@@ -256,9 +328,16 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
       </section>
 
       {/* ══ STATS ══════════════════════════════════════════════════════════ */}
-      <section style={{ borderBottom: `1px solid ${C.border}`, background: C.panel }}>
+      <section style={{ borderBottom: `1px solid ${C.border}`, background: C.panel, position: "relative", overflow: "hidden" }}>
+        {/* green glow */}
+        <div aria-hidden style={{
+          position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+          width: "60%", height: "200%",
+          background: `radial-gradient(ellipse, rgba(${C.accentRgb},0.06) 0%, transparent 65%)`,
+          pointerEvents: "none",
+        }} />
         <div style={{
-          maxWidth: MAX, margin: "0 auto",
+          maxWidth: MAX, margin: "0 auto", position: "relative", zIndex: 1,
           display: "grid", gridTemplateColumns: "repeat(4,1fr)",
           borderLeft: `1px solid ${C.border}`, borderRight: `1px solid ${C.border}`,
         }}>
@@ -268,9 +347,11 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
               borderRight: i < 3 ? `1px solid ${C.border}` : "none",
               display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 10,
             }}>
-              <span style={{
+              <span className="ab-stat-n" style={{
                 fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
-                fontSize: "clamp(3rem,6.5vw,7.5rem)", lineHeight: 1, letterSpacing: "-0.03em", color: C.text,
+                fontSize: "clamp(3rem,6.5vw,7.5rem)", lineHeight: 1, letterSpacing: "-0.03em",
+                color: C.accent,
+                display: "block",
               }}>{s.n}</span>
               <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.26em", textTransform: "uppercase", color: C.faint }}>{s.label}</span>
             </div>
@@ -303,12 +384,18 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
             <div className="ab-label" style={{ marginBottom: "clamp(1.2rem,2vw,2rem)" }}>
               <Label text="/ our story" />
             </div>
+            {/* green accent line */}
+            <div className="ab-story-line" style={{
+              height: 3, width: "clamp(60px,8vw,120px)",
+              background: C.accent,
+              marginBottom: "clamp(1.4rem,2.2vw,2.2rem)",
+            }} />
             <h2 className="ab-story-head" style={{
               fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
               fontSize: "clamp(2.8rem,6.5vw,8rem)", lineHeight: 0.9, letterSpacing: "-0.03em",
               color: C.text, margin: 0, maxWidth: "20ch",
             }}>
-              built for brands that refuse to blend in.
+              <span style={{ color: C.accent }}>built</span> for brands that refuse to blend in.
             </h2>
           </div>
           {/* 2-col paragraphs */}
@@ -326,7 +413,7 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
       {/* ══ MISSION & VISION ═══════════════════════════════════════════════ */}
       <section style={{ borderBottom: `1px solid ${C.border}`, background: C.panelSoft }}>
         <div style={{
-          maxWidth: MAX, margin: "0 auto",
+          maxWidth: MAX,
           display: "grid", gridTemplateColumns: "minmax(0,1.3fr) minmax(0,0.85fr)",
           border: `1px solid ${C.border}`, borderTop: "none", borderBottom: "none",
           margin: `0 auto`,
@@ -336,7 +423,13 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
             padding: `clamp(4rem,7vw,8rem) ${P}`,
             borderRight: `1px solid ${C.border}`,
             display: "flex", flexDirection: "column", gap: "clamp(1.8rem,2.8vw,2.8rem)",
+            position: "relative",
           }}>
+            {/* green left bar */}
+            <div className="ab-mission-bar" style={{
+              position: "absolute", left: 0, top: "clamp(3rem,5vw,5rem)", bottom: "clamp(3rem,5vw,5rem)",
+              width: 3, background: `linear-gradient(to bottom, ${C.accent}, transparent)`,
+            }} />
             <div className="ab-label"><Label text="/ mission" /></div>
             <h2 style={{
               fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
@@ -399,38 +492,14 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
           {/* 5-col process grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", borderLeft: `1px solid ${C.border}`, borderTop: `1px solid ${C.border}` }}>
             {PROCESS.map((step, i) => (
-              <div
-                key={step.n}
-                className="ab-process-card"
-                style={{
-                  borderRight: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`,
-                  padding: "clamp(1.8rem,3vw,3rem) clamp(1.2rem,1.8vw,2rem)",
-                  display: "flex", flexDirection: "column",
-                  gap: "clamp(1rem,1.8vw,1.8rem)",
-                  background: C.panel,
-                  transition: "background 220ms ease",
-                  minHeight: "clamp(240px,28vw,320px)",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = C.panelSoft)}
-                onMouseLeave={e => (e.currentTarget.style.background = C.panel)}
-              >
-                <span style={{ fontFamily: SANS, fontSize: "0.5rem", letterSpacing: "0.24em", color: C.accent }}>{step.n}</span>
-                <h3 style={{
-                  fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
-                  fontSize: "clamp(1.6rem,3vw,3.2rem)", lineHeight: 1, letterSpacing: "-0.02em",
-                  color: C.text, margin: 0, flex: 1,
-                }}>{step.title}</h3>
-                <p style={{ fontFamily: SANS, fontSize: "clamp(0.78rem,0.9vw,0.9rem)", lineHeight: 1.65, color: C.muted, margin: 0 }}>{step.body}</p>
-              </div>
+              <ProcessCard key={step.n} step={step} index={i} C={C} />
             ))}
           </div>
         </div>
       </section>
 
       {/* ══ NOXMUSTS ═══════════════════════════════════════════════════════ */}
-      <div style={{ position: "relative", height: "calc(100vh + 1600px)" }}>
-        <NoxMusts />
-      </div>
+      <NoxMusts />
 
       {/* ══ TEAM ═══════════════════════════════════════════════════════════ */}
       <section style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, background: C.panel }}>

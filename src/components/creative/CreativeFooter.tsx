@@ -34,8 +34,8 @@ export default function CreativeFooter() {
 
       {/* giant email link */}
       <div className="c-footer__email-wrap">
-        <a href="mailto:hello@dontforget.studio" className="c-footer__email">
-          hello@dontforget.studio
+        <a href="mailto:hello@noxstudio.dev" className="c-footer__email">
+          hello@noxstudio.dev
           <span className="c-footer__email-arrow" aria-hidden="true"> ↗</span>
         </a>
       </div>
@@ -45,8 +45,8 @@ export default function CreativeFooter() {
       {/* info grid */}
       <div className="c-footer__info">
         <div className="c-footer__info-col">
-          <p>+351 211 234 567</p>
-          <address>Rua de São Bento 142<br />Lisbon, Portugal</address>
+          <p>+963 935 154 501</p>
+          <address>Yabroud, Damascus Suburbs<br />Syria</address>
         </div>
         <nav className="c-footer__info-col" aria-label="Site navigation">
           {NAV_PRIMARY.map(label => (

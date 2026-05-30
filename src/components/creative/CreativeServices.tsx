@@ -28,6 +28,15 @@ const CARD_LAYOUT = [
   { imgFlex: 356, bodyFlex: 275, flip: true, noborder: false, image: "/creative/crm-service.png", hoverImage: "/creative/crm-service-hover.png" },
 ];
 
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ").replace(/&quot;/g, '"')
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 function formatTitle(title: string) {
   if (title.includes("/")) return title;
 
@@ -82,7 +91,12 @@ export default function CreativeServices({ services = SERVICES }: { services?: C
                 <div className="c-svc__body" style={{ flex: bodyFlex }}>
                   <h3 className="c-svc__title" style={{ whiteSpace: "pre-line" }}>{formatTitle(title)}</h3>
                   <div className="c-svc__meta">
-                    <p className="c-svc__desc">{description}</p>
+                    <p className="c-svc__desc" style={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 4,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}>{stripHtml(description)}</p>
                     <Link href="/creative/services" className="c-svc__explore">
                       Explore
                     </Link>

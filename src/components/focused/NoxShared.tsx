@@ -303,72 +303,130 @@ function ThemeToggle() {
 
 /* ── Navbar ─────────────────────────────────────────────────────────── */
 export function NoxNavbar({ active }: { active?: string }) {
+  const headerRef = useRef<HTMLElement>(null);
+
+  /* Direct DOM mutation — zero React re-renders, silky CSS transition */
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    function onScroll() {
+      if (!el) return;
+      if (window.scrollY > 40) {
+        el.style.height = "56px";
+      } else {
+        el.style.height = "";
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="nox-navbar" style={{
-      position:       "relative",
-      height:         "clamp(72px, 7vw, 96px)",
-      background:     TK.ink,
-      display:        "flex",
-      alignItems:     "center",
-      justifyContent: "space-between",
-      padding:        "0 clamp(1.5rem, 4vw, 3.5rem)",
-      borderBottom:   `1px solid ${TK.lineFaint}`,
-    }}>
-      {/* Logo */}
-      <Link href="/en/focused" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-        <NoxLogo height={32} />
-      </Link>
+    <>
+      <style>{`
+        .nox-navbar {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          height: clamp(72px, 7vw, 88px);
+          background: ${TK.ink};
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 clamp(1.5rem, 4vw, 3.5rem);
+          border-bottom: 1px solid ${TK.lineFaint};
+          transition: height 380ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          will-change: height;
+        }
+        .nox-nav-link {
+          font-family: ${SANS};
+          font-size: clamp(0.76rem, 0.92vw, 0.92rem);
+          color: ${TK.green};
+          text-decoration: none;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          border-bottom: 1px solid transparent;
+          padding-bottom: 3px;
+          transition: color 160ms ease, border-color 160ms ease;
+        }
+        .nox-nav-link:hover { color: ${TK.greenHot}; }
+        .nox-nav-link.active { color: ${TK.greenHot}; border-bottom-color: ${TK.greenHot}; }
+        .nox-cta {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 0 clamp(1rem, 1.4vw, 1.4rem);
+          height: 34px;
+          background: transparent;
+          color: ${TK.green};
+          border: 1px solid ${TK.line};
+          font-size: clamp(0.7rem, 0.82vw, 0.82rem);
+          font-family: ${SANS};
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+        }
+        .nox-cta:hover {
+          background: ${TK.green};
+          border-color: ${TK.green};
+          color: ${TK.ink};
+        }
+        .nox-lang-btn {
+          font-family: ${SANS};
+          font-size: 0.68rem;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: ${TK.textFaint};
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 0;
+          transition: color 160ms ease;
+        }
+        .nox-lang-btn:hover { color: ${TK.green}; }
+        .nox-lang-btn.on { color: ${TK.green}; }
+      `}</style>
 
-      {/* Center nav */}
-      <nav style={{
-        display:   "flex",
-        gap:       "clamp(1.5rem, 3vw, 3rem)",
-        position:  "absolute",
-        left:      "50%",
-        transform: "translateX(-50%)",
-      }}>
-        {NAV.map(({ label, href }) => {
-          const isActive = active === label;
-          return (
-            <Link key={label} href={href} style={{
-              fontFamily:    SANS,
-              fontSize:      "clamp(0.78rem, 0.95vw, 0.95rem)",
-              color:         isActive ? TK.greenHot : TK.green,
-              textDecoration: "none",
-              borderBottom:  isActive ? `1px solid ${TK.greenHot}` : "1px solid transparent",
-              paddingBottom:  isActive ? 4 : 0,
-              transition:    "color 180ms ease, border-color 180ms ease",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = TK.greenHot; }}
-            onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = TK.green; }}
+      <header ref={headerRef} className="nox-navbar">
+        {/* Logo */}
+        <Link href="/en/focused" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <NoxLogo height={32} />
+        </Link>
+
+        {/* Center nav */}
+        <nav style={{
+          display:   "flex",
+          gap:       "clamp(1.5rem, 3vw, 3rem)",
+          position:  "absolute",
+          left:      "50%",
+          transform: "translateX(-50%)",
+        }}>
+          {NAV.map(({ label, href }) => (
+            <Link
+              key={label}
+              href={href}
+              className={`nox-nav-link${active === label ? " active" : ""}`}
             >{label}</Link>
-          );
-        })}
-      </nav>
+          ))}
+        </nav>
 
-      {/* Right side: theme toggle + CTA */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-      <ThemeToggle />
-      {/* CTA */}
-      <Link href="/en/focused/contact" style={{
-        display:        "inline-flex",
-        alignItems:     "center",
-        justifyContent: "center",
-        padding:        "0 clamp(1rem, 1.5vw, 1.5rem)",
-        height:         36,
-        background:     TK.chrome,
-        color:          TK.paper,
-        fontSize:       "clamp(0.72rem, 0.88vw, 0.9rem)",
-        fontFamily:     SANS,
-        textDecoration: "none",
-        transition:     "background 180ms ease",
-        whiteSpace:     "nowrap",
-      }}
-      onMouseEnter={e => (e.currentTarget.style.background = "#2f2f2f")}
-      onMouseLeave={e => (e.currentTarget.style.background = TK.chrome)}
-      >Contact us</Link>
-      </div>
-    </header>
+        {/* Right: lang + CTA */}
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <button className="nox-lang-btn on" type="button">EN</button>
+            <span style={{ color: TK.textFaint, fontSize: "0.6rem" }}>/</span>
+            <button className="nox-lang-btn" type="button">AR</button>
+          </div>
+
+          <Link href="/en/focused/contact" className="nox-cta">
+            Contact us
+          </Link>
+        </div>
+      </header>
+    </>
   );
 }
 

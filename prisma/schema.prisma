@@ -239,6 +239,7 @@ model Post {
   content     String     @default("") @db.Text
   contentAr   String?    @db.Text
   coverImage  String?
+  heroImage   String?
   tags        String[]
   tagsAr      String[]   @default([])
   status      PostStatus @default(DRAFT)
