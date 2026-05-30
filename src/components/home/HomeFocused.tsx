@@ -626,7 +626,7 @@ export default function HomeFocused({ clients }: { clients?: { name: string; com
                       fontFamily:    SANS,
                       fontSize:      "clamp(0.6rem, 0.76vw, 0.76rem)",
                       letterSpacing: "0.22em",
-                      color:         "rgba(255,255,255,0.55)",
+                      color:         "var(--nox-proj-sub, rgba(255,255,255,0.55))",
                       textTransform: "uppercase",
                     }}>{String(i + 1).padStart(2, "0")} — {p.category}</span>
 
@@ -645,7 +645,7 @@ export default function HomeFocused({ clients }: { clients?: { name: string; com
                       fontFamily: SANS,
                       fontSize:   "clamp(0.68rem, 0.82vw, 0.82rem)",
                       lineHeight: 1.6,
-                      color:      "rgba(255,255,255,0.72)",
+                      color:      "var(--nox-proj-body, rgba(255,255,255,0.72))",
                       margin:     0,
                     }}>{p.description}</p>
 
@@ -656,7 +656,7 @@ export default function HomeFocused({ clients }: { clients?: { name: string; com
                         fontFamily:    SANS,
                         fontSize:      "clamp(0.52rem, 0.6vw, 0.6rem)",
                         letterSpacing: "0.22em",
-                        color:         "rgba(255,255,255,0.45)",
+                        color:         "var(--nox-text-faint, rgba(255,255,255,0.45))",
                         textTransform: "uppercase",
                         marginBottom:  5,
                       }}>What we did</span>
@@ -682,7 +682,7 @@ export default function HomeFocused({ clients }: { clients?: { name: string; com
                         fontFamily:    SANS,
                         fontSize:      "clamp(0.52rem, 0.6vw, 0.6rem)",
                         letterSpacing: "0.22em",
-                        color:         "rgba(255,255,255,0.45)",
+                        color:         "var(--nox-text-faint, rgba(255,255,255,0.45))",
                         textTransform: "uppercase",
                         marginBottom:  5,
                       }}>Built with</span>
@@ -887,9 +887,9 @@ export default function HomeFocused({ clients }: { clients?: { name: string; com
           <div style={{
             display: "flex", alignItems: "center", gap: "1.2rem",
             padding: `clamp(1.4rem,2.2vw,2.2rem) clamp(1.5rem,4vw,3.5rem)`,
-            borderBottom: `1px solid rgba(255,255,255,0.05)`,
+            borderBottom: `1px solid var(--nox-border-faint, rgba(255,255,255,0.05))`,
           }}>
-            <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(255,255,255,0.32)", flexShrink: 0 }}>
+            <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--nox-text-faint, rgba(255,255,255,0.32))", flexShrink: 0 }}>
               Trusted by founders &amp; growing teams
             </span>
             <div style={{ flex: 1, height: 1, background: TK.line }} />

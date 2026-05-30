@@ -5,14 +5,22 @@ import { useId, useState, useEffect, useRef } from "react";
 
 /* ── design tokens ──────────────────────────────────────────────────── */
 export const TK = {
-  ink:       "var(--nox-ink, #000000)",
-  green:     "var(--nox-green, #46ae22)",
-  greenHot:  "#46d12a",
-  paper:     "var(--nox-paper, #ffffff)",
-  chrome:    "var(--nox-chrome, rgb(38,37,37))",
-  line:      "rgba(70,174,34,0.35)",
-  lineFaint: "rgba(70,174,34,0.18)",
-  muted:     "rgba(70,174,34,0.6)",
+  ink:        "var(--nox-ink, #000000)",
+  green:      "var(--nox-green, #46ae22)",
+  greenHot:   "#46d12a",
+  paper:      "var(--nox-paper, #ffffff)",
+  chrome:     "var(--nox-chrome, rgb(38,37,37))",
+  line:       "rgba(70,174,34,0.35)",
+  lineFaint:  "rgba(70,174,34,0.18)",
+  muted:      "rgba(70,174,34,0.6)",
+  /* surface tokens — light/dark adaptive */
+  panel:      "var(--nox-panel, #0a0e0c)",
+  card:       "var(--nox-card, #070b09)",
+  border:     "var(--nox-border, rgba(255,255,255,0.09))",
+  borderFaint:"var(--nox-border-faint, rgba(255,255,255,0.06))",
+  textMuted:  "var(--nox-text-muted, rgba(255,255,255,0.52))",
+  textFaint:  "var(--nox-text-faint, rgba(255,255,255,0.28))",
+  iconFaint:  "var(--nox-icon-faint, rgba(255,255,255,0.13))",
 } as const;
 
 export const SANS    = "'Syne', 'Inter', sans-serif";
@@ -296,7 +304,7 @@ function ThemeToggle() {
 /* ── Navbar ─────────────────────────────────────────────────────────── */
 export function NoxNavbar({ active }: { active?: string }) {
   return (
-    <header style={{
+    <header className="nox-navbar" style={{
       position:       "relative",
       height:         "clamp(72px, 7vw, 96px)",
       background:     TK.ink,
@@ -527,7 +535,7 @@ function LogoSlot({ client }: { client: ClientItem }) {
         width: "clamp(110px,13vw,180px)",
         height: "clamp(52px,6vw,80px)",
         flexShrink: 0,
-        borderRight: `1px solid rgba(255,255,255,0.06)`,
+        borderRight: `1px solid ${TK.borderFaint}`,
         padding: "0 clamp(1rem,2vw,2rem)",
         position: "relative",
         cursor: "default",
@@ -538,6 +546,7 @@ function LogoSlot({ client }: { client: ClientItem }) {
           <img
             src={client.logo}
             alt={label}
+            className="nox-client-logo"
             style={{
               height: "clamp(18px,2.2vw,32px)",
               width: "auto",
@@ -546,7 +555,7 @@ function LogoSlot({ client }: { client: ClientItem }) {
               display: "block",
               filter: hov
                 ? "brightness(0) saturate(100%) invert(55%) sepia(80%) saturate(400%) hue-rotate(65deg) brightness(0.9)"
-                : "brightness(0) invert(1)",
+                : "var(--nox-logo-filter, brightness(0) invert(1))",
               opacity: hov ? 1 : 0.38,
               transition: "opacity 220ms ease, filter 280ms ease",
               userSelect: "none",
@@ -616,7 +625,7 @@ export function NoxClients({ clients }: { clients?: ClientItem[] }) {
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "clamp(1rem,1.6vw,1.4rem) clamp(1.5rem,4vw,3.5rem)",
-        borderBottom: `1px solid rgba(255,255,255,0.05)`,
+        borderBottom: `1px solid ${TK.borderFaint}`,
       }}>
         <span style={{ fontFamily: SANS, fontSize: "clamp(0.58rem,0.7vw,0.72rem)", letterSpacing: "0.26em", textTransform: "uppercase", color: TK.green, opacity: 0.38 }}>
           / Clients we have worked with
@@ -642,7 +651,7 @@ export function NoxClients({ clients }: { clients?: ClientItem[] }) {
         }} />
 
         {/* row 1 — forward */}
-        <div style={{ overflow: "hidden", borderBottom: `1px solid rgba(255,255,255,0.04)` }}>
+        <div style={{ overflow: "hidden", borderBottom: `1px solid ${TK.borderFaint}` }}>
           <div className="nc-row-fwd">
             {r1.map((c, i) => <LogoSlot key={i} client={c} />)}
           </div>
@@ -845,7 +854,7 @@ function MustRow({ m, i }: { m: typeof MUSTS[0]; i: number }) {
           letterSpacing:    "-0.03em",
           display:          "block",
           color:            hov ? TK.ink : "transparent",
-          WebkitTextStroke: hov ? "1px transparent" : "1.5px rgba(255,255,255,0.65)",
+          WebkitTextStroke: hov ? "1px transparent" : `1.5px ${TK.textMuted}`,
           transition:       "color 360ms cubic-bezier(0.22,1,0.36,1), -webkit-text-stroke-color 360ms ease",
         }}>{m.text}</em>
 

@@ -11,12 +11,12 @@ gsap.registerPlugin(ScrollTrigger);
 /* ── tokens ─────────────────────────────────────────────────────────────── */
 const C = {
   bg:        TK.ink,
-  panel:     "#0a0e0c",
-  card:      "#070b09",
-  border:    "rgba(255,255,255,0.09)",
+  panel:     TK.panel,
+  card:      TK.card,
+  border:    TK.border,
   text:      TK.paper,
-  muted:     "rgba(255,255,255,0.52)",
-  faint:     "rgba(255,255,255,0.28)",
+  muted:     TK.textMuted,
+  faint:     TK.textFaint,
   accent:    TK.green,
   accentRgb: "70,174,34",
   accentHot: TK.greenHot,
@@ -79,12 +79,12 @@ function ServiceCard({ s, index }: { s: (typeof SERVICES)[0]; index: number }) {
       <style>{`
         .sf-card-${index} {
           transition: box-shadow 300ms ease, background 300ms ease;
-          box-shadow: inset 0 0 0 1px rgba(255,255,255,0.09);
+          box-shadow: inset 0 0 0 1px var(--nox-border, rgba(255,255,255,0.09));
         }
         .sf-card-${index}:hover {
           box-shadow: inset 0 0 0 2px ${C.accent}, 0 12px 48px rgba(${C.accentRgb},0.1);
         }
-        .sf-pill-${index} { display:inline-flex; align-items:center; padding:0.4rem 0.9rem; border:1px solid rgba(255,255,255,0.12); background:rgba(${C.accentRgb},0.06); font-family:${SANS}; font-size:0.75rem; letter-spacing:0.05em; color:${C.accent}; }
+        .sf-pill-${index} { display:inline-flex; align-items:center; padding:0.4rem 0.9rem; border:1px solid var(--nox-border, rgba(255,255,255,0.12)); background:rgba(${C.accentRgb},0.06); font-family:${SANS}; font-size:0.75rem; letter-spacing:0.05em; color:${C.accent}; }
         .sf-card-${index}:hover .sf-pill-${index} { border-color:rgba(${C.accentRgb},0.4); background:rgba(${C.accentRgb},0.13); }
         .sf-del-${index} { display:flex; align-items:flex-start; gap:0.5rem; }
       `}</style>
@@ -108,7 +108,7 @@ function ServiceCard({ s, index }: { s: (typeof SERVICES)[0]; index: number }) {
           </div>
           <div aria-hidden style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{
-              color: hov ? C.accent : "rgba(255,255,255,0.13)",
+              color: hov ? C.accent : TK.iconFaint,
               lineHeight: 0, display: "block",
               transform: hov ? "scale(1.1)" : "scale(1)",
               transition: "color 350ms, transform 350ms cubic-bezier(0.22,1,0.36,1)",
@@ -122,7 +122,7 @@ function ServiceCard({ s, index }: { s: (typeof SERVICES)[0]; index: number }) {
         <div style={{ padding: `clamp(1.8rem,2.8vw,3rem) clamp(1.8rem,3.5vw,3rem)`, borderBottom: `1px solid ${C.border}`, display: "flex", flexDirection: "column", gap: "clamp(1.5rem,2.2vw,2.2rem)" }}>
           <p style={{
             fontFamily: SANS, fontSize: "clamp(0.92rem,1.05vw,1.05rem)",
-            lineHeight: 1.75, color: hov ? C.muted : "rgba(255,255,255,0.5)",
+            lineHeight: 1.75, color: hov ? C.muted : TK.textMuted,
             margin: 0, transition: "color 260ms",
           }}>{s.body}</p>
 
@@ -221,7 +221,7 @@ export default function ServicesFocused() {
       <section style={{ position: "relative", overflow: "hidden", borderBottom: `1px solid ${C.border}` }}>
         <div aria-hidden style={{
           position: "absolute", inset: 0, pointerEvents: "none",
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)`,
+          backgroundImage: `linear-gradient(var(--nox-border-faint, rgba(255,255,255,0.03)) 1px,transparent 1px),linear-gradient(90deg,var(--nox-border-faint, rgba(255,255,255,0.03)) 1px,transparent 1px)`,
           backgroundSize: "48px 48px",
         }} />
         <div aria-hidden style={{
@@ -248,7 +248,7 @@ export default function ServicesFocused() {
             color: C.text, margin: "0 0 clamp(1.8rem,3vw,3rem)", maxWidth: "16ch",
           }}>
             six disciplines,{" "}
-            <span style={{ color: `rgba(255,255,255,0.35)` }}>one studio.</span>
+            <span style={{ color: TK.textFaint }}>one studio.</span>
           </h1>
           <p className="sf-lede" style={{
             fontFamily: SANS, fontSize: "clamp(1rem,1.35vw,1.35rem)",

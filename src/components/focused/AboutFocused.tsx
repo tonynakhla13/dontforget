@@ -12,12 +12,12 @@ gsap.registerPlugin(ScrollTrigger);
 /* ── tokens ──────────────────────────────────────────────────────────────── */
 const C = {
   bg:          TK.ink,
-  panel:       "#0a0e0c",
-  panelSoft:   "#0e1410",
-  border:      "rgba(255,255,255,0.09)",
+  panel:       TK.panel,
+  panelSoft:   TK.panel,
+  border:      TK.border,
   text:        TK.paper,
-  muted:       "rgba(255,255,255,0.55)",
-  faint:       "rgba(255,255,255,0.32)",
+  muted:       TK.textMuted,
+  faint:       TK.textFaint,
   accent:      TK.green,
   accentRgb:   "70,174,34",
   accentHot:   TK.greenHot,
@@ -214,7 +214,7 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
         {/* grid */}
         <div aria-hidden style={{
           position: "absolute", inset: 0, pointerEvents: "none",
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.034) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.034) 1px,transparent 1px)`,
+          backgroundImage: `linear-gradient(var(--nox-border-faint,rgba(255,255,255,0.034)) 1px,transparent 1px),linear-gradient(90deg,var(--nox-border-faint,rgba(255,255,255,0.034)) 1px,transparent 1px)`,
           backgroundSize: "56px 56px",
         }} />
         {/* glow top-right */}
@@ -284,7 +284,7 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
           <div style={{
             display: "flex", alignItems: "center", gap: "1.2rem",
             padding: `clamp(1.4rem,2.2vw,2.2rem) ${P}`,
-            borderBottom: `1px solid rgba(255,255,255,0.05)`,
+            borderBottom: `1px solid ${TK.borderFaint}`,
           }}>
             <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.3em", textTransform: "uppercase", color: C.faint, flexShrink: 0 }}>
               Trusted by founders &amp; growing teams
