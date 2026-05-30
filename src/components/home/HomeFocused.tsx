@@ -198,6 +198,7 @@ export default function HomeFocused({
       });
 
       // ── What sets us apart — pin + cards fall in ─────────────────────
+      gsap.set(".tk-wsua-eyebrow", { opacity: 0, y: 16 });
       gsap.set(".tk-wsua-heading", { opacity: 0, y: 40 });
       gsap.set(".tk-wsua-sub",     { opacity: 0, y: 20 });
 
@@ -215,8 +216,9 @@ export default function HomeFocused({
         pin:           true,
         anticipatePin: 1,
         onEnter() {
-          gsap.to(".tk-wsua-heading", { opacity: 1, y: 0, duration: 0.7,  ease: "power3.out" });
-          gsap.to(".tk-wsua-sub",     { opacity: 1, y: 0, duration: 0.6,  ease: "power3.out", delay: 0.15 });
+          gsap.to(".tk-wsua-eyebrow", { opacity: 1, y: 0, duration: 0.5,  ease: "power3.out" });
+          gsap.to(".tk-wsua-heading", { opacity: 1, y: 0, duration: 0.7,  ease: "power3.out", delay: 0.1 });
+          gsap.to(".tk-wsua-sub",     { opacity: 1, y: 0, duration: 0.6,  ease: "power3.out", delay: 0.22 });
 
           gsap.utils.toArray<HTMLElement>(".tk-tag-item").forEach((el, i) => {
             gsap.set(el, { transformOrigin: "center bottom" });
@@ -237,6 +239,10 @@ export default function HomeFocused({
       });
 
       // ── Projects ──────────────────────────────────────
+      gsap.from(".tk-proj-eyebrow", {
+        y: 16, opacity: 0, duration: 0.55, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-projects", start: "top 84%" },
+      });
       gsap.from(".tk-proj-heading", {
         y: 50, opacity: 0, duration: 0.85, ease: "power3.out",
         scrollTrigger: { trigger: ".tk-projects", start: "top 82%" },
@@ -304,6 +310,10 @@ export default function HomeFocused({
       });
 
       // ── Services ──────────────────────────────────────
+      gsap.from(".tk-svc-eyebrow", {
+        y: 16, opacity: 0, duration: 0.55, ease: "power3.out",
+        scrollTrigger: { trigger: ".tk-services", start: "top 84%" },
+      });
       gsap.from(".tk-svc-heading", {
         y: 50, opacity: 0, duration: 0.85, ease: "power3.out",
         scrollTrigger: { trigger: ".tk-services", start: "top 82%" },
@@ -460,6 +470,16 @@ export default function HomeFocused({
         overflow:       "hidden",
         boxSizing:      "border-box",
       }}>
+        <p className="tk-wsua-eyebrow" style={{
+          fontFamily:    SANS,
+          fontSize:      "clamp(0.62rem, 0.82vw, 0.82rem)",
+          letterSpacing: "0.28em",
+          textTransform: "uppercase",
+          color:         TK.green,
+          textAlign:     "center",
+          margin:        "0 0 clamp(0.6rem, 1vw, 1rem)",
+          flexShrink:    0,
+        }}>/ what sets us apart</p>
         <h2 className="tk-wsua-heading" style={{
           fontFamily:    SANS,
           fontWeight:    700,
@@ -541,6 +561,15 @@ export default function HomeFocused({
         padding:   "clamp(4rem, 8vw, 9rem) clamp(1.5rem, 4vw, 3.5rem)",
         borderTop: `1px solid ${TK.line}`,
       }}>
+        <p className="tk-proj-eyebrow" style={{
+          fontFamily:    SANS,
+          fontSize:      "clamp(0.62rem, 0.82vw, 0.82rem)",
+          letterSpacing: "0.28em",
+          textTransform: "uppercase",
+          color:         TK.green,
+          textAlign:     "center",
+          margin:        "0 0 clamp(0.6rem, 1vw, 1rem)",
+        }}>/ our work</p>
         <h2 className="tk-proj-heading" style={{
           fontFamily:    SANS,
           fontWeight:    700,
@@ -768,6 +797,15 @@ export default function HomeFocused({
         padding:   "clamp(4rem, 8vw, 9rem) clamp(1.5rem, 4vw, 3.5rem)",
         borderTop: `1px solid ${TK.line}`,
       }}>
+        <p className="tk-svc-eyebrow" style={{
+          fontFamily:    SANS,
+          fontSize:      "clamp(0.62rem, 0.82vw, 0.82rem)",
+          letterSpacing: "0.28em",
+          textTransform: "uppercase",
+          color:         TK.green,
+          textAlign:     "center",
+          margin:        "0 0 clamp(0.6rem, 1vw, 1rem)",
+        }}>/ our services</p>
         <h2 className="tk-svc-heading" style={{
           fontFamily:    SANS,
           fontWeight:    700,
