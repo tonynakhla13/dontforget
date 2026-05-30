@@ -404,12 +404,12 @@ export default function BlogPostFocused({ post, locale = "en" }: { post: FullPos
         <article
           className="bpf-prose-col"
           style={{
-            background:   "rgba(4, 14, 6, 0.72)",
-            border:       "1px solid rgba(70,174,34,0.13)",
-            borderLeft:   "3px solid rgba(70,174,34,0.55)",
-            padding:      "clamp(2rem, 4vw, 4rem) clamp(1.5rem, 3.5vw, 3.5rem)",
-            boxSizing:    "border-box",
-            backdropFilter: "blur(2px)",
+            background:     "rgba(4, 14, 6, 0.96)",
+            border:         "1px solid rgba(70,174,34,0.16)",
+            borderLeft:     "3px solid rgba(70,174,34,0.6)",
+            padding:        "clamp(2rem, 4vw, 4rem) clamp(1.5rem, 3.5vw, 3.5rem)",
+            boxSizing:      "border-box",
+            backdropFilter: "blur(8px)",
           }}
         >
           <style>{`
@@ -593,10 +593,10 @@ export default function BlogPostFocused({ post, locale = "en" }: { post: FullPos
               maxHeight:     "calc(100dvh - 8rem)",
               overflowY:     "auto",
               padding:       "clamp(1.2rem, 2vw, 1.8rem)",
-              background:    "rgba(4,14,6,0.6)",
-              border:        "1px solid rgba(70,174,34,0.13)",
-              borderTop:     "2px solid rgba(70,174,34,0.45)",
-              backdropFilter:"blur(2px)",
+              background:    "rgba(4,14,6,0.96)",
+              border:        "1px solid rgba(70,174,34,0.16)",
+              borderTop:     "2px solid rgba(70,174,34,0.55)",
+              backdropFilter:"blur(8px)",
             }}
           >
             <p style={{
