@@ -36,13 +36,13 @@ function TypeWord({ children }: { children: string }) {
 const VARIANTS = ["", "c-client--script", "c-client--bold", "c-client--dm"] as const;
 
 const FALLBACK_CLIENTS = [
-  { name: "Atelier",  variant: "c-client--script" },
-  { name: "MERIDIAN", variant: "" },
-  { name: "Solaris",  variant: "c-client--dm" },
-  { name: "PARCEL",   variant: "c-client--bold" },
-  { name: "Nexus",    variant: "c-client--script" },
-  { name: "FORMA",    variant: "" },
-  { name: "Tessera",  variant: "c-client--dm" },
+  { name: "Atelier",  variant: "c-client--script", logo: null },
+  { name: "MERIDIAN", variant: "", logo: null },
+  { name: "Solaris",  variant: "c-client--dm", logo: null },
+  { name: "PARCEL",   variant: "c-client--bold", logo: null },
+  { name: "Nexus",    variant: "c-client--script", logo: null },
+  { name: "FORMA",    variant: "", logo: null },
+  { name: "Tessera",  variant: "c-client--dm", logo: null },
 ];
 
 export default async function CreativeHero() {

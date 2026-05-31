@@ -271,13 +271,14 @@ function TechCarousel({ items }: { items: TechItem[] }) {
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
+    const trackEl = track;
     const half = track.scrollWidth / 2;
     function tick() {
       if (!pauseRef.current) {
         posRef.current += 0.45;
         if (posRef.current >= half) posRef.current -= half;
         if (posRef.current < 0) posRef.current += half;
-        track.style.transform = `translateX(-${posRef.current}px)`;
+        trackEl.style.transform = `translateX(-${posRef.current}px)`;
       }
       rafRef.current = requestAnimationFrame(tick);
     }

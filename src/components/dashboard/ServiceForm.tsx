@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import type { DragEvent } from "react";
+import type { DragEvent, ReactNode } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MediaPicker from "./MediaPicker";
 
@@ -130,6 +131,23 @@ function useDragReorder<T>(items: T[], setItems: (items: T[]) => void) {
     },
     handleDrop: () => { dragIndex.current = null; },
   };
+}
+
+function SectionHead({ heading, action }: { heading: string; action?: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-5">
+      <h2 className="text-xs font-medium text-white/50 uppercase tracking-widest">{heading}</h2>
+      {action}
+    </div>
+  );
+}
+
+function AddBtn({ onClick, text }: { onClick: () => void; text: string }) {
+  return (
+    <button type="button" onClick={onClick} className="text-xs text-[#3ABF8A] hover:text-[#2ea876] transition-colors">
+      + {text}
+    </button>
+  );
 }
 
 export default function ServiceForm({
@@ -270,23 +288,6 @@ export default function ServiceForm({
 
   const inp = "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-[#2ea876] transition-colors text-sm";
   const lbl = "block text-xs text-white/50 uppercase tracking-widest mb-2";
-
-  function SectionHead({ heading, action }: { heading: string; action?: React.ReactNode }) {
-    return (
-      <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-5">
-        <h2 className="text-xs font-medium text-white/50 uppercase tracking-widest">{heading}</h2>
-        {action}
-      </div>
-    );
-  }
-
-  function AddBtn({ onClick, text }: { onClick: () => void; text: string }) {
-    return (
-      <button type="button" onClick={onClick} className="text-xs text-[#3ABF8A] hover:text-[#2ea876] transition-colors">
-        + {text}
-      </button>
-    );
-  }
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -600,9 +601,9 @@ export default function ServiceForm({
         >
           {saving ? "Saving..." : "Save Changes"}
         </button>
-        <a href="/dashboard/services" className="bg-white/5 hover:bg-white/10 text-white/60 text-sm px-8 py-3 rounded-lg transition-colors inline-flex items-center">
+        <Link href="/dashboard/services" className="bg-white/5 hover:bg-white/10 text-white/60 text-sm px-8 py-3 rounded-lg transition-colors inline-flex items-center">
           Cancel
-        </a>
+        </Link>
       </div>
     </div>
   );
