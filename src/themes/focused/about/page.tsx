@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { getClients } from "@/lib/public-content";
 import AboutFocused, { type FocusedTeamMember } from "@/components/focused/AboutFocused";
 
 export const metadata: Metadata = {
@@ -37,6 +38,6 @@ async function getTeam(): Promise<FocusedTeamMember[]> {
 }
 
 export default async function FocusedAboutPage() {
-  const team = await getTeam();
-  return <AboutFocused team={team} />;
+  const [team, clients] = await Promise.all([getTeam(), getClients()]);
+  return <AboutFocused team={team} clients={clients} />;
 }

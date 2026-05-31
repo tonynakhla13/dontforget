@@ -53,7 +53,7 @@ const ITEMS: CreativeHomeProject[] = [
   },
 ];
 
-const RIBBON_WORDS = ["Creative", "Services", "Agency", "Studio", "Design", "Creative", "Services", "Agency"];
+const RIBBON_WORDS = ["Creative", "Services", "Studio", "Design", "Strategy", "Websites", "Systems", "SEO", "Creative", "Services", "Studio", "Design", "Strategy", "Websites", "Systems", "SEO"];
 const PROJECT_ROW_HEIGHT = 146;
 
 function repeatProjects(projects: CreativeHomeProject[], minimumCount = 10) {
@@ -245,7 +245,7 @@ export default function CreativePortfolio({ projects = ITEMS }: { projects?: Cre
           <div className="c-portfolio__head">
             <div className="c-portfolio__cta-wrap">
               <Link href="/creative/work" className="c-btn">
-                Explore Our Work
+                View all work
                 <span className="c-blink" aria-hidden="true" />
               </Link>
             </div>

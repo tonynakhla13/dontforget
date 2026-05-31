@@ -126,6 +126,7 @@ export default function NoxGrid() {
     <canvas
       ref={ref}
       aria-hidden="true"
+      className="nox-grid-canvas"
       style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none" }}
     />
   );

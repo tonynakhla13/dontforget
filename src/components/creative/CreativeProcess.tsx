@@ -4,13 +4,13 @@ import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
 const STEPS = [
-  { n: "01", title: "Intake",    body: "We ask the right questions before the brief exists." },
-  { n: "02", title: "Discovery", body: "We define the real job, audience, and constraints." },
-  { n: "03", title: "Research",  body: "We study the market and choose the strongest route." },
-  { n: "04", title: "Proposal",  body: "You get clear options, scope, trade-offs, and timing." },
-  { n: "05", title: "Strategy",  body: "We shape the UX, structure, references, and plan." },
-  { n: "06", title: "Build",     body: "We make the system work, then make it unforgettable." },
-  { n: "07", title: "Launch",    body: "We test, refine, ship, and support what comes next." },
+  { n: "01", title: "Listen",    body: "We start with the real problem, not just the first idea that sounds exciting." },
+  { n: "02", title: "Discovery", body: "We understand the business, the audience, the current situation, and what needs to change." },
+  { n: "03", title: "Research",  body: "We look at users, competitors, content, SEO, structure, and the details that affect trust." },
+  { n: "04", title: "Proposal",  body: "We give clear options, explain the tradeoffs, and help choose the path that makes sense." },
+  { n: "05", title: "Strategy",  body: "We shape the structure, flow, content direction, and build plan before production starts." },
+  { n: "06", title: "Build",     body: "We design, develop, test, adjust, and keep the work moving without turning the project into fog." },
+  { n: "07", title: "Launch",    body: "We release it carefully, check the details, and make sure the first impression lands well." },
 ];
 
 function Connector({ fromLeft }: { fromLeft: boolean }) {
@@ -125,8 +125,7 @@ export default function CreativeProcess() {
             <span>WORK</span>
           </h2>
           <p className="c-process__desc">
-            A guided path — from the first question to final launch. Most projects
-            land in the 1–2 month range.
+            A clear path from first thought to final launch.
           </p>
           <div className="c-process__count">
             <span className="c-process__count-n">07</span>

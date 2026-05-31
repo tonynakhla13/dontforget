@@ -2,16 +2,7 @@
 
 import { useState } from "react";
 
-const FAQS = [
-  {
-    q: "What types of projects do you work on?",
-    a: "We work on websites, apps, online stores, SEO-ready pages, CRMs, booking systems, dashboards, and custom digital tools.",
-    defaultOpen: true,
-  },
-  { q: "How do you approach a new project?", a: "We start by understanding the problem, the audience, the goal, and what already exists. Then we shape the clearest path forward." },
-  { q: "What if my idea is not fully clear yet?", a: "That is normal. Many strong projects start messy. We help turn scattered thoughts into a direction, then into a build." },
-  { q: "Do you offer ongoing support?", a: "Yes. We can help with updates, improvements, fixes, SEO adjustments, new features, and keeping the digital thing healthy after launch." },
-];
+export type FaqItem = { question: string; answer: string };
 
 function PlusIcon() {
   return (
@@ -31,8 +22,10 @@ function MinusIcon() {
   );
 }
 
-export default function CreativeFAQ() {
-  const [open, setOpen] = useState(0);
+export default function ServiceFAQCreative({ items }: { items: FaqItem[] }) {
+  const [open, setOpen] = useState<number>(-1);
+
+  if (!items.length) return null;
 
   return (
     <section className="c-faq">
@@ -43,19 +36,29 @@ export default function CreativeFAQ() {
         </div>
       </div>
 
-      {FAQS.map((item, i) => (
+      {items.map((item, i) => (
         <div
           key={i}
           className={`c-faq__row${open === i ? " c-faq__row--open" : ""}`}
           onClick={() => setOpen(i === open ? -1 : i)}
         >
           <div className="c-faq__q">
-            <div className="c-faq__q-text">{item.q}</div>
+            <div className="c-faq__q-text">{item.question}</div>
           </div>
           {open === i ? (
             <div className="c-faq__a">
-              <div className="c-faq__a-text">{item.a}</div>
-              <button className="c-faq__btn" aria-label="Close" onClick={(e) => { e.stopPropagation(); setOpen(-1); }}>
+              <div
+                className="c-faq__a-text"
+                dangerouslySetInnerHTML={{ __html: item.answer }}
+              />
+              <button
+                className="c-faq__btn"
+                aria-label="Close"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpen(-1);
+                }}
+              >
                 <MinusIcon />
               </button>
             </div>

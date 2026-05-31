@@ -193,6 +193,7 @@ export default function ServicesManager({
           <div className="border-t border-white/5 pt-4 space-y-4">
             <h3 className="text-xs uppercase tracking-widest text-white/40">Theme Media</h3>
             <div className="grid grid-cols-2 gap-4">
+              {mediaSelect("hero", "creative", "Hero Service PNG — Creative")}
               {mediaSelect("creative_default", "creative", "Creative default")}
               {mediaSelect("creative_hover", "creative", "Creative hover")}
               {mediaSelect("immersive_left", "immersive", "Immersive left")}
@@ -226,7 +227,7 @@ export default function ServicesManager({
               <tr key={s.id} className="border-b border-white/5 last:border-0">
                 <td className="px-6 py-4"><div className="text-sm text-white font-medium">{s.title}</div><div className="text-xs text-white/35">{s.slug}</div></td>
                 <td className="px-6 py-4"><span className={`text-xs px-2 py-1 rounded-full ${s.active ? "bg-emerald-600/20 text-emerald-400" : "bg-white/5 text-white/30"}`}>{s.active ? "Active" : "Hidden"}</span></td>
-                <td className="px-6 py-4"><div className="flex gap-3 justify-end"><button onClick={() => openEdit(s)} className="text-xs text-white/40 hover:text-white">Edit</button><button onClick={() => deleteService(s.id)} className="text-xs text-white/20 hover:text-red-400">Delete</button></div></td>
+                <td className="px-6 py-4"><div className="flex gap-3 justify-end"><a href={`/dashboard/services/${s.id}`} className="text-xs text-[#3ABF8A] hover:text-[#2ea876]">Edit Details</a><button onClick={() => openEdit(s)} className="text-xs text-white/40 hover:text-white">Quick Edit</button><button onClick={() => deleteService(s.id)} className="text-xs text-white/20 hover:text-red-400">Delete</button></div></td>
               </tr>
             ))}</tbody>
           </table>
