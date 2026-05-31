@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { prisma } from "@/lib/prisma";
 import SmoothScroll from "@/components/SmoothScroll";
-import AltParticleLayer from "@/components/AltParticleLayer";
+import ParticleLayer from "@/components/ParticleLayer";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
 import ProjectContent from "./ProjectContent";
@@ -138,7 +138,7 @@ export type ProjectData = {
   services?: { id: string; title: string; slug: string; icon: string | null; shortDescription: string | null }[];
 };
 
-async function getProject(slug: string): Promise<ProjectData | null> {
+export async function getProject(slug: string): Promise<ProjectData | null> {
   const fallback = FALLBACK_PROJECTS.find((project) => project.slug === slug) ?? null;
   try {
     const project = await prisma.project.findUnique({
@@ -259,8 +259,8 @@ export default async function WorkPage({
   return (
     <>
       <SmoothScroll />
-      <AltParticleLayer mode="galaxy" />
-      <main className="relative z-[1] overflow-x-clip">
+      <ParticleLayer />
+      <main className="immersive-mode relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
         <Navbar inner />

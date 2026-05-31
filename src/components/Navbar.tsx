@@ -7,6 +7,7 @@ import { gsap } from "@/lib/gsap";
 import { isLocale } from "@/lib/site-routing";
 import { LocaleControl } from "@/components/site/SiteControls";
 import ImmersiveLogo from "@/components/immersive/ImmersiveLogo";
+import { ImmersiveContactPopup } from "@/components/immersive/ImmersiveContact";
 
 const NAV_H = 86;
 const LANGUAGE_LABELS = {
@@ -46,11 +47,13 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         { label: "Work",     href: `${canonicalBase}/work`     },
         { label: "Services", href: `${canonicalBase}/services` },
         { label: "About",    href: `${canonicalBase}/about`    },
+        { label: "Blog",     href: `${canonicalBase}/blog`     },
         { label: "Contact",  href: `${canonicalBase}/contact`  },
       ] : [
         { label: "Work",     href: `/${mode}/work`    },
         { label: "Services", href: `/services`        },
         { label: "About",    href: `/about`           },
+        { label: "Blog",     href: `/${mode}/blog`    },
         { label: "Contact",  href: `/${mode}/contact` },
       ]
     : isInnerPage
@@ -73,6 +76,9 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
   const isImmersive = mode === "immersive";
   const logoSrc = isImmersive ? "/immersive/nokx-studio-logo.svg" : "/dont%20forget%20logo.png";
   const logoAlt = isImmersive ? "NOKX Studio" : "DON'T FORGET";
+  const openImmersiveContact = () => {
+    window.dispatchEvent(new Event("immersive-contact:open"));
+  };
 
   /* ── Full-screen overlay animation ── */
   useEffect(() => {
@@ -235,7 +241,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
           </Link>
 
           <ul className="hidden items-center gap-8 md:flex">
-            {navLinks.slice(0, navLinks.length - 1).map(({ label, href }) => (
+            {navLinks.map(({ label, href }) => (
               <li key={label}>
                 <Link
                   href={href}
@@ -265,10 +271,17 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
                 />
               </div>
             ) : null}
-            <Link href={ctaHref} className={`btn-glass transition-[transform] duration-500 ${isImmersive && compact ? "scale-[0.94]" : ""}`}>
-              <span className="btn-glass-blob" aria-hidden="true" />
-              <span className="btn-glass-face" style={{ padding: "0.48rem 1.1rem", fontSize: "0.78rem" }}>Let&apos;s talk</span>
-            </Link>
+            {isImmersive ? (
+              <button type="button" onClick={openImmersiveContact} className={`btn-glass transition-[transform] duration-500 ${compact ? "scale-[0.94]" : ""}`}>
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face" style={{ padding: "0.48rem 1.1rem", fontSize: "0.78rem" }}>Let&apos;s talk</span>
+              </button>
+            ) : (
+              <Link href={ctaHref} className="btn-glass transition-[transform] duration-500">
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face" style={{ padding: "0.48rem 1.1rem", fontSize: "0.78rem" }}>Let&apos;s talk</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -312,6 +325,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
           </div>
         </div>
       </aside>}
+      {isImmersive ? <ImmersiveContactPopup /> : null}
     </>
   );
 }

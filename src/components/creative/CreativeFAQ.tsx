@@ -5,12 +5,12 @@ import { useState } from "react";
 const FAQS = [
   {
     q: "What types of projects do you work on?",
-    a: "We work on a wide range of projects, from branding and graphic design to web development and content creation",
+    a: "We work on websites, apps, online stores, SEO-ready pages, CRMs, booking systems, dashboards, and custom digital tools.",
     defaultOpen: true,
   },
-  { q: "How do you approach a new project?", a: "We start with a deep discovery phase to understand your goals, audience, and competitive landscape before crafting a tailored creative strategy." },
-  { q: "What is your pricing model?", a: "We work on a project-basis with clear milestones and deliverables. Reach out for a custom quote based on your scope." },
-  { q: "Do you offer ongoing support?", a: "Yes — we offer retainer packages for brands that want a long-term creative partner." },
+  { q: "How do you approach a new project?", a: "We start by understanding the problem, the audience, the goal, and what already exists. Then we shape the clearest path forward." },
+  { q: "What if my idea is not fully clear yet?", a: "That is normal. Many strong projects start messy. We help turn scattered thoughts into a direction, then into a build." },
+  { q: "Do you offer ongoing support?", a: "Yes. We can help with updates, improvements, fixes, SEO adjustments, new features, and keeping the digital thing healthy after launch." },
 ];
 
 function PlusIcon() {

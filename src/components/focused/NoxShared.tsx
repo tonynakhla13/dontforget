@@ -2,17 +2,27 @@
 
 import Link from "next/link";
 import { useId, useState, useEffect, useRef } from "react";
+import { HeaderLocaleControl } from "@/components/site/SiteControls";
+import ContactFormPopup, { openContactFormPopup } from "@/components/site/ContactFormPopup";
 
 /* ── design tokens ──────────────────────────────────────────────────── */
 export const TK = {
-  ink:       "var(--nox-ink, #000000)",
-  green:     "var(--nox-green, #46ae22)",
-  greenHot:  "#46d12a",
-  paper:     "var(--nox-paper, #ffffff)",
-  chrome:    "var(--nox-chrome, rgb(38,37,37))",
-  line:      "rgba(70,174,34,0.35)",
-  lineFaint: "rgba(70,174,34,0.18)",
-  muted:     "rgba(70,174,34,0.6)",
+  ink:        "var(--nox-ink, #000000)",
+  green:      "var(--nox-green, #46ae22)",
+  greenHot:   "#46d12a",
+  paper:      "var(--nox-paper, #ffffff)",
+  chrome:     "var(--nox-chrome, rgb(38,37,37))",
+  line:       "rgba(70,174,34,0.35)",
+  lineFaint:  "rgba(70,174,34,0.18)",
+  muted:      "rgba(70,174,34,0.6)",
+  /* surface tokens — light/dark adaptive */
+  panel:      "var(--nox-panel, #0a0e0c)",
+  card:       "var(--nox-card, #070b09)",
+  border:     "var(--nox-border, rgba(255,255,255,0.09))",
+  borderFaint:"var(--nox-border-faint, rgba(255,255,255,0.06))",
+  textMuted:  "var(--nox-text-muted, rgba(255,255,255,0.52))",
+  textFaint:  "var(--nox-text-faint, rgba(255,255,255,0.28))",
+  iconFaint:  "var(--nox-icon-faint, rgba(255,255,255,0.13))",
 } as const;
 
 export const SANS    = "'Syne', 'Inter', sans-serif";
@@ -239,7 +249,7 @@ const NAV = [
   { label: "about",    href: "/en/focused/about" },
   { label: "services", href: "/en/focused/services" },
   { label: "our work", href: "/en/focused/work" },
-  { label: "contact",  href: "/en/focused/contact" },
+  { label: "blog",     href: "/en/focused/blog" },
 ];
 
 /* ── Theme toggle ────────────────────────────────────────────────────── */
@@ -295,72 +305,137 @@ function ThemeToggle() {
 
 /* ── Navbar ─────────────────────────────────────────────────────────── */
 export function NoxNavbar({ active }: { active?: string }) {
+  const headerRef = useRef<HTMLElement>(null);
+
+  /* Direct DOM mutation — zero React re-renders, silky CSS transition */
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    function onScroll() {
+      if (!el) return;
+      if (window.scrollY > 40) {
+        el.style.height = "56px";
+      } else {
+        el.style.height = "";
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header style={{
-      position:       "relative",
-      height:         "clamp(72px, 7vw, 96px)",
-      background:     TK.ink,
-      display:        "flex",
-      alignItems:     "center",
-      justifyContent: "space-between",
-      padding:        "0 clamp(1.5rem, 4vw, 3.5rem)",
-      borderBottom:   `1px solid ${TK.lineFaint}`,
-    }}>
-      {/* Logo */}
-      <Link href="/en/focused" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-        <NoxLogo height={32} />
-      </Link>
+    <>
+      <style>{`
+        .nox-navbar {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          height: clamp(72px, 7vw, 88px);
+          background: ${TK.ink};
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 clamp(1.5rem, 4vw, 3.5rem);
+          border-bottom: 1px solid ${TK.lineFaint};
+          transition: height 380ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          will-change: height;
+        }
+        .nox-nav-link {
+          font-family: ${SANS};
+          font-size: clamp(0.76rem, 0.92vw, 0.92rem);
+          color: ${TK.green};
+          text-decoration: none;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          border-bottom: 1px solid transparent;
+          padding-bottom: 3px;
+          transition: color 160ms ease, border-color 160ms ease;
+        }
+        .nox-nav-link:hover { color: ${TK.greenHot}; }
+        .nox-nav-link.active { color: ${TK.greenHot}; border-bottom-color: ${TK.greenHot}; }
+        .nox-cta {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 0 clamp(1rem, 1.4vw, 1.4rem);
+          height: 34px;
+          background: transparent;
+          color: ${TK.green};
+          border: 1px solid ${TK.line};
+          font-size: clamp(0.7rem, 0.82vw, 0.82rem);
+          font-family: ${SANS};
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+        }
+        .nox-cta:hover {
+          background: ${TK.green};
+          border-color: ${TK.green};
+          color: ${TK.ink};
+        }
+        .nox-locale .locale-control {
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+          direction: ltr;
+        }
+        .nox-locale .locale-control button {
+          font-family: ${SANS};
+          font-size: 0.68rem;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: ${TK.textFaint};
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 0;
+          transition: color 160ms ease;
+        }
+        .nox-locale .locale-control span {
+          color: ${TK.textFaint};
+          font-size: 0.6rem;
+        }
+        .nox-locale .locale-control button:hover { color: ${TK.green}; }
+        .nox-locale .locale-control button[aria-current="true"] { color: ${TK.green}; font-weight: 700; }
+      `}</style>
 
-      {/* Center nav */}
-      <nav style={{
-        display:   "flex",
-        gap:       "clamp(1.5rem, 3vw, 3rem)",
-        position:  "absolute",
-        left:      "50%",
-        transform: "translateX(-50%)",
-      }}>
-        {NAV.map(({ label, href }) => {
-          const isActive = active === label;
-          return (
-            <Link key={label} href={href} style={{
-              fontFamily:    SANS,
-              fontSize:      "clamp(0.78rem, 0.95vw, 0.95rem)",
-              color:         isActive ? TK.greenHot : TK.green,
-              textDecoration: "none",
-              borderBottom:  isActive ? `1px solid ${TK.greenHot}` : "1px solid transparent",
-              paddingBottom:  isActive ? 4 : 0,
-              transition:    "color 180ms ease, border-color 180ms ease",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = TK.greenHot; }}
-            onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = TK.green; }}
+      <header ref={headerRef} className="nox-navbar">
+        {/* Logo */}
+        <Link href="/en/focused" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <NoxLogo height={32} />
+        </Link>
+
+        {/* Center nav */}
+        <nav style={{
+          display:   "flex",
+          gap:       "clamp(1.5rem, 3vw, 3rem)",
+          position:  "absolute",
+          left:      "50%",
+          transform: "translateX(-50%)",
+        }}>
+          {NAV.map(({ label, href }) => (
+            <Link
+              key={label}
+              href={href}
+              className={`nox-nav-link${active === label ? " active" : ""}`}
             >{label}</Link>
-          );
-        })}
-      </nav>
+          ))}
+        </nav>
 
-      {/* Right side: theme toggle + CTA */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-      <ThemeToggle />
-      {/* CTA */}
-      <Link href="/en/focused/contact" style={{
-        display:        "inline-flex",
-        alignItems:     "center",
-        justifyContent: "center",
-        padding:        "0 clamp(1rem, 1.5vw, 1.5rem)",
-        height:         36,
-        background:     TK.chrome,
-        color:          TK.paper,
-        fontSize:       "clamp(0.72rem, 0.88vw, 0.9rem)",
-        fontFamily:     SANS,
-        textDecoration: "none",
-        transition:     "background 180ms ease",
-        whiteSpace:     "nowrap",
-      }}
-      onMouseEnter={e => (e.currentTarget.style.background = "#2f2f2f")}
-      onMouseLeave={e => (e.currentTarget.style.background = TK.chrome)}
-      >Contact us</Link>
-      </div>
-    </header>
+        {/* Right: lang + CTA */}
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <HeaderLocaleControl theme="focused" className="nox-locale" />
+
+          <button type="button" onClick={openContactFormPopup} className="nox-cta">
+            Let&apos;s talk
+          </button>
+        </div>
+      </header>
+      <ContactFormPopup theme="focused" />
+    </>
   );
 }
 
@@ -507,35 +582,275 @@ export function NoxCTABar({ label = "Start a project", href = "/en/focused/conta
 }
 
 /* ── Clients marquee ────────────────────────────────────────────────── */
-const CLIENT_NAMES = [
-  "Atelier Noir", "Meridian", "Solaris Labs", "Parcel", "Drift & Co.",
-  "Orbit Travel", "Nexus", "Forma Studio", "Arca", "Tessera",
-  "Lumen Digital", "Haven", "Strata", "Cove",
+const CLIENT_NAMES_FALLBACK = [
+  "Guarantee", "Elia Clinic", "AKG Creative House", "Vera Reformer & Pilates",
+  "Thrt Home Services", "DARQ Architects", "Sky Group", "MARSHES",
+  "11vent Production", "Ida Bakery & Bistro", "Leaders Makers", "180 Degrees",
 ];
 
-export function NoxClients() {
-  const items = [...CLIENT_NAMES, ...CLIENT_NAMES];
+type ClientItem = { name: string; company: string | null; logo?: string | null };
+
+function LogoSlot({ client }: { client: ClientItem }) {
+  const [hov, setHov] = useState(false);
+  const label = client.company || client.name;
   return (
-    <section style={{ borderTop: `1px solid ${TK.line}`, borderBottom: `1px solid ${TK.line}`, overflow: "hidden", padding: "clamp(1.8rem, 3.5vw, 3.5rem) 0" }}>
-      <style>{`@keyframes nox-ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}.nox-ticker{display:flex;width:max-content;animation:nox-ticker 36s linear infinite;will-change:transform}.nox-ticker:hover{animation-play-state:paused}`}</style>
-      <div className="nox-ticker">
-        {items.map((c, i) => (
-          <span key={i} style={{ display: "inline-flex", alignItems: "center", whiteSpace: "nowrap" }}>
-            <span style={{ fontFamily: SANS, fontWeight: 700, fontSize: "clamp(1rem, 2.2vw, 2.2rem)", color: TK.green, padding: "0 clamp(1.5rem, 3vw, 3.5rem)", letterSpacing: "-0.01em", textTransform: "uppercase" }}>{c}</span>
-            <span style={{ width: 8, height: 8, background: TK.green, display: "inline-block", flexShrink: 0 }} />
-          </span>
-        ))}
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        width: "clamp(110px,13vw,180px)",
+        height: "clamp(52px,6vw,80px)",
+        flexShrink: 0,
+        borderRight: `1px solid ${TK.borderFaint}`,
+        padding: "0 clamp(1rem,2vw,2rem)",
+        position: "relative",
+        cursor: "default",
+      }}
+    >
+      {client.logo ? (
+        <>
+          <img
+            src={client.logo}
+            alt={label}
+            className="nox-client-logo"
+            style={{
+              height: "clamp(18px,2.2vw,32px)",
+              width: "auto",
+              maxWidth: "100%",
+              objectFit: "contain",
+              display: "block",
+              filter: hov
+                ? "brightness(0) saturate(100%) invert(55%) sepia(80%) saturate(400%) hue-rotate(65deg) brightness(0.9)"
+                : "var(--nox-logo-filter, brightness(0) invert(1))",
+              opacity: hov ? 1 : 0.38,
+              transition: "opacity 220ms ease, filter 280ms ease",
+              userSelect: "none",
+            }}
+          />
+          {/* tooltip */}
+          <span style={{
+            position: "absolute",
+            bottom: "calc(100% + 8px)",
+            left: "50%",
+            transform: `translateX(-50%) translateY(${hov ? 0 : 4}px)`,
+            background: TK.green,
+            color: "#000",
+            fontFamily: SANS,
+            fontWeight: 700,
+            fontSize: "0.6rem",
+            letterSpacing: "0.08em",
+            padding: "0.25rem 0.6rem",
+            whiteSpace: "nowrap",
+            opacity: hov ? 1 : 0,
+            pointerEvents: "none",
+            transition: "opacity 180ms ease, transform 180ms ease",
+            zIndex: 10,
+          }}>{label}</span>
+        </>
+      ) : (
+        <span style={{
+          fontFamily: SANS, fontWeight: 700,
+          fontSize: "clamp(0.65rem,0.85vw,0.85rem)",
+          letterSpacing: "0.05em",
+          color: TK.green,
+          opacity: hov ? 0.9 : 0.35,
+          whiteSpace: "nowrap",
+          transition: "opacity 220ms",
+          textAlign: "center",
+          lineHeight: 1.2,
+        }}>{label}</span>
+      )}
+    </div>
+  );
+}
+
+export function NoxClients({ clients }: { clients?: ClientItem[] }) {
+  const withLogos = clients?.filter(c => c.logo) ?? [];
+  const all: ClientItem[] = withLogos.length > 0
+    ? withLogos
+    : CLIENT_NAMES_FALLBACK.map(n => ({ name: n, company: n }));
+
+  const mid = Math.ceil(all.length / 2);
+  const row1 = all.slice(0, mid);
+  const row2 = all.slice(mid);
+
+  const r1 = [...row1, ...row1, ...row1];
+  const r2 = [...row2, ...row2, ...row2];
+
+  return (
+    <section style={{ borderTop: `1px solid ${TK.line}`, borderBottom: `1px solid ${TK.line}`, background: TK.ink, overflow: "hidden" }}>
+      <style>{`
+        @keyframes nc-fwd { from { transform: translateX(0) } to { transform: translateX(-33.333%) } }
+        @keyframes nc-rev { from { transform: translateX(-33.333%) } to { transform: translateX(0) } }
+        .nc-row-fwd { display:flex; width:max-content; animation: nc-fwd 40s linear infinite; will-change:transform; }
+        .nc-row-rev { display:flex; width:max-content; animation: nc-rev 48s linear infinite; will-change:transform; }
+        .nc-row-fwd:hover, .nc-row-rev:hover { animation-play-state: paused; }
+      `}</style>
+
+      {/* header */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "clamp(1rem,1.6vw,1.4rem) clamp(1.5rem,4vw,3.5rem)",
+        borderBottom: `1px solid ${TK.borderFaint}`,
+      }}>
+        <span style={{ fontFamily: SANS, fontSize: "clamp(0.58rem,0.7vw,0.72rem)", letterSpacing: "0.26em", textTransform: "uppercase", color: TK.green, opacity: 0.38 }}>
+          / Clients we have worked with
+        </span>
+        <span style={{ fontFamily: SANS, fontSize: "clamp(0.56rem,0.66vw,0.66rem)", letterSpacing: "0.14em", color: TK.green, opacity: 0.2 }}>
+          {all.length} clients
+        </span>
+      </div>
+
+      {/* rows container with edge fades */}
+      <div style={{ position: "relative" }}>
+        {/* left fade */}
+        <div aria-hidden style={{
+          position: "absolute", left: 0, top: 0, bottom: 0, width: "clamp(60px,8vw,120px)",
+          background: `linear-gradient(to right, ${TK.ink}, transparent)`,
+          zIndex: 2, pointerEvents: "none",
+        }} />
+        {/* right fade */}
+        <div aria-hidden style={{
+          position: "absolute", right: 0, top: 0, bottom: 0, width: "clamp(60px,8vw,120px)",
+          background: `linear-gradient(to left, ${TK.ink}, transparent)`,
+          zIndex: 2, pointerEvents: "none",
+        }} />
+
+        {/* row 1 — forward */}
+        <div style={{ overflow: "hidden", borderBottom: `1px solid ${TK.borderFaint}` }}>
+          <div className="nc-row-fwd">
+            {r1.map((c, i) => <LogoSlot key={i} client={c} />)}
+          </div>
+        </div>
+
+        {/* row 2 — reverse */}
+        <div style={{ overflow: "hidden" }}>
+          <div className="nc-row-rev">
+            {r2.map((c, i) => <LogoSlot key={i} client={c} />)}
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 
+/* ── Scrolling client logo strip (RAF-based) ────────────────────────── */
+export function ClientCarousel({ clients }: { clients: ClientItem[] }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const rafRef   = useRef<number>(0);
+  const posRef   = useRef(0);
+  const pauseRef = useRef(false);
+  const touchRef = useRef({ startX: 0, startPos: 0, active: false });
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const trackEl = track;
+    const half = track.scrollWidth / 2;
+    function tick() {
+      if (!pauseRef.current) {
+        posRef.current += 0.5;
+        if (posRef.current >= half) posRef.current -= half;
+        if (posRef.current < 0) posRef.current += half;
+        trackEl.style.transform = `translateX(-${posRef.current}px)`;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    }
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchRef.current = { startX: e.touches[0].clientX, startPos: posRef.current, active: true };
+    pauseRef.current = true;
+  }
+  function onTouchMove(e: React.TouchEvent) {
+    if (!touchRef.current.active) return;
+    const track = trackRef.current;
+    if (!track) return;
+    const half = track.scrollWidth / 2;
+    let next = touchRef.current.startPos - (e.touches[0].clientX - touchRef.current.startX);
+    if (next < 0) next += half;
+    if (next >= half) next -= half;
+    posRef.current = next;
+    track.style.transform = `translateX(-${next}px)`;
+  }
+  function onTouchEnd() {
+    touchRef.current.active = false;
+    pauseRef.current = false;
+  }
+
+  const doubled = [...clients, ...clients];
+  return (
+    <div
+      style={{ overflow: "hidden", padding: "clamp(2.5rem,4vw,4.5rem) 0", touchAction: "pan-y" }}
+      onMouseEnter={() => { pauseRef.current = true; }}
+      onMouseLeave={() => { pauseRef.current = false; }}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchEnd}
+    >
+      <div ref={trackRef} style={{ display: "flex", alignItems: "center", gap: "clamp(3rem,6vw,7rem)", width: "max-content", paddingLeft: "clamp(1.5rem,4vw,3.5rem)" }}>
+        {doubled.map((cl, i) => {
+          const label = cl.company ?? cl.name;
+          return (
+            <div key={i} className="cc-item" style={{
+              flexShrink: 0, position: "relative",
+              width: "clamp(100px,12vw,160px)", height: "clamp(40px,5vw,64px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {cl.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={cl.logo}
+                  alt={label}
+                  draggable={false}
+                  style={{
+                    maxWidth: "100%", maxHeight: "100%",
+                    width: "auto", height: "auto",
+                    objectFit: "contain",
+                    filter: "brightness(0) saturate(100%) invert(55%) sepia(80%) saturate(400%) hue-rotate(65deg) brightness(0.85)",
+                    opacity: 0.65,
+                    transition: "opacity 220ms",
+                    display: "block",
+                  }}
+                />
+              ) : (
+                <span style={{
+                  fontFamily: SANS, fontWeight: 700, fontSize: "clamp(0.72rem,0.9vw,0.9rem)",
+                  letterSpacing: "0.12em", textTransform: "uppercase",
+                  color: TK.green, opacity: 0.55, whiteSpace: "nowrap",
+                }}>{label}</span>
+              )}
+              <span className="cc-tip" style={{
+                position: "absolute", bottom: "calc(100% + 10px)", left: "50%",
+                transform: "translateX(-50%) translateY(4px)",
+                fontFamily: SANS, fontSize: "0.56rem", letterSpacing: "0.18em", textTransform: "uppercase",
+                color: "#000", background: TK.green,
+                padding: "0.28rem 0.65rem", whiteSpace: "nowrap",
+                pointerEvents: "none", opacity: 0,
+                transition: "opacity 180ms ease, transform 180ms ease",
+              }}>{label}</span>
+            </div>
+          );
+        })}
+      </div>
+      <style>{`
+        .cc-item:hover img { opacity: 1 !important; }
+        .cc-item:hover .cc-tip { opacity: 1 !important; transform: translateX(-50%) translateY(0) !important; }
+      `}</style>
+    </div>
+  );
+}
+
 /* ── MUSTs manifesto ────────────────────────────────────────────────── */
 const MUSTS = [
-  { n: "01", text: "Clarity.",  sub: "If it doesn't sharpen the message, it doesn't make the cut." },
-  { n: "02", text: "Motion.",   sub: "Every movement has to explain, reveal, or guide — nothing decorative." },
-  { n: "03", text: "Systems.",  sub: "The launch is not the finish line. It is the first stress test." },
-  { n: "04", text: "Honesty.",  sub: "The strongest result starts with saying the useful thing early." },
+  { n: "01", text: "Clarity.",  sub: "If people cannot understand it, it is not ready yet." },
+  { n: "02", text: "Care.",     sub: "Small team means real attention — to the client, the users, and the little details that usually cause big headaches." },
+  { n: "03", text: "Systems.",  sub: "A launch is not just a finish line. It is the moment your digital thing has to behave in public." },
+  { n: "04", text: "Honesty.",  sub: "We suggest what makes sense, not what makes the invoice bigger." },
 ];
 
 function MustRow({ m, i }: { m: typeof MUSTS[0]; i: number }) {
@@ -607,7 +922,7 @@ function MustRow({ m, i }: { m: typeof MUSTS[0]; i: number }) {
           letterSpacing:    "-0.03em",
           display:          "block",
           color:            hov ? TK.ink : "transparent",
-          WebkitTextStroke: hov ? "1px transparent" : "1.5px rgba(255,255,255,0.65)",
+          WebkitTextStroke: hov ? "1px transparent" : `1.5px ${TK.textMuted}`,
           transition:       "color 360ms cubic-bezier(0.22,1,0.36,1), -webkit-text-stroke-color 360ms ease",
         }}>{m.text}</em>
 
@@ -737,7 +1052,7 @@ export function NoxFooter() {
           color:         FG,
           margin:        0,
         }}>
-          Got an idea? We&apos;d love<br />to bring it to life
+          Got an idea? Let&apos;s make it easier.
         </h2>
 
         {/* Page nav */}
@@ -788,7 +1103,7 @@ export function NoxFooter() {
         {/* Newsletter signup */}
         <div>
           <p style={{ fontFamily: SANS, fontSize: "clamp(0.68rem,0.82vw,0.82rem)", color: FGA, margin: "0 0 0.5rem" }}>
-            Sign up for our newsletter
+            Simple notes on websites, systems, UX, SEO, and the small digital mistakes everyone keeps pretending are normal.
           </p>
           <div style={{
             display:       "flex",
@@ -837,7 +1152,8 @@ export function NoxFooter() {
           color:      FGA,
           margin:     0,
         }}>
-          We&apos;re based in Bali, working<br />with clients worldwide
+          Based in Yabroud, Syria.<br />Working worldwide.<br />
+          <span style={{ opacity: 0.55, fontSize: "0.85em" }}>Formerly Don&apos;t Forget. Same team, easier name.</span>
         </p>
 
         {/* Contact email */}

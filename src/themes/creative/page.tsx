@@ -8,6 +8,7 @@ import CreativeProcess from "@/components/creative/CreativeProcess";
 import CreativeMusts from "@/components/creative/CreativeMusts";
 import CreativeCTA1 from "@/components/creative/CreativeCTA1";
 import CreativeFAQ from "@/components/creative/CreativeFAQ";
+import CreativeHomeBlog, { type HomeBlogPost } from "@/components/creative/CreativeHomeBlog";
 import CreativeContactHome from "@/components/creative/CreativeContactHome";
 import CreativeFooter from "@/components/creative/CreativeFooter";
 import CreativeHomeMotion from "@/components/creative/CreativeHomeMotion";
@@ -22,9 +23,10 @@ export const dynamic = "force-dynamic";
 async function getCreativeHomeData(): Promise<{
   services: CreativeHomeService[] | undefined;
   projects: CreativeHomeProject[] | undefined;
+  posts: HomeBlogPost[] | undefined;
 }> {
   try {
-    const [services, projects] = await Promise.all([
+    const [services, projects, posts] = await Promise.all([
       prisma.service.findMany({
         where: { active: true },
         orderBy: { order: "asc" },
@@ -45,6 +47,12 @@ async function getCreativeHomeData(): Promise<{
           gifUrl: true,
         },
       }),
+      prisma.post.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: [{ order: "asc" }, { publishedAt: "desc" }],
+        take: 3,
+        select: { id: true, slug: true, title: true, tags: true, coverImage: true, excerpt: true, publishedAt: true },
+      }),
     ]);
 
     return {
@@ -55,14 +63,15 @@ async function getCreativeHomeData(): Promise<{
           }))
         : undefined,
       projects: projects.length ? projects : undefined,
+      posts: posts.length ? posts : undefined,
     };
   } catch {
-    return { services: undefined, projects: undefined };
+    return { services: undefined, projects: undefined, posts: undefined };
   }
 }
 
-export default async function CreativePage() {
-  const { services, projects } = await getCreativeHomeData();
+export default async function CreativePage({ locale = "en" }: { locale?: string }) {
+  const { services, projects, posts } = await getCreativeHomeData();
 
   return (
     <>
@@ -75,6 +84,7 @@ export default async function CreativePage() {
       <CreativeMusts />
       <CreativeCTA1 />
       <CreativeFAQ />
+      <CreativeHomeBlog posts={posts} locale={locale} />
       <CreativeContactHome />
       <CreativeFooter />
     </>

@@ -24,17 +24,17 @@ async function getPosts() {
   } catch { return []; }
 }
 
-export default async function ImmersiveBlogPage() {
+export default async function ImmersiveBlogPage({ locale = "en" }: { locale?: string }) {
   const posts = await getPosts();
   return (
     <>
       <SmoothScroll />
       <ParticleLayer />
-      <main className="relative z-[1] overflow-x-clip">
+      <main className="immersive-mode relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
         <Navbar inner />
-        <DarkBlogList posts={posts} basePath="/immersive/blog" />
+        <DarkBlogList posts={posts} basePath="/immersive/blog" locale={locale} />
       </main>
     </>
   );

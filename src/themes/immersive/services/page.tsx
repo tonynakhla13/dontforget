@@ -92,7 +92,7 @@ export default function ImmersiveServicesPage() {
   return (
     <>
       <SmoothScroll />
-      <main className="relative z-[1] overflow-x-clip">
+      <main className="immersive-mode relative z-[1] overflow-x-clip">
         <ServicesBackground />
         <ServicesDFParticles />
         <div className="noise" />

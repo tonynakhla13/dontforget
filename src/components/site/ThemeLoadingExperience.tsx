@@ -75,8 +75,13 @@ function normalizeInternalHref(href: string) {
 
 export function useThemeTransition() {
   const value = useContext(TransitionContext);
-  if (!value) throw new Error("useThemeTransition must be used inside ThemeTransitionProvider");
-  return value;
+  return value ?? {
+    navigateWithTransition: (href: string, options?: NavigateOptions) => {
+      void Promise.resolve(options?.beforeNavigate?.()).finally(() => {
+        window.location.href = href;
+      });
+    },
+  };
 }
 
 export function ThemeTransitionProvider({ children }: { children: ReactNode }) {

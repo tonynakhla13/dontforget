@@ -30,29 +30,57 @@ export default function FocusedLayout({ children }: { children: React.ReactNode 
           --nox-btn-start-hov:  #46ae22;
           --nox-btn-start-c:    #46ae22;
           --nox-btn-start-ch:   #000000;
+          /* surface tokens used by components */
+          --nox-panel:          #0a0e0c;
+          --nox-card:           #070b09;
+          --nox-border:         rgba(255,255,255,0.09);
+          --nox-border-faint:   rgba(255,255,255,0.06);
+          --nox-text-muted:     rgba(255,255,255,0.52);
+          --nox-text-faint:     rgba(255,255,255,0.28);
+          --nox-icon-faint:     rgba(255,255,255,0.13);
+          --nox-logo-filter:    brightness(0) invert(1);
         }
         [data-nox-theme="light"] {
-          --nox-ink:            #e9e9e9;
-          --nox-paper:          #000000;
-          --nox-green:          #3d9e18;
-          --nox-chrome:         rgb(215,215,215);
-          --nox-field-bg:       #c8e8b8;
-          --nox-field-bg-focus: #b2dea0;
-          --nox-card-mask:      #ffffff;
-          --nox-form-card-bg:   #daf0ce;
-          --nox-proj-card-bg:   #c2e0b2;
-          --nox-proj-sub:       rgba(0,0,0,0.5);
-          --nox-proj-body:      rgba(0,0,0,0.72);
-          --nox-svc-card-bg:    #eaf6e4;
-          --nox-svc-card-hov:   #d6efcc;
-          --nox-svc-border:     rgba(61,158,24,0.22);
-          --nox-svc-border-hov: rgba(61,158,24,0.7);
-          --nox-svc-body:       rgba(61,158,24,0.75);
-          --nox-svc-body-hov:   rgba(61,158,24,1);
-          --nox-btn-start-bg:   rgba(61,158,24,0.12);
-          --nox-btn-start-hov:  #3d9e18;
-          --nox-btn-start-c:    #3d9e18;
+          /* ── page canvas ───────────────────────────────────── */
+          --nox-ink:            #f7f6f1;
+          --nox-paper:          #0d0d0b;
+          --nox-green:          #267803;
+          --nox-chrome:         #1a1918;
+
+          /* ── form / inputs ─────────────────────────────────── */
+          --nox-field-bg:       #eeede8;
+          --nox-field-bg-focus: #e5e4de;
+          --nox-card-mask:      #f7f6f1;
+          --nox-form-card-bg:   #ffffff;
+
+          /* ── project / work cards ──────────────────────────── */
+          --nox-proj-card-bg:   #eeede8;
+          --nox-proj-sub:       rgba(13,13,11,0.52);
+          --nox-proj-body:      rgba(13,13,11,0.75);
+
+          /* ── service cards ─────────────────────────────────── */
+          --nox-svc-card-bg:    #ffffff;
+          --nox-svc-card-hov:   #f7f6f1;
+          --nox-svc-border:     rgba(0,0,0,0.09);
+          --nox-svc-border-hov: rgba(38,120,3,0.55);
+          --nox-svc-body:       rgba(38,120,3,0.72);
+          --nox-svc-body-hov:   rgba(38,120,3,1);
+
+          /* ── buttons ───────────────────────────────────────── */
+          --nox-btn-start-bg:   rgba(38,120,3,0.09);
+          --nox-btn-start-hov:  #267803;
+          --nox-btn-start-c:    #267803;
           --nox-btn-start-ch:   #ffffff;
+
+          /* ── surface tokens ────────────────────────────────── */
+          --nox-panel:          #edecea;
+          --nox-card:           #e8e7e1;
+          --nox-border:         rgba(0,0,0,0.09);
+          --nox-border-faint:   rgba(0,0,0,0.055);
+          --nox-text-muted:     rgba(13,13,11,0.55);
+          --nox-text-faint:     rgba(13,13,11,0.32);
+          --nox-icon-faint:     rgba(13,13,11,0.14);
+          --nox-logo-filter:    brightness(0) saturate(0);
         }
 
         /* Reset focused theme to Techolo canvas */
@@ -61,6 +89,50 @@ export default function FocusedLayout({ children }: { children: React.ReactNode 
           color: #46ae22 !important;
           margin: 0 !important;
           padding: 0 !important;
+        }
+
+        /* ── light-mode overrides ────────────────────────────── */
+
+        /* service card injected box-shadows & pill borders */
+        [data-nox-theme="light"] [class*="sf-card-"] {
+          box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1) !important;
+        }
+        [data-nox-theme="light"] [class*="sf-card-"]:hover {
+          box-shadow: inset 0 0 0 2px var(--nox-green),
+                      0 12px 48px rgba(38,120,3,0.08) !important;
+        }
+        [data-nox-theme="light"] [class*="sf-pill-"] {
+          border-color: rgba(0,0,0,0.12) !important;
+          background:   rgba(38,120,3,0.06) !important;
+        }
+        [data-nox-theme="light"] [class*="sf-card-"]:hover [class*="sf-pill-"] {
+          border-color: rgba(38,120,3,0.4)  !important;
+          background:   rgba(38,120,3,0.12) !important;
+        }
+
+        /* grid canvas: tone down on light */
+        [data-nox-theme="light"] .nox-grid-canvas {
+          opacity: 0.45;
+        }
+
+        /* living background: less dominating on light */
+        [data-nox-theme="light"] .focused-living-background {
+          opacity: 0.25 !important;
+        }
+
+        /* navbar: slight shadow so it separates from the page */
+        [data-nox-theme="light"] .nox-navbar {
+          box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+        }
+
+        /* client logo images: invert for dark mode, black for light mode */
+        [data-nox-theme="light"] .nox-client-logo {
+          filter: var(--nox-logo-filter) !important;
+        }
+
+        /* footer dividers and muted text */
+        [data-nox-theme="light"] .nox-footer-line {
+          background: rgba(0,0,0,0.1) !important;
         }
 
         /* Hide any leftover ambient/particle elements from the shell */

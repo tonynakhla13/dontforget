@@ -13,6 +13,7 @@ interface PostData {
   content?: string;
   contentAr?: string;
   coverImage?: string;
+  heroImage?: string;
   tags?: string[];
   tagsAr?: string[];
   status?: "DRAFT" | "PUBLISHED";
@@ -31,7 +32,7 @@ export default function PostForm({ initial }: { initial?: PostData }) {
   const editing = !!initial?.id;
 
   const [form, setForm] = useState<PostData>({
-    title: "", titleAr: "", slug: "", excerpt: "", excerptAr: "", content: "", contentAr: "", coverImage: "",
+    title: "", titleAr: "", slug: "", excerpt: "", excerptAr: "", content: "", contentAr: "", coverImage: "", heroImage: "",
     tags: [], tagsAr: [], status: "DRAFT", order: 0,
     ...initial,
   });
@@ -123,7 +124,7 @@ export default function PostForm({ initial }: { initial?: PostData }) {
         />
       </div>
 
-      {/* Cover image + Tags */}
+      {/* Cover image + Hero image + Tags */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>Cover image URL</label>
@@ -141,6 +142,19 @@ export default function PostForm({ initial }: { initial?: PostData }) {
             onChange={e => setTagsInput(e.target.value)}
           />
         </div>
+      </div>
+      <div>
+        <label className={labelCls}>
+          Hero / Portrait image URL{" "}
+          <span className="normal-case text-white/30">
+            (displayed as a decorative portrait in Creative theme — works best with tall/portrait-orientation images)
+          </span>
+        </label>
+        <input
+          className={inputCls}
+          value={form.heroImage} placeholder="https://..."
+          onChange={e => set("heroImage", e.target.value)}
+        />
       </div>
 
       <section className="space-y-4 rounded-xl border border-white/8 bg-zinc-900 p-5">

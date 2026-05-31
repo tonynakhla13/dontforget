@@ -6,22 +6,22 @@ import { gsap } from "@/lib/gsap";
 const RULES = [
   {
     n: "01", name: "Clarity",
-    line: "If it doesn't sharpen the message, it doesn't make the cut.",
+    line: "If people cannot understand it, they cannot trust it.",
     img: "/creative/thinking.png",
   },
   {
     n: "02", name: "Motion",
-    line: "Every movement has to explain, reveal, or guide.",
+    line: "Every movement should guide, reveal, or help. Nothing moves just to show off.",
     img: "/creative/bust2.png",
   },
   {
     n: "03", name: "Systems",
-    line: "The launch is not the finish line. It is the first stress test.",
+    line: "The best digital work feels simple because something underneath is doing its job.",
     img: "/creative/bust1.png",
   },
   {
     n: "04", name: "Honesty",
-    line: "The strongest result starts with saying the useful thing early.",
+    line: "The right solution should serve the client, not the invoice.",
     img: "/creative/thinking.png",
   },
 ];

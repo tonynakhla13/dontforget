@@ -22,6 +22,7 @@ const projectFields = [
 const serviceFields = [
   "title", "titleAr", "slug", "description", "descriptionAr", "shortDescription", "tagline",
   "benefits", "deliverables", "process", "techStack", "featured", "seoTitle", "seoDescription", "icon", "order", "active",
+  "faq", "ctaHeadline", "ctaSubtext", "ctaButtonLabel", "ctaButtonLink",
 ] as const;
 
 export function slugify(value: string) {
@@ -84,5 +85,9 @@ export function serviceData(body: Record<string, unknown>): Prisma.ServiceCreate
 export function serviceUpdateData(body: Record<string, unknown>): Prisma.ServiceUpdateInput {
   const data = pick(body, serviceFields) as Prisma.ServiceUpdateInput;
   if (Array.isArray(body.attachments)) data.attachments = { deleteMany: {}, create: attachmentRows(body.attachments) ?? [] };
+  if (Array.isArray(body.projectIds)) {
+    const projectIds = body.projectIds.filter((id): id is string => typeof id === "string");
+    data.projects = { deleteMany: {}, create: projectIds.map((projectId, order) => ({ order, project: { connect: { id: projectId } } })) };
+  }
   return data;
 }

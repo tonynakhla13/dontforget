@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "@/lib/gsap";
 import RequestForm from "@/components/RequestForm";
@@ -720,7 +721,7 @@ function StepModal({ onClose }: { onClose: () => void }) {
         <div
           onWheel={e => e.stopPropagation()}
           style={{ flex: "1 1 auto", minHeight: 0, display: "flex", overflow: "hidden", overscrollBehavior: "contain" }}>
-          <RequestForm embedded onHeaderMetaChange={setHeaderMeta} />
+          <RequestForm embedded onHeaderMetaChange={setHeaderMeta} onBack={close} />
         </div>
       </div>
     </div>
@@ -1132,7 +1133,7 @@ function ContactField({ label, type = "text", placeholder, value, onChange, auto
 /* ─────────────────────────────────────────────────────────────────────────
    SUCCESS STATE — animated confirmation after submission
 ───────────────────────────────────────────────────────────────────────── */
-function SuccessState() {
+function SuccessState({ onBack }: { onBack?: () => void }) {
   const containerRef = useRef<HTMLElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const checkRef = useRef<SVGSVGElement>(null);
@@ -1292,7 +1293,8 @@ function SuccessState() {
         </p>
 
         <div style={{ opacity: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-          <a href="/immersive"
+          <button type="button"
+            onClick={onBack}
             className="transition-all duration-200"
             style={{
               display: "inline-flex", alignItems: "center", gap: "0.5rem",
@@ -1309,8 +1311,8 @@ function SuccessState() {
               stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            Back to home
-          </a>
+            Back
+          </button>
 
           <span style={{
             fontFamily: "var(--font-mono-next)", fontSize: "0.4rem",
@@ -1328,7 +1330,13 @@ function SuccessState() {
 /* ─────────────────────────────────────────────────────────────────────────
    MAIN COMPONENT
 ───────────────────────────────────────────────────────────────────────── */
-export default function ImmersiveContact({ embedded = false }: { embedded?: boolean }) {
+export default function ImmersiveContact({
+  embedded = false,
+  onDoneBack,
+}: {
+  embedded?: boolean;
+  onDoneBack?: () => void;
+}) {
   const [voiceClips, setVoiceClips] = useState<Blob[]>([]);
   const [form, setForm]     = useState({ message: "" });
   const [sub, setSub]       = useState(false);
@@ -1403,7 +1411,22 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
   }
 
   /* ── Success ── */
-  if (done) return <SuccessState />;
+  if (done) {
+    return (
+      <SuccessState
+        onBack={() => {
+          if (onDoneBack) {
+            onDoneBack();
+            return;
+          }
+          setDone(false);
+          setSub(false);
+          setForm({ message: "" });
+          setVoiceClips([]);
+        }}
+      />
+    );
+  }
 
   return (
     <section ref={sectionRef} id="contact"
@@ -1575,5 +1598,22 @@ export default function ImmersiveContact({ embedded = false }: { embedded?: bool
       )}
 
     </section>
+  );
+}
+
+export function ImmersiveContactPopup() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const openPopup = () => setOpen(true);
+    window.addEventListener("immersive-contact:open", openPopup);
+    return () => window.removeEventListener("immersive-contact:open", openPopup);
+  }, []);
+
+  if (!open) return null;
+
+  return createPortal(
+    <StepModal onClose={() => setOpen(false)} />,
+    document.body
   );
 }

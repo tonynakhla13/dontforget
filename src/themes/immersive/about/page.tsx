@@ -25,7 +25,7 @@ export default function ImmersiveAboutPage() {
       <KnotBackground />
       {/* Snake scene = sits on top, fades out as user scrolls past hero */}
       <MeshWebDevBackgroundClient />
-      <main className="relative z-[1] overflow-x-clip">
+      <main className="immersive-mode relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
         <Navbar inner />

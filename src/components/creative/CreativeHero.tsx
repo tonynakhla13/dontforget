@@ -1,6 +1,7 @@
 import Link from "next/link";
 import CreativeNavbar from "./CreativeNavbar";
 import BustCard from "./BustCard";
+import { prisma } from "@/lib/prisma";
 
 function LogoEye({ clipId }: { clipId: string }) {
   return (
@@ -32,7 +33,39 @@ function TypeWord({ children }: { children: string }) {
   );
 }
 
-export default function CreativeHero() {
+const VARIANTS = ["", "c-client--script", "c-client--bold", "c-client--dm"] as const;
+
+const FALLBACK_CLIENTS = [
+  { name: "Atelier",  variant: "c-client--script", logo: null },
+  { name: "MERIDIAN", variant: "", logo: null },
+  { name: "Solaris",  variant: "c-client--dm", logo: null },
+  { name: "PARCEL",   variant: "c-client--bold", logo: null },
+  { name: "Nexus",    variant: "c-client--script", logo: null },
+  { name: "FORMA",    variant: "", logo: null },
+  { name: "Tessera",  variant: "c-client--dm", logo: null },
+];
+
+export default async function CreativeHero() {
+  let dbClients: { name: string; company: string | null; logo: string | null }[] = [];
+  try {
+    dbClients = await prisma.clientItem.findMany({
+      orderBy: [{ order: "asc" }, { name: "asc" }],
+      select: { name: true, company: true, logo: true },
+    });
+  } catch {}
+
+  const strip = dbClients.length >= 1
+    ? (() => {
+        const base = dbClients.map((c, i) => ({
+          name: c.company || c.name,
+          logo: c.logo ?? null,
+          variant: VARIANTS[i % VARIANTS.length],
+        }));
+        while (base.length < 7) base.push(...base.slice(0, Math.max(1, 7 - base.length)));
+        return base.slice(0, Math.max(7, dbClients.length));
+      })()
+    : FALLBACK_CLIENTS;
+
   return (
     <section className="c-hero">
       <div className="c-hero__brush" aria-hidden="true" />
@@ -54,12 +87,12 @@ export default function CreativeHero() {
           <TypeWord>TIVE</TypeWord>
         </div>
         <div className="c-hero__row">
-          <TypeWord>AGENCY</TypeWord>
+          <TypeWord>STUDIO</TypeWord>
           <span className="c-hero__star" aria-hidden="true" />
         </div>
         <BustCard />
         <div className="c-hero__sub">
-          <p>Crafting unique and compelling{"\n"}creative solutions that captivate and inspire.</p>
+          <p>We shape websites, brands, and digital systems{"\n"}that people notice, understand, and remember.</p>
           <Link href="/creative/work" className="c-btn">
             Explore Our Work
             <span className="c-blink" aria-hidden="true" />
@@ -81,11 +114,11 @@ export default function CreativeHero() {
         <div className="c-hero__stats-left">
           <div className="c-stat">
             <span className="c-stat__n">200+</span>
-            <span className="c-stat__d">{"Project\nCompleted"}</span>
+            <span className="c-stat__d">{"Projects\nShaped"}</span>
           </div>
           <div className="c-stat">
             <span className="c-stat__n">80%</span>
-            <span className="c-stat__d">{"Repeat\nBusiness"}</span>
+            <span className="c-stat__d">{"Repeat\nClients"}</span>
           </div>
         </div>
         <div className="c-hero__globes">
@@ -94,15 +127,19 @@ export default function CreativeHero() {
         </div>
       </div>
 
-      {/* Clients strip */}
+      {/* Clients carousel */}
       <div className="c-hero__clients">
-        <span className="c-client c-client--script">Gamma</span>
-        <span className="c-client">DELTA</span>
-        <span className="c-client c-client--bold">Omega</span>
-        <span className="c-client c-client--dm">Alpha</span>
-        <span className="c-client c-client--bold">BETA</span>
-        <span className="c-client c-client--script">Gamma</span>
-        <span className="c-client">DELTA</span>
+        <div className="c-clients__track">
+          {[...strip, ...strip].map((c, i) => (
+            <span key={i} className="c-client-wrap">
+              <span className={`c-client${c.variant ? ` ${c.variant}` : ""}`}>{c.name}</span>
+              {c.logo && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className="c-client__logo" src={c.logo} alt={c.name} draggable={false} />
+              )}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );

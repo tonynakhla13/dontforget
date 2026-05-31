@@ -24,11 +24,16 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
           initial={{
             id: post.id,
             title: post.title,
+            titleAr: post.titleAr ?? "",
             slug: post.slug,
             excerpt: post.excerpt ?? "",
+            excerptAr: post.excerptAr ?? "",
             content: post.content,
+            contentAr: post.contentAr ?? "",
             coverImage: post.coverImage ?? "",
+            heroImage: post.heroImage ?? "",
             tags: post.tags,
+            tagsAr: post.tagsAr ?? [],
             status: post.status as "DRAFT" | "PUBLISHED",
             order: post.order,
           }}
