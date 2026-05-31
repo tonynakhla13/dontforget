@@ -97,11 +97,54 @@ body:has(.creative-mode) {
 }
 .creative-mode .c-nav__link:hover::after,
 .creative-mode .c-nav__link.active::after { transform: scaleX(1); }
+.creative-mode .c-nav__talk {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 18px;
+  border: 1px solid var(--c-ink);
+  border-radius: 999px;
+  background: var(--c-lime);
+  color: var(--c-ink);
+  font-family: var(--c-f-body);
+  font-size: 15px;
+  transition: transform .15s, box-shadow .15s;
+}
+.creative-mode .c-nav__talk:hover {
+  transform: translate(-2px,-2px);
+  box-shadow: 3px 3px 0 var(--c-ink);
+}
 .creative-mode .c-nav__brand {
   display: flex; align-items: center;
 }
 .creative-mode .c-nav__logo {
   display: block; width: clamp(96px, 10vw, 124px); height: auto;
+}
+.creative-mode .c-nav__locale .locale-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  direction: ltr;
+  font-family: var(--c-f-ui);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--c-ink);
+}
+.creative-mode .c-nav__locale .locale-control button {
+  color: rgba(35,31,32,.48);
+  padding: 8px 0;
+  transition: color .18s;
+}
+.creative-mode .c-nav__locale .locale-control button:hover,
+.creative-mode .c-nav__locale .locale-control button[aria-current="true"] {
+  color: var(--c-ink);
+}
+.creative-mode .c-nav__locale .locale-control button[aria-current="true"] {
+  font-weight: 700;
+}
+.creative-mode .c-nav__locale .locale-control span {
+  color: rgba(35,31,32,.35);
 }
 
 /* =========================================================

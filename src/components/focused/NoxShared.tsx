@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useId, useState, useEffect, useRef } from "react";
+import { HeaderLocaleControl } from "@/components/site/SiteControls";
+import ContactFormPopup, { openContactFormPopup } from "@/components/site/ContactFormPopup";
 
 /* ── design tokens ──────────────────────────────────────────────────── */
 export const TK = {
@@ -247,7 +249,7 @@ const NAV = [
   { label: "about",    href: "/en/focused/about" },
   { label: "services", href: "/en/focused/services" },
   { label: "our work", href: "/en/focused/work" },
-  { label: "contact",  href: "/en/focused/contact" },
+  { label: "blog",     href: "/en/focused/blog" },
 ];
 
 /* ── Theme toggle ────────────────────────────────────────────────────── */
@@ -374,7 +376,13 @@ export function NoxNavbar({ active }: { active?: string }) {
           border-color: ${TK.green};
           color: ${TK.ink};
         }
-        .nox-lang-btn {
+        .nox-locale .locale-control {
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+          direction: ltr;
+        }
+        .nox-locale .locale-control button {
           font-family: ${SANS};
           font-size: 0.68rem;
           letter-spacing: 0.14em;
@@ -386,8 +394,12 @@ export function NoxNavbar({ active }: { active?: string }) {
           padding: 0;
           transition: color 160ms ease;
         }
-        .nox-lang-btn:hover { color: ${TK.green}; }
-        .nox-lang-btn.on { color: ${TK.green}; }
+        .nox-locale .locale-control span {
+          color: ${TK.textFaint};
+          font-size: 0.6rem;
+        }
+        .nox-locale .locale-control button:hover { color: ${TK.green}; }
+        .nox-locale .locale-control button[aria-current="true"] { color: ${TK.green}; font-weight: 700; }
       `}</style>
 
       <header ref={headerRef} className="nox-navbar">
@@ -415,17 +427,14 @@ export function NoxNavbar({ active }: { active?: string }) {
 
         {/* Right: lang + CTA */}
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-            <button className="nox-lang-btn on" type="button">EN</button>
-            <span style={{ color: TK.textFaint, fontSize: "0.6rem" }}>/</span>
-            <button className="nox-lang-btn" type="button">AR</button>
-          </div>
+          <HeaderLocaleControl theme="focused" className="nox-locale" />
 
-          <Link href="/en/focused/contact" className="nox-cta">
-            Contact us
-          </Link>
+          <button type="button" onClick={openContactFormPopup} className="nox-cta">
+            Let&apos;s talk
+          </button>
         </div>
       </header>
+      <ContactFormPopup theme="focused" />
     </>
   );
 }

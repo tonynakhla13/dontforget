@@ -19,6 +19,7 @@ import FocusedServices from "@/themes/focused/services/page";
 import FocusedBlog from "@/themes/focused/blog/page";
 import ServiceDetailFocused from "@/components/focused/ServiceDetailFocused";
 import BlogPostFocused from "@/components/focused/BlogPostFocused";
+import ProjectContentFocused from "@/components/focused/ProjectContentFocused";
 import FocusedContact from "@/themes/focused/contact/page";
 import CreativeThemeLayout from "@/themes/creative/layout";
 import CreativeHome from "@/themes/creative/page";
@@ -29,6 +30,8 @@ import CreativeBlog from "@/themes/creative/blog/page";
 import CreativeContact from "@/themes/creative/contact/page";
 import ServiceDetailCreative from "@/components/creative/ServiceDetailCreative";
 import BlogPostCreative from "@/components/creative/BlogPostCreative";
+import ProjectContentCreative from "@/components/creative/ProjectContentCreative";
+import { getProject as getFullProject } from "@/features/work/[slug]/page";
 import BlogPostImmersive from "@/components/immersive/BlogPostImmersive";
 import ImmersiveHome from "@/themes/immersive/page";
 import ImmersiveAbout from "@/themes/immersive/about/page";
@@ -121,6 +124,11 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
       if (!post) return null;
       return <FocusedThemeLayout><BlogPostFocused post={post} locale={locale} /></FocusedThemeLayout>;
     }
+    if (page === "work" && tail[1]) {
+      const project = await getFullProject(tail[1]);
+      if (!project) return null;
+      return <FocusedThemeLayout><ProjectContentFocused project={project} /></FocusedThemeLayout>;
+    }
     const view = page === "home" ? <FocusedHome /> :
       page === "about" && !tail[1] ? <FocusedAbout /> :
       page === "work" && !tail[1] ? <FocusedWork locale={locale} /> :
@@ -139,6 +147,11 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
       const post = await getPost(locale, tail[1]);
       if (!post) return null;
       return <CreativeThemeLayout><BlogPostCreative post={post} locale={locale} /></CreativeThemeLayout>;
+    }
+    if (page === "work" && tail[1]) {
+      const project = await getFullProject(tail[1]);
+      if (!project) return null;
+      return <CreativeThemeLayout><ProjectContentCreative project={project} /></CreativeThemeLayout>;
     }
     const view = page === "home" ? <CreativeHome locale={locale} /> :
       page === "about" && !tail[1] ? <CreativeAbout /> :

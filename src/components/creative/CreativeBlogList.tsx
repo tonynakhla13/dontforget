@@ -110,7 +110,6 @@ export default function CreativeBlogList({ posts, locale }: { posts: BlogPost[];
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             ref={imgRef}
-            src=""
             alt=""
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />

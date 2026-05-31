@@ -28,7 +28,7 @@ export default async function CreativeBlogPage({ locale = "en" }: { locale?: str
 
   return (
     <>
-      <CreativeNavbar />
+      <CreativeNavbar active="blog" />
 
       {/* ── Page hero ── */}
       <section className="c-page-hero" style={{ paddingBottom: "clamp(60px, 8vw, 100px)" }}>

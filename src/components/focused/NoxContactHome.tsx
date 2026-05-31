@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import { TK, SANS, DISPLAY } from "./NoxShared";
 
@@ -37,6 +38,17 @@ async function uploadVoice(blob: Blob, i: number): Promise<string | null> {
     if (!res.ok) return null;
     const d = await res.json() as { url?: string };
     return d.url ?? null;
+  } catch { return null; }
+}
+
+async function uploadInquiryFile(file: File) {
+  const fd = new FormData();
+  fd.append("file", file, file.name);
+  try {
+    const res = await fetch("/api/inquiries/files", { method: "POST", body: fd });
+    if (!res.ok) return null;
+    const data = await res.json() as { name?: string; url?: string };
+    return data.name && data.url ? { name: data.name, url: data.url } : null;
   } catch { return null; }
 }
 
@@ -108,29 +120,6 @@ function Field({ label, value, onChange, type = "text", placeholder, autoComplet
 }
 
 /* ─── Contact method toggle ─────────────────────────────────────────── */
-function MethodToggle({ value, onChange }: { value: ContactMethod; onChange: (v: ContactMethod) => void }) {
-  return (
-    <div>
-      <FieldLabel>How should we reach you?</FieldLabel>
-      <div style={{ display: "flex", gap: "0.5rem" }}>
-        {(["whatsapp", "phone", "email"] as ContactMethod[]).map(m => (
-          <button key={m} type="button" onClick={() => onChange(m)} style={{
-            flex:       1,
-            padding:    "0.65rem 0.5rem",
-            border:     `1px solid ${value === m ? TK.green : TK.line}`,
-            background: value === m ? TK.green : "transparent",
-            color:      value === m ? TK.ink   : TK.green,
-            fontFamily: SANS,
-            fontSize:   "clamp(0.72rem, 0.88vw, 0.88rem)",
-            cursor:     "pointer",
-            transition: "all 160ms ease",
-          }}>{METHOD_LABELS[m]}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /* ─── Voice Recorder ────────────────────────────────────────────────── */
 function NoxVoice({
   onRecorded,
@@ -330,6 +319,70 @@ function NoxVoice({
   );
 }
 
+function MiniVoiceButton({ onRecorded, count }: { onRecorded: (blob: Blob) => void; count: number }) {
+  const [recording, setRecording] = useState(false);
+  const mediaRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  async function toggle() {
+    if (recording) {
+      mediaRef.current?.stop();
+      return;
+    }
+    if (count >= 3) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      mediaRef.current = recorder;
+      recorder.ondataavailable = event => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach(track => track.stop());
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        if (blob.size) onRecorded(blob);
+        setRecording(false);
+      };
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setRecording(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      disabled={!recording && count >= 3}
+      aria-label={recording ? "Stop recording" : "Record voice note"}
+      style={{
+        width: 34,
+        height: 34,
+        display: "grid",
+        placeItems: "center",
+        border: `1px solid ${recording ? "#ef4444" : TK.line}`,
+        background: recording ? "rgba(239,68,68,0.12)" : "rgba(70,174,34,0.06)",
+        color: recording ? "#ef4444" : TK.green,
+        cursor: !recording && count >= 3 ? "default" : "pointer",
+        opacity: !recording && count >= 3 ? 0.35 : 1,
+      }}
+    >
+      {recording ? (
+        <span style={{ width: 10, height: 10, borderRadius: 2, background: "currentColor" }} />
+      ) : (
+        <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+          <path d="M12 19v4" />
+          <path d="M8 23h8" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 /* ─── Guided brief card ─────────────────────────────────────────────── */
 function GuidedCard({ onClick }: { onClick: () => void }) {
   const [hov, setHov] = useState(false);
@@ -378,140 +431,35 @@ function GuidedCard({ onClick }: { onClick: () => void }) {
   );
 }
 
-/* ─── Contact details modal (quick send) ────────────────────────────── */
-function ContactModal({
-  onClose, onSubmit, submitting, submitError,
-}: {
-  onClose: () => void;
-  onSubmit: (cd: CD) => void;
-  submitting: boolean;
-  submitError: boolean;
-}) {
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const panelRef   = useRef<HTMLFormElement>(null);
-  const [name, setName]     = useState("");
-  const [method, setMethod] = useState<ContactMethod>("email");
-  const [value, setValue]   = useState("");
-
-  useEffect(() => {
-    gsap.fromTo(overlayRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 });
-    gsap.fromTo(panelRef.current, { autoAlpha: 0, y: 32 }, { autoAlpha: 1, y: 0, duration: 0.38, ease: "power3.out" });
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
-
-  function close() {
-    gsap.to(panelRef.current, { autoAlpha: 0, y: 20, duration: 0.2, ease: "power2.in" });
-    gsap.to(overlayRef.current, { autoAlpha: 0, duration: 0.22, onComplete: onClose });
-  }
-
-  const canSubmit = name.trim().length > 1 && value.trim().length > 3 && !submitting;
-
-  return (
-    <div ref={overlayRef}
-      onClick={e => { if (e.target === overlayRef.current) close(); }}
-      style={{
-        position: "fixed", inset: 0, zIndex: 1000,
-        display: "grid", placeItems: "center",
-        padding: "clamp(0.75rem, 2vw, 1.5rem)",
-        background: "rgba(0,0,0,0.9)",
-        backdropFilter: "blur(12px)",
-      }}>
-      <form ref={panelRef}
-        onSubmit={e => { e.preventDefault(); if (canSubmit) onSubmit({ name: name.trim(), method, value: value.trim() }); }}
-        style={{
-          width:      "min(460px, calc(100vw - 2rem))",
-          background: TK.ink,
-          border:     `1px solid ${TK.line}`,
-          padding:    "clamp(2rem, 4vw, 3rem)",
-          position:   "relative",
-        }}>
-        {/* Close */}
-        <button type="button" onClick={close} aria-label="Close"
-          style={{
-            position: "absolute", top: "1.25rem", right: "1.25rem",
-            background: "none", border: `1px solid ${TK.line}`,
-            color: TK.green, cursor: "pointer",
-            width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-          <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
-        </button>
-
-        <p style={{ fontFamily: SANS, fontSize: "clamp(0.6rem, 0.75vw, 0.75rem)", letterSpacing: "0.22em", textTransform: "uppercase", color: TK.green, opacity: 0.5, margin: "0 0 0.5rem" }}>
-          almost done
-        </p>
-        <h2 style={{ fontFamily: SANS, fontWeight: 700, fontSize: "clamp(1.6rem, 3vw, 2.5rem)", color: TK.paper, lineHeight: 1, margin: "0 0 clamp(1.5rem, 3vw, 2.5rem)" }}>
-          Where do we reach you?
-        </h2>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "clamp(1.2rem, 2vw, 1.8rem)" }}>
-          <Field label="Your name" value={name} onChange={setName} placeholder="Full name" autoComplete="name" />
-          <MethodToggle value={method} onChange={m => { setMethod(m); setValue(""); }} />
-          <Field
-            label={METHOD_LABELS[method]}
-            value={value}
-            onChange={setValue}
-            type={method === "email" ? "email" : "tel"}
-            placeholder={method === "email" ? "hello@you.com" : "+1 555 123 4567"}
-            autoComplete={method === "email" ? "email" : "tel"}
-          />
-        </div>
-
-        {submitError && (
-          <p style={{ fontFamily: SANS, fontSize: "0.82rem", color: "#ef4444", marginTop: "1rem" }}>
-            Something went wrong. Try again.
-          </p>
-        )}
-
-        <button type="submit" disabled={!canSubmit} style={{
-          display:        "flex",
-          alignItems:     "center",
-          justifyContent: "center",
-          gap:            "0.5rem",
-          width:          "100%",
-          marginTop:      "clamp(1.5rem, 3vw, 2.5rem)",
-          padding:        "clamp(0.85rem, 1.4vw, 1.1rem)",
-          background:     canSubmit ? TK.green : "transparent",
-          color:          canSubmit ? TK.ink   : TK.green,
-          border:         `1px solid ${canSubmit ? TK.green : TK.line}`,
-          fontFamily:     SANS, fontWeight: 700,
-          fontSize:       "clamp(0.88rem, 1.1vw, 1.05rem)",
-          cursor:         canSubmit ? "pointer" : "default",
-          opacity:        canSubmit ? 1 : 0.45,
-          transition:     "all 200ms ease",
-        }}>
-          {submitting ? "Sending…" : "Send request →"}
-        </button>
-        <p style={{ fontFamily: SANS, fontSize: "clamp(0.58rem, 0.7vw, 0.7rem)", letterSpacing: "0.18em", textTransform: "uppercase", color: TK.green, opacity: 0.3, textAlign: "center", marginTop: "0.75rem" }}>
-          A real person replies within 24 hours
-        </p>
-      </form>
-    </div>
-  );
-}
-
 /* ─── 3-step guided brief modal ─────────────────────────────────────── */
-function StepModal({ onClose }: { onClose: () => void }) {
+export function FocusedGuidedBriefModal({ onClose }: { onClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef   = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [step, setStep]   = useState(1);
   const [done, setDone]   = useState(false);
   const [sub, setSub]     = useState(false);
   const [err, setErr]     = useState(false);
   const [gd, setGd]       = useState<GuidedData>({ serviceIds: [], subServices: [], timeline: "", budget: "" });
   const [cd, setCd]       = useState<CD>({ name: "", method: "email", value: "" });
+  const [message, setMessage] = useState("");
+  const [voice, setVoice] = useState<Blob[]>([]);
+  const [assetFiles, setAssetFiles] = useState<File[]>([]);
 
   const selected = SERVICES.filter(s => gd.serviceIds.includes(s.id));
   const examples = Array.from(new Set(selected.flatMap(s => s.examples)));
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     gsap.fromTo(overlayRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 });
     gsap.fromTo(panelRef.current, { autoAlpha: 0, y: 28, scale: 0.98 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.38, ease: "power3.out" });
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
-  }, []);
+  }, [mounted]);
 
   function close() {
     gsap.to(panelRef.current, { autoAlpha: 0, y: 16, scale: 0.98, duration: 0.2 });
@@ -527,6 +475,23 @@ function StepModal({ onClose }: { onClose: () => void }) {
     if (!canAdvance) return;
     setSub(true); setErr(false);
     try {
+      const audioUploads = voice.length
+        ? await Promise.all(voice.map((blob, index) => uploadVoice(blob, index)))
+        : [];
+      const audioUrls = audioUploads.filter((url): url is string => Boolean(url));
+      const failedAudioCount = voice.length - audioUrls.length;
+      const fileUploads = assetFiles.length
+        ? await Promise.all(assetFiles.map(file => uploadInquiryFile(file)))
+        : [];
+      const uploadedFiles = fileUploads.filter((file): file is { name: string; url: string } => Boolean(file));
+      const failedFileCount = assetFiles.length - uploadedFiles.length;
+      const noteLine = message.trim() ? `\n\nMessage:\n${message.trim()}` : "";
+      const voiceLine = voice.length
+        ? `\n\nVoice notes: ${audioUrls.length} uploaded${failedAudioCount ? `, ${failedAudioCount} failed to upload` : ""}`
+        : "";
+      const fileLine = uploadedFiles.length
+        ? `\n\nShared files:\n${uploadedFiles.map(file => `- ${file.name}: ${file.url}`).join("\n")}`
+        : "";
       const res = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -534,11 +499,23 @@ function StepModal({ onClose }: { onClose: () => void }) {
           name: cd.name.trim(),
           email: cd.method === "email" ? cd.value : `${cd.method}@dontforget.local`,
           projectType: `${selected.map(s => s.title).join(", ")} — ${gd.subServices.join(", ")}`,
-          message: `Timeline: ${gd.timeline} | Budget: ${gd.budget}`,
+          message: `Timeline: ${gd.timeline} | Budget: ${gd.budget}${noteLine}${voiceLine}${fileLine}`,
           contactMethod: cd.method,
           contactValue:  cd.value,
           source: "focused-home-guided",
-          metadata: { serviceIds: gd.serviceIds, subServices: gd.subServices, timeline: gd.timeline, budget: gd.budget },
+          audioUrls,
+          assetNames: uploadedFiles.map(file => file.name),
+          metadata: {
+            serviceIds: gd.serviceIds,
+            subServices: gd.subServices,
+            timeline: gd.timeline,
+            budget: gd.budget,
+            assetCount: uploadedFiles.length,
+            failedFileCount,
+            assetUrls: uploadedFiles,
+            voiceCount: audioUrls.length,
+            failedAudioCount,
+          },
         }),
       });
       if (res.ok) setDone(true);
@@ -548,12 +525,14 @@ function StepModal({ onClose }: { onClose: () => void }) {
 
   const STEP_LABELS = ["Services", "Scope", "Details"];
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div ref={overlayRef}
       onClick={e => { if (e.target === overlayRef.current) close(); }}
       onWheel={e => e.stopPropagation()}
       style={{
-        position: "fixed", inset: 0, zIndex: 1000,
+        position: "fixed", inset: 0, zIndex: 100000,
         display: "grid", placeItems: "center",
         padding: "clamp(0.75rem, 2vw, 1.5rem)",
         background: "rgba(0,0,0,0.92)",
@@ -696,16 +675,161 @@ function StepModal({ onClose }: { onClose: () => void }) {
                 <h3 style={{ fontFamily: SANS, fontWeight: 700, fontSize: "clamp(1.4rem, 2.5vw, 2rem)", color: TK.paper, lineHeight: 1, margin: "0 0 0.5rem" }}>Last few details.</h3>
                 <p style={{ fontFamily: SANS, fontSize: "clamp(0.82rem, 1vw, 1rem)", color: TK.green, opacity: 0.7, margin: 0 }}>We promise, that&apos;s it.</p>
               </div>
-              <Field label="Your name" value={cd.name} onChange={v => setCd(d => ({ ...d, name: v }))} placeholder="Full name" autoComplete="name" />
-              <MethodToggle value={cd.method} onChange={m => setCd(d => ({ ...d, method: m, value: "" }))} />
-              <Field
-                label={METHOD_LABELS[cd.method]}
-                value={cd.value}
-                onChange={v => setCd(d => ({ ...d, value: v }))}
-                type={cd.method === "email" ? "email" : "tel"}
-                placeholder={cd.method === "email" ? "hello@you.com" : "+1 555 123 4567"}
-                autoComplete={cd.method === "email" ? "email" : "tel"}
-              />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(0.8rem, 1.5vw, 1.2rem)" }}>
+                <Field label="Your name" value={cd.name} onChange={v => setCd(d => ({ ...d, name: v }))} placeholder="Full name" autoComplete="name" />
+                <div>
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "0.35rem",
+                    minHeight: "calc(clamp(0.6rem, 0.75vw, 0.75rem) * 1.2 + 0.55rem)",
+                    marginBottom: "0.55rem",
+                  }}>
+                    {(["email", "phone", "whatsapp"] as ContactMethod[]).map(method => (
+                      <button
+                        key={method}
+                        type="button"
+                        onClick={() => setCd(d => ({ ...d, method, value: "" }))}
+                        style={{
+                          border: `1px solid ${cd.method === method ? TK.green : TK.line}`,
+                          background: cd.method === method ? TK.green : "transparent",
+                          color: cd.method === method ? TK.ink : TK.green,
+                          fontFamily: SANS,
+                          fontSize: "0.62rem",
+                          padding: "0.25rem 0.5rem",
+                          cursor: "pointer",
+                          lineHeight: 1,
+                        }}
+                      >
+                        {METHOD_LABELS[method]}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    value={cd.value}
+                    onChange={e => setCd(d => ({ ...d, value: e.target.value }))}
+                    type={cd.method === "email" ? "email" : "tel"}
+                    placeholder={cd.method === "email" ? "hello@you.com" : "+1 555 123 4567"}
+                    autoComplete={cd.method === "email" ? "email" : "tel"}
+                    required
+                    style={{
+                      width: "100%",
+                      background: "var(--nox-field-bg)",
+                      border: `1px solid ${TK.line}`,
+                      outline: "none",
+                      padding: "0.75rem 0.9rem",
+                      fontFamily: SANS,
+                      fontSize: "clamp(0.88rem, 1.1vw, 1.05rem)",
+                      color: TK.paper,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <FieldLabel>Message</FieldLabel>
+                <style>{`#focused-guided-message::placeholder{color:rgba(70,174,34,0.38)}`}</style>
+                <div
+                  style={{
+                    position: "relative",
+                    background: "var(--nox-field-bg)",
+                    border: `1px solid ${TK.line}`,
+                  }}
+                >
+                  <textarea
+                    id="focused-guided-message"
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    placeholder="Add context, goals, links, constraints, or anything we should know."
+                    style={{
+                      width: "100%",
+                      minHeight: 150,
+                      resize: "vertical",
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      padding: "0.9rem 0.95rem 3.2rem",
+                      fontFamily: SANS,
+                      fontSize: "clamp(0.88rem, 1.1vw, 1.05rem)",
+                      color: TK.paper,
+                      lineHeight: 1.55,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <div style={{
+                    position: "absolute",
+                    right: "0.75rem",
+                    bottom: "0.75rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.45rem",
+                  }}>
+                    <label
+                      aria-label="Attach files"
+                      style={{
+                        width: 34,
+                        height: 34,
+                        display: "grid",
+                        placeItems: "center",
+                        border: `1px solid ${TK.line}`,
+                        background: "rgba(70,174,34,0.06)",
+                        color: TK.green,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                      </svg>
+                      <input
+                        type="file"
+                        multiple
+                        style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+                        onChange={e => {
+                          const next = Array.from(e.target.files ?? []);
+                          if (next.length) setAssetFiles(files => [...files, ...next].slice(0, 6));
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                    <MiniVoiceButton onRecorded={blob => setVoice(items => [...items, blob].slice(0, 3))} count={voice.length} />
+                  </div>
+                </div>
+                {(assetFiles.length > 0 || voice.length > 0) && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem", marginTop: "0.65rem" }}>
+                    {assetFiles.map((file, i) => (
+                      <button
+                        key={`${file.name}-${i}`}
+                        type="button"
+                        onClick={() => setAssetFiles(files => files.filter((_, index) => index !== i))}
+                        style={{
+                          border: `1px solid ${TK.line}`,
+                          background: "transparent",
+                          color: TK.green,
+                          padding: "0.35rem 0.55rem",
+                          fontFamily: SANS,
+                          fontSize: "0.72rem",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {file.name} x
+                      </button>
+                    ))}
+                    {voice.map((_, i) => (
+                      <button key={i} type="button" onClick={() => setVoice(items => items.filter((_, index) => index !== i))} style={{
+                        border: `1px solid ${TK.line}`,
+                        color: TK.green,
+                        background: "transparent",
+                        padding: "0.35rem 0.55rem",
+                        fontFamily: SANS,
+                        fontSize: "0.72rem",
+                        cursor: "pointer",
+                      }}>
+                        Voice note {i + 1} x
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               {err && <p style={{ fontFamily: SANS, fontSize: "0.82rem", color: "#ef4444" }}>Something went wrong. Try again.</p>}
             </div>
           )}
@@ -747,7 +871,8 @@ function StepModal({ onClose }: { onClose: () => void }) {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -758,65 +883,10 @@ export default function NoxContactHome() {
   const [isRec, setIsRec]         = useState(false);
   const [taFocused, setTaFocused] = useState(false);
   const [stepModal, setStepModal] = useState(false);
-  const [cdModal, setCdModal]     = useState(false);
-  const [done, setDone]           = useState(false);
-  const [submitting, setSub]      = useState(false);
-  const [submitErr, setErr]       = useState(false);
 
   const hasMsg     = message.trim().length > 0;
   const hasVoice   = voice.length > 0;
   const hasPayload = hasMsg || hasVoice;
-
-  async function handleQuickSubmit(cd: CD) {
-    setSub(true); setErr(false);
-    try {
-      const audioUrls = hasVoice
-        ? (await Promise.all(voice.map((b, i) => uploadVoice(b, i)))).filter(Boolean) as string[]
-        : [];
-      const msg = hasMsg
-        ? message.trim()
-        : `${voice.length} voice note${voice.length > 1 ? "s" : ""} attached.`;
-      const res = await fetch("/api/inquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name:         cd.name,
-          email:        cd.method === "email" ? cd.value : `${cd.method}@dontforget.local`,
-          projectType:  "Open inquiry",
-          contactMethod: cd.method,
-          contactValue:  cd.value,
-          source:       "focused-home-quick",
-          audioUrls,
-          message:      `${msg}\n\nPreferred contact: ${cd.method} | ${cd.value}`,
-        }),
-      });
-      if (res.ok) setDone(true);
-      else { setErr(true); setSub(false); }
-    } catch { setErr(true); setSub(false); }
-  }
-
-  if (done) {
-    return (
-      <section style={{
-        borderTop: `1px solid ${TK.line}`,
-        padding:   "clamp(4rem, 8vw, 9rem) clamp(1.5rem, 4vw, 3.5rem)",
-        display:   "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        minHeight: "40vh", textAlign: "center",
-      }}>
-        <div style={{ width: 72, height: 72, border: `2px solid ${TK.green}`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "clamp(1.5rem, 3vw, 2.5rem)" }}>
-          <svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke={TK.green} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
-        </div>
-        <h2 style={{ fontFamily: SANS, fontWeight: 700, fontSize: "clamp(2rem, 5vw, 5rem)", color: TK.paper, lineHeight: 1, margin: "0 0 1rem", textTransform: "uppercase", letterSpacing: "-0.01em" }}>
-          Request received.
-        </h2>
-        <p style={{ fontFamily: SANS, fontSize: "clamp(0.88rem, 1.2vw, 1.2rem)", color: TK.green, lineHeight: 1.6 }}>
-          A real person will reply within 24 hours.
-        </p>
-      </section>
-    );
-  }
 
   return (
     <section className="tk-contact-home" style={{
@@ -998,7 +1068,7 @@ export default function NoxContactHome() {
             transform:     hasPayload && !isRec ? "translateY(0) scale(1)" : "translateY(6px) scale(0.96)",
             transition:    "opacity 220ms ease, transform 220ms ease",
           }}>
-            <button type="button" onClick={() => setCdModal(true)} style={{
+            <button type="button" onClick={() => setStepModal(true)} style={{
               display:    "flex",
               alignItems: "center",
               gap:        "0.4rem",
@@ -1021,15 +1091,7 @@ export default function NoxContactHome() {
 
       </div>{/* end zIndex wrapper */}
 
-      {stepModal && <StepModal onClose={() => setStepModal(false)} />}
-      {cdModal && (
-        <ContactModal
-          onClose={() => setCdModal(false)}
-          onSubmit={handleQuickSubmit}
-          submitting={submitting}
-          submitError={submitErr}
-        />
-      )}
+      {stepModal && <FocusedGuidedBriefModal onClose={() => setStepModal(false)} />}
     </section>
   );
 }

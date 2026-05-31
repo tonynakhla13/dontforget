@@ -47,11 +47,13 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         { label: "Work",     href: `${canonicalBase}/work`     },
         { label: "Services", href: `${canonicalBase}/services` },
         { label: "About",    href: `${canonicalBase}/about`    },
+        { label: "Blog",     href: `${canonicalBase}/blog`     },
         { label: "Contact",  href: `${canonicalBase}/contact`  },
       ] : [
         { label: "Work",     href: `/${mode}/work`    },
         { label: "Services", href: `/services`        },
         { label: "About",    href: `/about`           },
+        { label: "Blog",     href: `/${mode}/blog`    },
         { label: "Contact",  href: `/${mode}/contact` },
       ]
     : isInnerPage

@@ -161,7 +161,7 @@ export default function BlogPostCreative({ post, locale = "en" }: { post: FullPo
       {/* ── Reading progress bar ── */}
       <div aria-hidden className="c-bpc-progress" style={{ width: `${progress}%` }} />
 
-      <CreativeNavbar />
+      <CreativeNavbar active="blog" />
 
       {/* ══ HERO ════════════════════════════════════════════════ */}
       <section className="c-bpc-hero">

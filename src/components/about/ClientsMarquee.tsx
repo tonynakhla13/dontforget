@@ -244,6 +244,12 @@ export default function ClientsMarquee() {
       .catch(() => {});
   }, []);
 
+  if (clients.length === 0) return null;
+
+  return <ClientsMarqueeSection clients={clients} />;
+}
+
+function ClientsMarqueeSection({ clients }: { clients: ClientItem[] }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 90%", "start 20%"] });
   const y       = useTransform(scrollYProgress, [0, 1], [40, 0]);
@@ -255,8 +261,6 @@ export default function ClientsMarquee() {
     : [];
   const rowA = padded;
   const rowB = [...padded.slice(Math.floor(padded.length / 3)), ...padded.slice(0, Math.floor(padded.length / 3))];
-
-  if (clients.length === 0) return null;
 
   return (
     <section
