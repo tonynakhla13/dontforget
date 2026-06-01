@@ -121,20 +121,12 @@ export default function StatsSection({ stats: statsProp }: { stats?: StatItem[] 
         background: "linear-gradient(90deg, transparent 0%, rgba(58,191,138,0.2) 40%, rgba(58,191,138,0.35) 70%, transparent 100%)",
       }} />
 
-      {/* Dot grid */}
+      {/* Dot grid — neutral white dots, no green tint */}
       <div aria-hidden className="pointer-events-none absolute inset-0" style={{
-        backgroundImage: "radial-gradient(rgba(58,191,138,0.065) 1px, transparent 1px)",
+        backgroundImage: "radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)",
         backgroundSize: "38px 38px",
         maskImage: "radial-gradient(ellipse 95% 85% at 50% 50%, black 40%, transparent 100%)",
         WebkitMaskImage: "radial-gradient(ellipse 95% 85% at 50% 50%, black 40%, transparent 100%)",
-      }} />
-
-      {/* Centre ambient glow */}
-      <div aria-hidden className="pointer-events-none absolute" style={{
-        top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-        width: "70vw", height: "50vw",
-        background: "radial-gradient(ellipse at 50% 50%, rgba(58,191,138,0.09) 0%, transparent 60%)",
-        filter: "blur(56px)",
       }} />
 
       <div className="wrap relative z-10">
