@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { pagePath, parseCanonicalPath, themeHome } from "@/lib/site-routing";
 import { useEffect, useRef } from "react";
+import ImmersiveLogo from "@/components/immersive/ImmersiveLogo";
 
 /* ── lazy-load the heavy Three.js canvas ── */
 const FooterOrb = dynamic(() => import("./FooterOrb"), { ssr: false });
@@ -239,9 +240,9 @@ export default function ImmersiveFooter() {
               }}>
                 Studio
               </p>
-              <p style={{ fontSize: "0.85rem", lineHeight: 1.85, color: "var(--body)", marginBottom: "0.4rem" }}>
-                NOX Studio
-              </p>
+              <div style={{ marginBottom: "1rem", maxWidth: 120 }}>
+                <ImmersiveLogo />
+              </div>
               <address style={{ fontStyle: "normal", fontSize: "0.80rem", lineHeight: 1.85, color: "rgba(255,255,255,0.38)" }}>
                 Yabroud, Damascus Suburbs<br />Syria
               </address>
@@ -412,7 +413,7 @@ export default function ImmersiveFooter() {
               lineHeight: 0.80,
               letterSpacing: "-0.06em",
               color: "transparent",
-              WebkitTextStroke: "1px rgba(70,174,34,0.12)",
+              WebkitTextStroke: "1px rgba(70,174,34,0.045)",
               whiteSpace: "nowrap",
             }}
           >
