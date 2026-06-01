@@ -11,7 +11,7 @@ import {
 } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import type { WorkProject } from "./page";
-import WorkHeroFrames from "./WorkHeroFrames";
+import WorkHeroCards from "./WorkHeroCards";
 
 // ─────────────────────────────────────────────────────────────────────
 // Filter drawer — slides in from the right
@@ -253,9 +253,9 @@ function ProjectArtworkFallback({ project, num }: { project: WorkProject; num: s
 // ─────────────────────────────────────────────────────────────────────
 // Hero
 // ─────────────────────────────────────────────────────────────────────
-function WorkHero({ totalCount }: { totalCount: number }) {
+function WorkHero({ totalCount, projects }: { totalCount: number; projects: WorkProject[] }) {
   const headRef    = useRef<HTMLHeadingElement>(null);
-  const bodyRef    = useRef<HTMLParagraphElement>(null);
+  const tagRef     = useRef<HTMLParagraphElement>(null);
   const ctaRef     = useRef<HTMLDivElement>(null);
   const statsRef   = useRef<HTMLDivElement>(null);
   const lineRef    = useRef<HTMLDivElement>(null);
@@ -267,7 +267,7 @@ function WorkHero({ totalCount }: { totalCount: number }) {
     const tl = gsap.timeline({ delay });
     tl.fromTo(lineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "expo.out" })
       .fromTo(
-        [headRef.current, bodyRef.current, ctaRef.current, statsRef.current],
+        [headRef.current, tagRef.current, ctaRef.current, statsRef.current],
         { autoAlpha: 0, y: 34 },
         { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.95, ease: "power3.out" },
         "-=0.2"
@@ -291,64 +291,113 @@ function WorkHero({ totalCount }: { totalCount: number }) {
     >
       <div
         ref={lineRef}
-        className="absolute left-0 right-0 h-px origin-left bg-gradient-to-r from-[var(--teal)] via-[rgba(58,191,138,0.35)] to-transparent"
-        style={{ top: "22%", transform: "scaleX(0)" }}
+        className="absolute left-0 right-0 h-px origin-left"
+        style={{
+          top: "22%", transform: "scaleX(0)",
+          background: "linear-gradient(90deg, rgba(70,174,34,1), rgba(70,174,34,0.35), transparent)",
+        }}
       />
 
-      {/* Floating editorial frames — the visual "game" of this hero */}
-      <WorkHeroFrames />
+      <div className="relative z-10 wrap flex items-center justify-between gap-12 pt-32 pb-20">
 
-      <div className="relative z-10 wrap flex items-center pt-32 pb-20">
-        <div className="max-w-[520px]">
+        {/* ── LEFT: copy ── */}
+        <div style={{ maxWidth: 500, flexShrink: 0 }}>
+          {/* funny tagline */}
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            marginBottom: "1.5rem",
+          }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: "50%",
+              background: "rgba(70,174,34,1)",
+              boxShadow: "0 0 8px rgba(70,174,34,0.8)",
+              flexShrink: 0,
+            }} />
+            <span style={{
+              fontFamily: "var(--font-mono-next)",
+              fontSize: "0.46rem", letterSpacing: "0.44em",
+              textTransform: "uppercase", color: "rgba(70,174,34,0.7)",
+            }}>
+              Warning: may cause competitor envy
+            </span>
+          </div>
+
           <h1
             ref={headRef}
-            className="hed text-[clamp(4.2rem,10vw,9.6rem)] leading-[0.84] text-[#F8F5EE]"
-            style={{ visibility: "hidden" }}
+            className="hed"
+            style={{
+              fontSize: "clamp(4rem,9vw,9rem)",
+              lineHeight: 0.84, color: "#F8F5EE",
+              visibility: "hidden",
+            }}
           >
             Selected<br />
-            <span className="text-[var(--teal)]">Work</span>
+            <span style={{ color: "rgba(70,174,34,1)" }}>Work.</span>
           </h1>
+
           <p
-            ref={bodyRef}
-            className="mt-8 max-w-[520px] text-[clamp(0.92rem,1.3vw,1.04rem)] leading-[1.9] text-[var(--body)]"
-            style={{ visibility: "hidden" }}
+            ref={tagRef}
+            style={{
+              marginTop: "clamp(1.2rem,2vw,1.8rem)",
+              fontSize: "clamp(0.88rem,1.2vw,1rem)",
+              lineHeight: 1.85,
+              color: "var(--body)",
+              maxWidth: 420,
+              visibility: "hidden",
+            }}
           >
-            Websites that stop the scroll. Apps people keep opening. Stores built
-            to convert. Every project shipped is a reason to{" "}
-            <span className="text-[var(--fg)]">remember us.</span>
+            We build things that make your competitors{" "}
+            <span style={{ color: "var(--fg)" }}>uncomfortable.</span>
           </p>
-          <div ref={ctaRef} className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-            <Link href="/immersive/contact" className="btn-glass">
+
+          <div ref={ctaRef} className="flex flex-wrap gap-4" style={{ marginTop: "clamp(1.5rem,3vw,2.5rem)", visibility: "hidden" }}>
+            <Link href="/en/immersive/contact" className="btn-glass">
               <span className="btn-glass-blob" aria-hidden="true" />
               <span className="btn-glass-face">Start a project</span>
             </Link>
-            <Link href="/services" className="btn-glass-ghost">
+            <Link href="/en/immersive/services" className="btn-glass-ghost">
               <span className="btn-glass-blob" aria-hidden="true" />
               <span className="btn-glass-face">Our services →</span>
             </Link>
           </div>
+
           <div
             ref={statsRef}
-            className="mt-14 grid max-w-[520px] grid-cols-3 border-y border-[var(--border)]"
-            style={{ visibility: "hidden" }}
+            style={{
+              marginTop: "clamp(2rem,4vw,3.5rem)",
+              display: "grid", gridTemplateColumns: "repeat(3,1fr)",
+              borderTop: "1px solid var(--border)",
+              borderBottom: "1px solid var(--border)",
+              visibility: "hidden",
+            }}
           >
             {[
               { value: <span ref={counterRef}>00</span>, label: "Projects" },
               { value: "3+", label: "Years" },
               { value: "6",  label: "Industries" },
             ].map(({ value, label }) => (
-              <div key={label} className="border-r border-[var(--border)] py-4 last:border-r-0">
-                <span className="block font-mono text-[0.52rem] uppercase tracking-[0.26em] text-[var(--teal)]">
+              <div key={label} style={{ borderRight: "1px solid var(--border)", padding: "1rem 0" }} className="last:border-r-0">
+                <span style={{
+                  display: "block", fontFamily: "var(--font-mono-next)",
+                  fontSize: "0.52rem", textTransform: "uppercase",
+                  letterSpacing: "0.26em", color: "rgba(70,174,34,1)",
+                }}>
                   {value} {label}
                 </span>
               </div>
             ))}
           </div>
         </div>
+
+        {/* ── RIGHT: stacked project cards ── */}
+        <WorkHeroCards projects={projects} />
+
       </div>
+
+      {/* scroll cue */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
         <span className="font-mono text-[0.5rem] uppercase tracking-[0.4em] text-[var(--body)]">Scroll</span>
-        <div className="h-8 w-px bg-gradient-to-b from-[var(--teal)] to-transparent" />
+        <div className="h-8 w-px" style={{ background: "linear-gradient(to bottom, rgba(70,174,34,1), transparent)" }} />
       </div>
     </section>
   );
@@ -449,6 +498,30 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
         @keyframes work-particle-drift {
           from { background-position: 0 0, 32px 54px; }
           to { background-position: 84px 168px, -100px 186px; }
+        }
+        .work-device-ambient {
+          background:
+            radial-gradient(ellipse at 74% 42%, rgba(70,209,42,0.18), transparent 42%),
+            radial-gradient(ellipse at 88% 64%, rgba(184,255,224,0.08), transparent 28%),
+            radial-gradient(ellipse at 52% 56%, rgba(70,174,34,0.08), transparent 40%);
+          filter: blur(1px);
+          mask-image: radial-gradient(ellipse at 72% 48%, black 0%, transparent 72%);
+        }
+        .work-device-laptop {
+          transform-origin: 45% 52%;
+          animation: work-device-drift 8s ease-in-out infinite alternate;
+        }
+        .work-device-mobile {
+          transform-origin: 82% 48%;
+          animation: work-device-drift-mobile 7s ease-in-out infinite alternate;
+        }
+        @keyframes work-device-drift {
+          from { transform: translate3d(-4px, 6px, 0) rotate(-0.35deg); opacity: 0.86; }
+          to { transform: translate3d(8px, -4px, 0) rotate(0.55deg); opacity: 1; }
+        }
+        @keyframes work-device-drift-mobile {
+          from { transform: translate3d(5px, -8px, 0) rotate(0.7deg); opacity: 0.78; }
+          to { transform: translate3d(-7px, 5px, 0) rotate(-0.5deg); opacity: 0.96; }
         }
         .work-hero-orbit {
           position: absolute;
@@ -716,7 +789,7 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
       `}</style>
 
       {/* ── Hero ── */}
-      <WorkHero totalCount={projects.length} />
+      <WorkHero totalCount={projects.length} projects={projects} />
 
       {/* ── Grid section ── */}
       <section id="work" className="section-py border-b border-[var(--border)]" style={{ background: "transparent" }}>
