@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
+import dynamic from "next/dynamic";
+
+const SnakeGame = dynamic(() => import("./MeshWebDevBackground"), { ssr: false });
 
 /* ─────────────────────────────────────────────────────────────────────────
    CANVAS PARTICLES
@@ -84,6 +87,11 @@ export default function AboutHero() {
       {/* Bottom fade */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[4]"
         style={{height:"20vh",background:"linear-gradient(to bottom,transparent,rgba(9,9,9,0.97))"}}/>
+
+      {/* Snake game — sits in the right half, scrolls with the hero */}
+      <div className="pointer-events-none absolute inset-0 z-[11]">
+        <SnakeGame />
+      </div>
 
       {/* ── Two-column grid ── */}
       <div className="wrap relative z-10 w-full"

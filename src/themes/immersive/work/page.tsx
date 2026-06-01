@@ -36,9 +36,9 @@ export default async function ImmersiveWorkPage() {
   return (
     <>
       <SmoothScroll />
-      <KnotOnly />
-      <MeshGrid />
-      <main className="immersive-mode relative z-[1] overflow-x-clip">
+      <KnotOnly opacity={0.26} />
+      <MeshGrid count={28} />
+      <main className="relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
         <Navbar inner />

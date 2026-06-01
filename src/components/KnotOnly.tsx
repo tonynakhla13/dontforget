@@ -10,7 +10,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
-export default function KnotOnly() {
+export default function KnotOnly({ opacity = 0.9 }: { opacity?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -235,7 +235,7 @@ export default function KnotOnly() {
       ref={canvasRef}
       aria-hidden
       className="pointer-events-none fixed inset-0"
-      style={{ zIndex: 0, opacity: 0.9 }}
+      style={{ zIndex: 0, opacity }}
     />
   );
 }

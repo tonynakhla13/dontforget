@@ -4,35 +4,28 @@ import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   DATA  — 4 stats
+   TYPES
 ───────────────────────────────────────────────────────────────────────── */
-const STATS = [
-  {
-    value: 14, suffix: "+", label: "Projects shipped",
-    desc: "From zero to live — design, build, and hand-off.",
-    index: "01",
-  },
-  {
-    value: 6, suffix: "", label: "Countries served",
-    desc: "Clients across 6 countries, same standard everywhere.",
-    index: "02",
-  },
-  {
-    value: 3, suffix: "yr", label: "Since '22",
-    desc: "Three years of shipping things worth remembering.",
-    index: "03",
-  },
-  {
-    value: 100, suffix: "%", label: "On-time delivery",
-    desc: "Deadlines aren't guidelines. We've never missed one.",
-    index: "04",
-  },
+export type StatItem = {
+  value: number; suffix: string; label: string; desc: string;
+};
+
+const DEFAULT_STATS: StatItem[] = [
+  { value: 14, suffix: "+", label: "Projects shipped", desc: "From zero to live — design, build, and hand-off." },
+  { value: 6,  suffix: "",  label: "Countries served", desc: "Clients across 6 countries, same standard everywhere." },
+  { value: 3,  suffix: "yr",label: "Since '22",        desc: "Three years of shipping things worth remembering." },
+  { value: 100,suffix: "%", label: "On-time delivery",  desc: "Deadlines aren't guidelines. We've never missed one." },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────────
    COMPONENT
 ───────────────────────────────────────────────────────────────────────── */
-export default function StatsSection() {
+export default function StatsSection({ stats: statsProp }: { stats?: StatItem[] }) {
+  const STATS = (statsProp && statsProp.length > 0 ? statsProp : DEFAULT_STATS).map((s, i) => ({
+    ...s,
+    index: String(i + 1).padStart(2, "0"),
+  }));
+
   const sectionRef = useRef<HTMLElement>(null);
   const headerRef  = useRef<HTMLDivElement>(null);
   const gridRef    = useRef<HTMLDivElement>(null);
@@ -77,6 +70,7 @@ export default function StatsSection() {
       }
 
       /* Per-stat: bar draw + count-up */
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       STATS.forEach((stat, i) => {
         gsap.fromTo(barRefs.current[i],
           { scaleX: 0, transformOrigin: "left center" },
@@ -110,7 +104,7 @@ export default function StatsSection() {
       style={{
         /* Solid dark surface with subtle green tint */
         background: [
-          "linear-gradient(180deg, rgba(9,9,9,0) 0%, rgba(5,13,9,0.97) 5%, rgba(5,13,9,0.97) 95%, rgba(9,9,9,0) 100%)",
+          "linear-gradient(180deg, rgba(9,9,9,0) 0%, rgba(9,9,9,0.97) 5%, rgba(9,9,9,0.97) 95%, rgba(9,9,9,0) 100%)",
         ].join(","),
         padding: "clamp(4.5rem,9vh,8rem) 0 clamp(5rem,10vh,9rem)",
       }}

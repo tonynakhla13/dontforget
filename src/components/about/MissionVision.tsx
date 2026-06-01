@@ -104,18 +104,18 @@ function OvalCircle() {
 /* ─────────────────────────────────────────────────────────────────────────
    DATA
 ───────────────────────────────────────────────────────────────────────── */
-const CARDS = [
+const DEFAULT_CARDS = [
   {
     num: "01", label: "Mission", Icon: MissionIcon,
     heading: "Build things people remember.",
     accentWord: "remember", annotation: "underline" as const,
-    body: "We exist to create digital experiences that leave a mark — websites, apps, and systems that are fast, beautiful, and built to last. Not just functional. Genuinely unforgettable.",
+    defaultBody: "We exist to create digital experiences that leave a mark — websites, apps, and systems that are fast, beautiful, and built to last. Not just functional. Genuinely unforgettable.",
   },
   {
     num: "02", label: "Vision", Icon: VisionIcon,
     heading: "World-class craft for every brand.",
     accentWord: "every brand", annotation: "circle" as const,
-    body: "A world where every business, regardless of size, has access to the kind of digital craftsmanship that used to belong only to the biggest companies in the world.",
+    defaultBody: "A world where every business, regardless of size, has access to the kind of digital craftsmanship that used to belong only to the biggest companies in the world.",
   },
 ];
 
@@ -130,7 +130,9 @@ const RULES = [
 /* ─────────────────────────────────────────────────────────────────────────
    PILLAR CARD
 ───────────────────────────────────────────────────────────────────────── */
-function PillarCard({ card }: { card: typeof CARDS[0] }) {
+type CardWithBody = typeof DEFAULT_CARDS[0] & { body: string };
+
+function PillarCard({ card }: { card: CardWithBody }) {
   const cardRef = useRef<HTMLDivElement>(null);
   useGSAP(() => {
     gsap.fromTo(cardRef.current,
@@ -179,7 +181,7 @@ function PillarCard({ card }: { card: typeof CARDS[0] }) {
             <div style={{ height: 1, background: "rgba(58,191,138,0.18)" }} />
           </Reveal>
           <Reveal start="top 84%" end="top 44%" scrub={0.8} style={{ flex: 1 }}>
-            <p style={{ fontSize: "0.875rem", lineHeight: 1.95, color: "var(--body)" }}>{card.body}</p>
+            <p style={{ fontSize: "0.875rem", lineHeight: 1.95, color: "var(--body)", whiteSpace: "pre-line" }}>{card.body}</p>
           </Reveal>
         </div>
       </div>
@@ -248,17 +250,15 @@ function SectionHeader() {
 /* ─────────────────────────────────────────────────────────────────────────
    ROOT EXPORT
 ───────────────────────────────────────────────────────────────────────── */
-export default function MissionVision() {
-  const rulesHeaderRef = useRef<HTMLDivElement>(null);
-  useGSAP(() => {
-    gsap.fromTo(rulesHeaderRef.current, { y: 40, opacity: 0 }, { y: 0, opacity: 1, ease: "none",
-      scrollTrigger: { trigger: rulesHeaderRef.current, start: "top 90%", end: "top 45%", scrub: 1 } }
-    );
-  }, { dependencies: [] });
+export default function MissionVision({ mission, vision }: { mission?: string | null; vision?: string | null }) {
+  const CARDS: CardWithBody[] = DEFAULT_CARDS.map((c, i) => ({
+    ...c,
+    body: i === 0 ? (mission || c.defaultBody) : (vision || c.defaultBody),
+  }));
 
   return (
     <section className="relative border-t border-[var(--border)] overflow-hidden"
-      style={{ background: "rgba(9,9,9,0.92)", backdropFilter: "blur(8px)", paddingTop: "var(--section-py)", paddingBottom: "var(--section-py)" }}>
+      style={{ background: "rgba(9,9,9,0.92)", backdropFilter: "blur(8px)", paddingTop: "clamp(4rem,8vh,7rem)", paddingBottom: "clamp(3rem,6vh,5rem)" }}>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px"
         style={{ background: "linear-gradient(90deg,transparent,rgba(58,191,138,0.38),transparent)" }} />
 
@@ -267,17 +267,6 @@ export default function MissionVision() {
 
         <div className="grid gap-5 md:grid-cols-2">
           {CARDS.map(card => <PillarCard key={card.num} card={card} />)}
-        </div>
-
-        {/* Rules — 4 in a 2×2 grid */}
-        <div className="mt-24 border-t border-[var(--border)] pt-16">
-          <div ref={rulesHeaderRef} className="mb-12 flex items-end justify-between">
-            <p className="eyebrow">How we work</p>
-            <h3 className="hed text-right" style={{ fontSize: "clamp(1.5rem,2.8vw,2.6rem)", lineHeight: 1.02 }}>
-              Four rules we<br /><span style={{ color: "var(--teal)" }}>never break.</span>
-            </h3>
-          </div>
-          <RulesGrid />
         </div>
       </div>
     </section>

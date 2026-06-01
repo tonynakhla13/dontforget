@@ -14,12 +14,15 @@
 
 import dynamic from "next/dynamic";
 import { useRef, useEffect } from "react";
-import { gsap } from "@/lib/gsap";
+import type Lenis from "lenis";
 
 const MeshWebDevBackground = dynamic(
   () => import("./MeshWebDevBackground"),
   { ssr: false }
 );
+
+const FADE_START = 120; // px scrolled → begin fade
+const FADE_END   = 480; // px scrolled → fully hidden
 
 export default function MeshWebDevBackgroundClient() {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -28,37 +31,48 @@ export default function MeshWebDevBackgroundClient() {
     const el = wrapperRef.current;
     if (!el) return;
 
-    const ctx = gsap.context(() => {
-      // Fade the entire snake canvas from opaque → invisible as the user
-      // scrolls from page-top through the hero (~100vh). KnotOnly (behind)
-      // becomes fully visible once the snake is gone.
-      gsap.fromTo(
-        el,
-        { opacity: 1 },
-        {
-          opacity: 0,
-          ease: "none",
-          scrollTrigger: {
-            // Start fading when "Our Story" section top hits 80% of viewport,
-            // finish by the time it reaches 20% — so the snake is fully gone
-            // before the section content is in focus.
-            trigger: "#our-story",
-            start: "top 80%",
-            end: "top 20%",
-            scrub: 1.2,
-          },
-        }
-      );
-    });
+    // Direct Lenis scroll listener — bypasses ScrollTrigger timing issues.
+    // Lenis fires on every virtual scroll tick so opacity stays in sync.
+    const handleScroll = ({ scroll }: { scroll: number }) => {
+      const t = Math.min(1, Math.max(0, (scroll - FADE_START) / (FADE_END - FADE_START)));
+      el.style.opacity = String(1 - t);
+    };
 
-    return () => ctx.revert();
+    // Lenis is initialised by <SmoothScroll /> in the same render cycle.
+    // Poll briefly in case its useEffect hasn't run yet.
+    let lenis = (window as Window & { __lenis?: Lenis })["__lenis"];
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const attach = (l: Lenis) => {
+      l.on("scroll", handleScroll as Parameters<typeof l.on>[1]);
+      // Trigger once synchronously so initial opacity is correct.
+      handleScroll({ scroll: l.actualScroll ?? 0 });
+    };
+
+    if (lenis) {
+      attach(lenis);
+    } else {
+      interval = setInterval(() => {
+        lenis = (window as Window & { __lenis?: Lenis })["__lenis"];
+        if (lenis) {
+          clearInterval(interval!);
+          interval = null;
+          attach(lenis);
+        }
+      }, 40);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+      lenis?.off("scroll", handleScroll as Parameters<typeof lenis.off>[1]);
+    };
   }, []);
 
   return (
     <div
       ref={wrapperRef}
       className="pointer-events-none fixed inset-0 overflow-hidden"
-      style={{ zIndex: 0 }}
+      style={{ zIndex: 2 }}
     >
       <MeshWebDevBackground />
     </div>

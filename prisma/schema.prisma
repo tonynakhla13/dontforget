@@ -221,6 +221,15 @@ model ContactPage {
   updatedAt    DateTime @updatedAt
 }
 
+model AboutPage {
+  id        Int      @id @default(autoincrement())
+  stats     Json     @default("[]")
+  story     Json     @default("[]")
+  mission   String?  @db.Text
+  vision    String?  @db.Text
+  updatedAt DateTime @updatedAt
+}
+
 model Admin {
   id           String   @id @default(cuid())
   username     String   @unique

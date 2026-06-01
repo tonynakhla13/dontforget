@@ -5,30 +5,22 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "@/lib/gsap";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   DATA — condensed to 4 milestones
+   TYPES + DEFAULT DATA
 ───────────────────────────────────────────────────────────────────────── */
-const EVENTS = [
-  {
-    year: "2022", num: "01", title: "Founded",
-    body: "Born out of frustration with forgettable work. We set out to build a studio with an unreasonably high bar — and actually keep it.",
-  },
-  {
-    year: "2023", num: "02", title: "First wins",
-    body: "First client tripled their conversion rate in month one. First mobile app featured by Apple week one. The bar was set early.",
-  },
-  {
-    year: "2024", num: "03", title: "10 projects live",
-    body: "Ten live projects across three countries. E-commerce, custom CRMs, full-stack platforms. No templates. No shortcuts. Ever.",
-  },
-  {
-    year: "2025", num: "04", title: "6 countries",
-    body: "Shipping across six countries, 14+ clients, AI-powered search. Still small on purpose — every project gets the A-team.",
-  },
+export type StoryEvent = { year: string; title: string; body: string; };
+
+const DEFAULT_EVENTS: StoryEvent[] = [
+  { year: "2022", title: "Founded",        body: "Born out of frustration with forgettable work. We set out to build a studio with an unreasonably high bar — and actually keep it." },
+  { year: "2023", title: "First wins",     body: "First client tripled their conversion rate in month one. First mobile app featured by Apple week one. The bar was set early." },
+  { year: "2024", title: "10 projects live",body: "Ten live projects across three countries. E-commerce, custom CRMs, full-stack platforms. No templates. No shortcuts. Ever." },
+  { year: "2025", title: "6 countries",    body: "Shipping across six countries, 14+ clients, AI-powered search. Still small on purpose — every project gets the A-team." },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────────
    TIMELINE DOT — entrance scrub + infinite pulse (pure GSAP)
 ───────────────────────────────────────────────────────────────────────── */
+type EventWithNum = StoryEvent & { num: string };
+
 function Dot({ index }: { index: number }) {
   const dotRef   = useRef<HTMLDivElement>(null);
   const pulseRef = useRef<HTMLDivElement>(null);
@@ -62,7 +54,7 @@ function Dot({ index }: { index: number }) {
 /* ─────────────────────────────────────────────────────────────────────────
    CARD — GSAP scrub slide-in
 ───────────────────────────────────────────────────────────────────────── */
-function Card({ event, isLeft }: { event: typeof EVENTS[0]; isLeft: boolean }) {
+function Card({ event, isLeft }: { event: EventWithNum; isLeft: boolean }) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
@@ -129,7 +121,12 @@ function Header() {
 /* ─────────────────────────────────────────────────────────────────────────
    ROOT EXPORT
 ───────────────────────────────────────────────────────────────────────── */
-export default function OurStory() {
+export default function OurStory({ story: storyProp }: { story?: StoryEvent[] }) {
+  const EVENTS: EventWithNum[] = (storyProp && storyProp.length > 0 ? storyProp : DEFAULT_EVENTS).map((e, i) => ({
+    ...e,
+    num: String(i + 1).padStart(2, "0"),
+  }));
+
   return (
     <section id="our-story" className="relative border-t border-[var(--border)] section-py overflow-hidden"
       style={{ background: "rgba(9,9,9,0.72)" }}>

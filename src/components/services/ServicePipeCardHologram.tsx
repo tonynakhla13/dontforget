@@ -22,6 +22,10 @@ type ServicePipeCardHologramProps = {
   shape: ServicePipeShape;
 };
 
+const PIPE_GREEN = 0x46d12a;
+const PIPE_GREEN_DEEP = 0x46ae22;
+const PIPE_GREEN_BRIGHT = 0x7cff5f;
+
 function v(x: number, y: number, z = 0) {
   return new THREE.Vector3(x, y, z);
 }
@@ -102,25 +106,25 @@ function serviceStrokes(shape: ServicePipeShape): StrokeSpec[] {
       ];
     case "e-commerce":
       return [
-        { points: roundedRectPoints(2.25, 2.05, 0.24, 0.02).map(p => p.add(v(0, -0.12, 0))), radius: 0.105, closed: true, bright: true },
-        { points: [v(-0.72, 0.94, 0.08), v(-0.52, 1.42, 0.18), v(0, 1.62, 0.24), v(0.52, 1.42, 0.18), v(0.72, 0.94, 0.08)], radius: 0.095, bright: true },
-        { points: [v(-0.72, 0.94, 0.08), v(-0.72, 0.72, 0.14), v(-0.72, 0.52, 0.08)], radius: 0.055 },
-        { points: [v(0.72, 0.94, 0.08), v(0.72, 0.72, 0.14), v(0.72, 0.52, 0.08)], radius: 0.055 },
-        { points: roundedRectPoints(0.62, 0.48, 0.09, 0.12).map(p => p.add(v(-0.48, 0.16, 0))), radius: 0.045, closed: true },
-        { points: roundedRectPoints(0.62, 0.48, 0.09, 0.12).map(p => p.add(v(0.48, 0.16, 0))), radius: 0.045, closed: true },
-        { points: [v(-0.62, -0.48, 0.1), v(-0.18, -0.44, 0.16), v(0.28, -0.44, 0.16), v(0.72, -0.48, 0.1)], radius: 0.055, bright: true },
-        { points: [v(-0.48, -0.78, 0.08), v(-0.12, -0.74, 0.14), v(0.28, -0.74, 0.12)], radius: 0.045 },
-        { points: [v(0.46, -0.92, 0.1), v(0.66, -1.08, 0.18), v(1.02, -0.72, 0.1)], radius: 0.06, bright: true },
+        { points: [v(-1.42, 0.86, 0.1), v(-1.1, 0.86, 0.14), v(-0.86, -0.72, 0.14), v(1.16, -0.72, 0.14)], radius: 0.08, bright: true },
+        { points: [v(-0.86, 0.48, 0.12), v(1.3, 0.48, 0.18), v(1.08, -0.38, 0.2), v(-0.72, -0.38, 0.14)], radius: 0.09, bright: true },
+        { points: [v(-0.68, 0.12, 0.18), v(1.18, 0.12, 0.2)], radius: 0.04 },
+        { points: [v(-0.5, 0.44, 0.18), v(-0.4, -0.34, 0.18)], radius: 0.034 },
+        { points: [v(0.12, 0.46, 0.2), v(0.08, -0.36, 0.2)], radius: 0.034 },
+        { points: [v(0.72, 0.47, 0.2), v(0.58, -0.36, 0.2)], radius: 0.034 },
+        { points: [v(-0.68, -0.98, 0.1), v(0.92, -0.98, 0.12)], radius: 0.045 },
+        { points: circlePoints(-0.48, -1.2, 0.13, 0.16, 20), radius: 0.045, closed: true, bright: true },
+        { points: circlePoints(0.82, -1.2, 0.13, 0.16, 20), radius: 0.045, closed: true, bright: true },
       ];
     case "mobile-apps":
       return [
-        { points: roundedRectPoints(2.02, 3.35, 0.42, -0.08), radius: 0.13, closed: true, bright: true },
-        { points: [v(-0.34, 1.34, 0.1), v(0, 1.4, 0.16), v(0.34, 1.34, 0.1)], radius: 0.055 },
-        { points: [v(-0.62, 0.82, 0.14), v(0.38, 0.54, 0.22), v(-0.18, 0.02, 0.16), v(0.64, -0.48, 0.22), v(-0.52, -0.94, 0.14)], radius: 0.105, bright: true },
-        { points: circlePoints(-0.65, 0.84, 0.16, 0.14, 16), radius: 0.052, closed: true },
-        { points: circlePoints(0.4, 0.52, 0.18, 0.14, 16), radius: 0.052, closed: true },
-        { points: circlePoints(0.66, -0.48, 0.17, 0.14, 16), radius: 0.052, closed: true },
-        { points: [v(-0.28, -1.32, 0.12), v(0, -1.38, 0.18), v(0.28, -1.32, 0.12)], radius: 0.052 },
+        { points: roundedRectPoints(1.78, 3.14, 0.34, -0.08), radius: 0.115, closed: true, bright: true },
+        { points: roundedRectPoints(1.28, 2.22, 0.18, 0.04), radius: 0.04, closed: true },
+        { points: [v(-0.4, 0.7, 0.16), v(0.42, 0.7, 0.18)], radius: 0.04, bright: true },
+        { points: [v(-0.4, 0.18, 0.16), v(0.42, 0.18, 0.18)], radius: 0.04 },
+        { points: [v(-0.4, -0.34, 0.16), v(0.42, -0.34, 0.18)], radius: 0.04 },
+        { points: [v(-0.24, -0.86, 0.16), v(0.24, -0.86, 0.18)], radius: 0.04, bright: true },
+        { points: circlePoints(0, -1.25, 0.09, 0.14, 18), radius: 0.038, closed: true },
       ];
     case "seo":
       return [
@@ -131,32 +135,25 @@ function serviceStrokes(shape: ServicePipeShape): StrokeSpec[] {
       ];
     case "crm-systems":
       return [
-        { points: roundedRectPoints(0.9, 1.95, 0.12, 0.02).map(p => p.add(v(-1.18, 0, 0))), radius: 0.09, closed: true, bright: true },
-        { points: roundedRectPoints(0.9, 1.95, 0.12, 0.02), radius: 0.09, closed: true, bright: true },
-        { points: roundedRectPoints(0.9, 1.95, 0.12, 0.02).map(p => p.add(v(1.18, 0, 0))), radius: 0.09, closed: true, bright: true },
-        { points: [v(-1.44, 0.62, 0.08), v(-1.18, 0.66, 0.12), v(-0.92, 0.62, 0.08)], radius: 0.04 },
-        { points: [v(-1.44, 0.12, 0.08), v(-1.18, 0.16, 0.12), v(-0.92, 0.12, 0.08)], radius: 0.04 },
-        { points: [v(-1.44, -0.38, 0.08), v(-1.18, -0.34, 0.12), v(-0.92, -0.38, 0.08)], radius: 0.04 },
-        { points: [v(-0.26, 0.62, 0.08), v(0, 0.66, 0.12), v(0.26, 0.62, 0.08)], radius: 0.04 },
-        { points: [v(-0.26, 0.12, 0.08), v(0, 0.16, 0.12), v(0.26, 0.12, 0.08)], radius: 0.04 },
-        { points: [v(-0.26, -0.38, 0.08), v(0, -0.34, 0.12), v(0.26, -0.38, 0.08)], radius: 0.04 },
-        { points: [v(0.92, 0.62, 0.08), v(1.18, 0.66, 0.12), v(1.44, 0.62, 0.08)], radius: 0.04 },
-        { points: [v(0.92, 0.12, 0.08), v(1.18, 0.16, 0.12), v(1.44, 0.12, 0.08)], radius: 0.04 },
-        { points: [v(0.92, -0.38, 0.08), v(1.18, -0.34, 0.12), v(1.44, -0.38, 0.08)], radius: 0.04 },
-        { points: [v(-1.18, -1.08, 0.06), v(0, -1.14, 0.14), v(1.18, -1.08, 0.06)], radius: 0.06 },
-        { points: [v(-1.18, -1.08, 0.08), v(-1.18, -0.8, 0.14), v(-1.18, -0.58, 0.1)], radius: 0.05 },
-        { points: [v(0, -1.14, 0.08), v(0, -0.82, 0.14), v(0, -0.58, 0.1)], radius: 0.05 },
-        { points: [v(1.18, -1.08, 0.08), v(1.18, -0.8, 0.14), v(1.18, -0.58, 0.1)], radius: 0.05 },
+        { points: roundedRectPoints(3.18, 2.12, 0.18, 0.02), radius: 0.09, closed: true, bright: true },
+        { points: [v(-0.92, 1, 0.1), v(-0.92, -1, 0.1)], radius: 0.035 },
+        { points: [v(-0.62, 0.52, 0.14), v(1.22, 0.52, 0.16)], radius: 0.042, bright: true },
+        { points: [v(-0.62, 0.02, 0.14), v(0.82, 0.02, 0.16)], radius: 0.04 },
+        { points: [v(-0.62, -0.48, 0.14), v(1.08, -0.48, 0.16)], radius: 0.04 },
+        { points: circlePoints(-1.32, 0.54, 0.08, 0.14, 16), radius: 0.03, closed: true },
+        { points: circlePoints(-1.32, 0.02, 0.08, 0.14, 16), radius: 0.03, closed: true },
+        { points: circlePoints(-1.32, -0.5, 0.08, 0.14, 16), radius: 0.03, closed: true },
+        { points: [v(1.02, -0.48, 0.16), v(1.32, -0.12, 0.24), v(1.22, 0.52, 0.16)], radius: 0.04, bright: true },
       ];
   }
 }
 
 export function createServicePipeHologram(shape: ServicePipeShape) {
   const group = new THREE.Group();
-  const material = makeMaterial(0x35c592, 0.055);
-  const brightMaterial = makeMaterial(0x53e6b2, 0.105);
-  const echoMaterial = makeMaterial(0x35c592, 0.026);
-  const echoBrightMaterial = makeMaterial(0x53e6b2, 0.04);
+  const material = makeMaterial(PIPE_GREEN, 0.064);
+  const brightMaterial = makeMaterial(PIPE_GREEN_BRIGHT, 0.115);
+  const echoMaterial = makeMaterial(PIPE_GREEN_DEEP, 0.03);
+  const echoBrightMaterial = makeMaterial(PIPE_GREEN, 0.048);
   const echo = new THREE.Group();
   const main = new THREE.Group();
 
