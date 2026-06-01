@@ -44,9 +44,10 @@ export default function MeshWebDevBackgroundClient() {
     let interval: ReturnType<typeof setInterval> | null = null;
 
     const attach = (l: Lenis) => {
-      l.on("scroll", handleScroll as Parameters<typeof l.on>[1]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (l as any).on("scroll", handleScroll);
       // Trigger once synchronously so initial opacity is correct.
-      handleScroll({ scroll: l.actualScroll ?? 0 });
+      handleScroll({ scroll: (l as any).actualScroll ?? 0 });
     };
 
     if (lenis) {
@@ -64,7 +65,8 @@ export default function MeshWebDevBackgroundClient() {
 
     return () => {
       if (interval) clearInterval(interval);
-      lenis?.off("scroll", handleScroll as Parameters<typeof lenis.off>[1]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (lenis as any)?.off("scroll", handleScroll);
     };
   }, []);
 
