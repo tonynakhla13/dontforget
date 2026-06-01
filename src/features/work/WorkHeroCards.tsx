@@ -2,8 +2,9 @@
 
 /**
  * WorkHeroCards
- * Two project cards stacked in 3-D perspective.
- * On hover: card rises, rotates to face viewer, reveals name + "why best".
+ * Up to 4 project cards fanned like credit cards (à la the reference image).
+ * Wrapped in a HUD-style holographic frame.
+ * Hover: card fans out to face viewer, reveals title + category + why-best.
  */
 
 import Image from "next/image";
@@ -11,49 +12,72 @@ import Link from "next/link";
 import { useState } from "react";
 import type { WorkProject } from "./page";
 
-const WHY_BEST: Record<number, string> = {
-  0: "Clients keep sending us screenshots of competitors who copied it.",
-  1: "It converted so well, we had to double-check the analytics weren't broken.",
-};
+/* ── per-card "why it's the best" copy ── */
+const WHY: string[] = [
+  "Clients sent us screenshots of competitors copying it. Twice.",
+  "Converted so hard the client thought our analytics were broken.",
+  "Shipped in 3 weeks. Looks like it took 3 years. Classic us.",
+  "So fast, Google Search Console started crying tears of joy.",
+];
 
-const WHY_FALLBACK = "Shipped on time. Looks illegal. Client wept (happy tears).";
+const G = "70,174,34";
 
-function getSlug(p: WorkProject) {
-  return p.slug ?? p.id;
+function getSlug(p: WorkProject) { return p.slug ?? p.id; }
+
+/* ── fan layout per card index (0 = front) ── */
+function fanBase(i: number, total: number) {
+  // rotate from slight CCW to CW as i increases
+  const rotate = -8 + i * (16 / Math.max(total - 1, 1));
+  const tx     = i * 52;
+  const ty     = i * -8;
+  const tz     = -i * 28;
+  const scale  = 1 - i * 0.04;
+  return `perspective(1100px) rotateZ(${rotate}deg) translate3d(${tx}px,${ty}px,${tz}px) scale(${scale})`;
 }
 
-/* ── Single stacked card ── */
-function HeroCard({
-  project,
-  idx,
-  isHovered,
-  otherHovered,
-  onEnter,
-  onLeave,
+/* ── HUD corner bracket ── */
+function Bracket({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
+  const s = 14;
+  const t = pos.startsWith("t") ? 0 : "auto";
+  const b = pos.startsWith("b") ? 0 : "auto";
+  const l = pos.endsWith("l")  ? 0 : "auto";
+  const r = pos.endsWith("r")  ? 0 : "auto";
+  const bw: React.CSSProperties = {
+    borderTopWidth:    pos.startsWith("t") ? 1.5 : 0,
+    borderBottomWidth: pos.startsWith("b") ? 1.5 : 0,
+    borderLeftWidth:   pos.endsWith("l")   ? 1.5 : 0,
+    borderRightWidth:  pos.endsWith("r")   ? 1.5 : 0,
+  };
+  return (
+    <div style={{
+      position: "absolute", top: t, bottom: b, left: l, right: r,
+      width: s, height: s,
+      borderStyle: "solid", borderColor: `rgba(${G},0.85)`,
+      ...bw,
+    }} />
+  );
+}
+
+/* ── single card ── */
+function FanCard({
+  project, idx, total,
+  isHovered, anyHovered,
+  onEnter, onLeave,
 }: {
-  project: WorkProject;
-  idx: number;
-  isHovered: boolean;
-  otherHovered: boolean;
-  onEnter: () => void;
-  onLeave: () => void;
+  project: WorkProject; idx: number; total: number;
+  isHovered: boolean; anyHovered: boolean;
+  onEnter: () => void; onLeave: () => void;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const hasImg = Boolean(project.coverImage && !imgFailed);
 
-  /* stacking transforms — card 0 is front-left, card 1 is back-right */
-  const baseTransform = idx === 0
-    ? "perspective(900px) rotateY(-14deg) rotateX(6deg) translateZ(0px)"
-    : "perspective(900px) rotateY(-8deg)  rotateX(3deg) translateZ(-38px) translateX(48px) translateY(18px)";
+  const base  = fanBase(idx, total);
+  const front = `perspective(1100px) rotateZ(0deg) translate3d(${idx * 8}px,-${idx * 4}px,40px) scale(1.04)`;
+  const sink  = fanBase(idx, total) + ` scale(${0.92 - idx * 0.02})`;
 
-  const hoverTransform  = "perspective(900px) rotateY(0deg) rotateX(0deg) translateZ(24px)";
-  const sinkTransform   = idx === 0
-    ? "perspective(900px) rotateY(-18deg) rotateX(8deg)  translateZ(-20px) translateX(-10px)"
-    : "perspective(900px) rotateY(-10deg) rotateX(5deg)  translateZ(-60px)  translateX(56px) translateY(22px)";
-
-  const transform = isHovered ? hoverTransform : otherHovered ? sinkTransform : baseTransform;
-  const zIndex    = isHovered ? 10 : idx === 0 ? 2 : 1;
-  const opacity   = otherHovered ? 0.55 : 1;
+  const transform = isHovered ? front : (anyHovered ? sink : base);
+  const zIndex    = isHovered ? 20 : (total - idx);
+  const opacity   = anyHovered && !isHovered ? 0.48 : 1;
 
   return (
     <Link
@@ -62,212 +86,328 @@ function HeroCard({
       onMouseLeave={onLeave}
       style={{
         position: "absolute",
-        inset: 0,
-        borderRadius: 20,
+        left: 0, top: 0,
+        width: "100%", height: "100%",
+        borderRadius: 18,
         overflow: "hidden",
+        display: "block",
+        textDecoration: "none",
         transform,
         opacity,
         zIndex,
-        transition: "transform 0.52s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease, box-shadow 0.4s ease",
+        willChange: "transform, opacity",
+        transition: "transform 0.55s cubic-bezier(0.16,1,0.3,1), opacity 0.35s ease, box-shadow 0.35s ease",
         boxShadow: isHovered
-          ? "0 40px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(70,174,34,0.55), 0 0 60px rgba(70,174,34,0.18)"
-          : "0 24px 72px rgba(0,0,0,0.6), 0 0 0 1px rgba(70,174,34,0.2)",
+          ? `0 48px 120px rgba(0,0,0,0.8), 0 0 0 1.5px rgba(${G},0.7), 0 0 80px rgba(${G},0.2)`
+          : `0 ${16 + idx * 4}px ${48 + idx * 8}px rgba(0,0,0,${0.55 + idx * 0.08}), 0 0 0 1px rgba(${G},${0.22 - idx * 0.03})`,
         cursor: "pointer",
-        textDecoration: "none",
-        display: "block",
-        willChange: "transform",
       }}
     >
-      {/* image or fallback */}
-      <div style={{ position: "absolute", inset: 0, background: "rgba(4,10,7,0.95)" }}>
+      {/* bg image / fallback */}
+      <div style={{ position: "absolute", inset: 0, background: "#040a07" }}>
         {hasImg ? (
           <Image
             src={project.coverImage!}
             alt={project.title}
             fill
-            style={{ objectFit: "cover", opacity: 0.75, filter: "saturate(0.85) contrast(1.1)" }}
-            sizes="360px"
+            style={{
+              objectFit: "cover",
+              opacity: isHovered ? 0.82 : 0.65 - idx * 0.06,
+              filter: `saturate(${isHovered ? 1 : 0.75}) contrast(1.12)`,
+              transition: "opacity 0.45s, filter 0.45s",
+            }}
+            sizes="400px"
             onError={() => setImgFailed(true)}
           />
         ) : (
-          /* fallback — grid pattern */
           <div style={{
             position: "absolute", inset: 0,
             backgroundImage: `
-              linear-gradient(rgba(70,174,34,0.07) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(70,174,34,0.07) 1px, transparent 1px)
+              linear-gradient(rgba(${G},0.06) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(${G},0.06) 1px, transparent 1px)
             `,
-            backgroundSize: "32px 32px",
+            backgroundSize: "28px 28px",
           }} />
         )}
       </div>
 
-      {/* dark vignette */}
+      {/* vignette */}
       <div style={{
         position: "absolute", inset: 0,
-        background: "linear-gradient(180deg, rgba(4,10,7,0.25) 0%, rgba(4,10,7,0.85) 100%)",
+        background: `linear-gradient(180deg, rgba(4,10,7,0.18) 0%, rgba(4,10,7,0.88) 100%)`,
       }} />
 
-      {/* scan line sweep (green bar) */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden",
-      }}>
+      {/* scan line */}
+      <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
         <div style={{
           position: "absolute", left: 0, right: 0, height: 2,
-          background: "linear-gradient(90deg, transparent, rgba(70,174,34,0.7), transparent)",
-          animation: `hc-scan-${idx} ${3.2 + idx * 0.8}s linear infinite`,
+          background: `linear-gradient(90deg, transparent, rgba(${G},0.65), transparent)`,
+          animation: `whc-scan-${idx} ${3.0 + idx * 0.7}s linear infinite`,
         }} />
       </div>
 
-      {/* top badge */}
+      {/* ── top row: rank badge + category ── */}
       <div style={{
-        position: "absolute", top: 16, left: 16, right: 16,
+        position: "absolute", top: 14, left: 14, right: 14,
         display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 8,
       }}>
-        <span style={{
-          fontFamily: "var(--font-mono-next)", fontSize: "0.42rem",
-          letterSpacing: "0.44em", textTransform: "uppercase",
-          color: "rgba(70,174,34,0.85)",
-          background: "rgba(4,10,7,0.65)", backdropFilter: "blur(8px)",
-          padding: "4px 10px", borderRadius: 999,
-          border: "1px solid rgba(70,174,34,0.28)",
+        {/* rank */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "rgba(4,10,7,0.72)", backdropFilter: "blur(10px)",
+          border: `1px solid rgba(${G},${0.45 - idx * 0.06})`,
+          borderRadius: 999, padding: "4px 10px",
         }}>
-          {idx === 0 ? "★ Top this month" : "↑ Rising"}
-        </span>
+          <span style={{ color: `rgba(${G},1)`, fontSize: "0.65rem", lineHeight: 1 }}>
+            {idx === 0 ? "★" : idx === 1 ? "↑" : "◈"}
+          </span>
+          <span style={{
+            fontFamily: "var(--font-mono-next)", fontSize: "0.38rem",
+            letterSpacing: "0.4em", textTransform: "uppercase",
+            color: `rgba(${G},${0.9 - idx * 0.12})`,
+          }}>
+            {idx === 0 ? "Top this week" : idx === 1 ? "Rising" : `#${idx + 1}`}
+          </span>
+        </div>
+
+        {/* category */}
         {project.category && (
           <span style={{
-            fontFamily: "var(--font-mono-next)", fontSize: "0.40rem",
-            letterSpacing: "0.30em", textTransform: "uppercase",
-            color: "rgba(255,255,255,0.5)",
+            fontFamily: "var(--font-mono-next)", fontSize: "0.36rem",
+            letterSpacing: "0.28em", textTransform: "uppercase",
+            color: "rgba(255,255,255,0.55)",
             background: "rgba(4,10,7,0.55)", backdropFilter: "blur(8px)",
-            padding: "4px 10px", borderRadius: 999,
-            border: "1px solid rgba(255,255,255,0.10)",
+            border: "1px solid rgba(255,255,255,0.09)",
+            borderRadius: 999, padding: "4px 10px",
           }}>
             {project.category}
           </span>
         )}
       </div>
 
-      {/* bottom info — always visible */}
+      {/* ── bottom info ── */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
-        padding: "clamp(1rem,2vw,1.5rem)",
-        transform: isHovered ? "translateY(0)" : "translateY(8px)",
+        padding: "1rem 1.1rem 1.1rem",
+        transform: isHovered ? "translateY(0)" : "translateY(6px)",
         transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)",
       }}>
+        {/* year + divider */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.45rem" }}>
+          <span style={{
+            fontFamily: "var(--font-mono-next)", fontSize: "0.38rem",
+            letterSpacing: "0.38em", textTransform: "uppercase",
+            color: `rgba(${G},0.6)`,
+          }}>
+            {project.year ?? "2025"}
+          </span>
+          <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, rgba(${G},0.35), transparent)` }} />
+        </div>
+
         {/* title */}
         <h3 style={{
           fontFamily: "var(--font-display-next)",
-          fontSize: "clamp(1.6rem,2.5vw,2.2rem)",
-          lineHeight: 0.95, letterSpacing: "-0.02em",
-          color: "#F8F5EE",
-          marginBottom: "0.6rem",
+          fontSize: "clamp(1.4rem,2.2vw,2rem)",
+          lineHeight: 0.94, letterSpacing: "-0.02em",
+          color: "#F8F5EE", marginBottom: "0.55rem",
         }}>
           {project.title}
         </h3>
 
-        {/* "why it's the best" — slides up on hover */}
+        {/* why best — expands on hover */}
         <div style={{
-          maxHeight: isHovered ? 120 : 0,
+          maxHeight: isHovered ? 100 : 0,
           overflow: "hidden",
           transition: "max-height 0.42s cubic-bezier(0.16,1,0.3,1)",
         }}>
           <p style={{
             fontFamily: "var(--font-mono-next)",
-            fontSize: "0.62rem", lineHeight: 1.7,
-            color: "rgba(255,255,255,0.62)",
-            marginBottom: "0.9rem",
-            paddingTop: "0.3rem",
+            fontSize: "0.58rem", lineHeight: 1.65,
+            color: "rgba(255,255,255,0.58)",
+            marginBottom: "0.75rem",
+            paddingTop: "0.2rem",
           }}>
-            {WHY_BEST[idx] ?? WHY_FALLBACK}
+            {WHY[idx] ?? WHY[0]}
           </p>
           <span style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
+            display: "inline-flex", alignItems: "center", gap: 5,
             fontFamily: "var(--font-mono-next)",
-            fontSize: "0.44rem", letterSpacing: "0.36em",
-            textTransform: "uppercase",
-            color: "rgba(70,174,34,0.9)",
+            fontSize: "0.40rem", letterSpacing: "0.38em",
+            textTransform: "uppercase", color: `rgba(${G},0.9)`,
           }}>
-            View project <span style={{ fontSize: "0.9em" }}>→</span>
+            View project →
           </span>
         </div>
       </div>
 
-      {/* green top-edge glow */}
+      {/* card border */}
       <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        borderRadius: 20,
-        border: "1px solid rgba(70,174,34,0.22)",
-        transition: "border-color 0.4s ease",
-        ...(isHovered && { borderColor: "rgba(70,174,34,0.6)" }),
+        position: "absolute", inset: 0, borderRadius: 18, pointerEvents: "none",
+        border: `1px solid rgba(${G},${isHovered ? 0.65 : 0.18 - idx * 0.03})`,
+        transition: "border-color 0.4s",
       }} />
     </Link>
   );
 }
 
-/* ── Root export ── */
+/* ── root export ── */
 export default function WorkHeroCards({ projects }: { projects: WorkProject[] }) {
   const [hovered, setHovered] = useState<number | null>(null);
-  const top2 = projects.slice(0, 2);
+  const cards = projects.slice(0, 4);
+  if (cards.length === 0) return null;
 
-  if (top2.length === 0) return null;
+  const CARD_W = 360;
+  const CARD_H = 240;
+  // container is wider than a single card to accommodate the fan spread
+  const EXTRA_X = (cards.length - 1) * 52;
 
   return (
     <>
       <style>{`
-        @keyframes hc-scan-0 {
-          0%   { top: -2px; opacity: 0; }
-          5%   { opacity: 0.8; }
-          95%  { opacity: 0.6; }
-          100% { top: 100%; opacity: 0; }
+        @keyframes whc-scan-0 { 0%{top:-2px;opacity:0} 5%{opacity:.75} 95%{opacity:.55} 100%{top:100%;opacity:0} }
+        @keyframes whc-scan-1 { 0%{top:-2px;opacity:0} 5%{opacity:.65} 95%{opacity:.45} 100%{top:100%;opacity:0} }
+        @keyframes whc-scan-2 { 0%{top:-2px;opacity:0} 5%{opacity:.55} 95%{opacity:.35} 100%{top:100%;opacity:0} }
+        @keyframes whc-scan-3 { 0%{top:-2px;opacity:0} 5%{opacity:.45} 95%{opacity:.28} 100%{top:100%;opacity:0} }
+        @keyframes whc-frame-pulse {
+          0%,100% { opacity:.55; } 50% { opacity:.9; }
         }
-        @keyframes hc-scan-1 {
-          0%   { top: -2px; opacity: 0; }
-          5%   { opacity: 0.7; }
-          95%  { opacity: 0.5; }
-          100% { top: 100%; opacity: 0; }
+        @keyframes whc-scan-h {
+          0%   { left:-10%; opacity:0; }
+          8%   { opacity:.7; }
+          92%  { opacity:.5; }
+          100% { left:110%; opacity:0; }
         }
       `}</style>
 
+      {/* ── outer HUD frame ── */}
       <div style={{
         position: "relative",
-        width: "min(420px, 44vw)",
-        aspectRatio: "4 / 3",
         flexShrink: 0,
-        /* push up to align with heading */
         alignSelf: "center",
       }}>
-        {/* ambient glow behind cards */}
+        {/* ambient glow */}
         <div aria-hidden style={{
-          position: "absolute", inset: "-20%",
-          background: "radial-gradient(ellipse at 55% 50%, rgba(70,174,34,0.14) 0%, transparent 68%)",
-          filter: "blur(40px)", pointerEvents: "none", zIndex: 0,
+          position: "absolute", inset: "-30%",
+          background: `radial-gradient(ellipse at 50% 50%, rgba(${G},0.13) 0%, transparent 65%)`,
+          filter: "blur(50px)", pointerEvents: "none",
         }} />
 
-        {top2.map((project, idx) => (
-          <HeroCard
-            key={project.id}
-            project={project}
-            idx={idx}
-            isHovered={hovered === idx}
-            otherHovered={hovered !== null && hovered !== idx}
-            onEnter={() => setHovered(idx)}
-            onLeave={() => setHovered(null)}
-          />
-        ))}
-
-        {/* label below */}
+        {/* HUD panel frame */}
         <div style={{
-          position: "absolute", bottom: -36, left: 0, right: 0,
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          position: "relative",
+          padding: "14px 18px 18px",
+          border: `1px solid rgba(${G},0.28)`,
+          borderRadius: 16,
+          background: "rgba(4,10,7,0.42)",
+          backdropFilter: "blur(12px)",
+          boxShadow: `0 0 0 1px rgba(${G},0.08), inset 0 0 40px rgba(${G},0.04)`,
         }}>
-          <span style={{
-            fontFamily: "var(--font-mono-next)",
-            fontSize: "0.40rem", letterSpacing: "0.42em",
-            textTransform: "uppercase", color: "rgba(70,174,34,0.45)",
+          {/* corner brackets */}
+          <Bracket pos="tl" /><Bracket pos="tr" /><Bracket pos="bl" /><Bracket pos="br" />
+
+          {/* horizontal scan on the frame border */}
+          <div aria-hidden style={{
+            position: "absolute", inset: 0, overflow: "hidden",
+            borderRadius: 16, pointerEvents: "none",
           }}>
-            Hover to inspect
-          </span>
+            <div style={{
+              position: "absolute", top: 0, width: "30%", height: 1,
+              background: `linear-gradient(90deg, transparent, rgba(${G},0.8), transparent)`,
+              animation: "whc-scan-h 4.5s ease-in-out infinite",
+            }} />
+          </div>
+
+          {/* ── top label bar ── */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            marginBottom: 12, gap: 12,
+          }}>
+            {/* title */}
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <span style={{
+                width: 6, height: 6, borderRadius: "50%",
+                background: `rgba(${G},1)`,
+                boxShadow: `0 0 8px rgba(${G},0.9)`,
+                animation: "whc-frame-pulse 2s ease-in-out infinite",
+                flexShrink: 0,
+              }} />
+              <span style={{
+                fontFamily: "var(--font-mono-next)",
+                fontSize: "0.40rem", letterSpacing: "0.44em",
+                textTransform: "uppercase", color: `rgba(${G},0.82)`,
+              }}>
+                Top projects — this week
+              </span>
+            </div>
+
+            {/* count badge */}
+            <span style={{
+              fontFamily: "var(--font-mono-next)",
+              fontSize: "0.36rem", letterSpacing: "0.30em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.35)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 999, padding: "3px 8px",
+            }}>
+              {cards.length}/{projects.length} shown
+            </span>
+          </div>
+
+          {/* ── fan card area ── */}
+          <div style={{
+            position: "relative",
+            width: CARD_W + EXTRA_X,
+            height: CARD_H,
+          }}>
+            {/* render back-to-front */}
+            {[...cards].reverse().map((project, ri) => {
+              const idx = cards.length - 1 - ri;
+              return (
+                <FanCard
+                  key={project.id}
+                  project={project}
+                  idx={idx}
+                  total={cards.length}
+                  isHovered={hovered === idx}
+                  anyHovered={hovered !== null}
+                  onEnter={() => setHovered(idx)}
+                  onLeave={() => setHovered(null)}
+                />
+              );
+            })}
+          </div>
+
+          {/* ── bottom info bar ── */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            marginTop: 12, gap: 12,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {/* category pills */}
+              {cards.slice(0, 3).filter(p => p.category).map((p, i) => (
+                <span key={i} style={{
+                  fontFamily: "var(--font-mono-next)",
+                  fontSize: "0.35rem", letterSpacing: "0.28em",
+                  textTransform: "uppercase",
+                  color: `rgba(${G},${0.75 - i * 0.15})`,
+                  border: `1px solid rgba(${G},${0.22 - i * 0.04})`,
+                  borderRadius: 999, padding: "3px 9px",
+                  background: `rgba(${G},0.04)`,
+                }}>
+                  {p.category}
+                </span>
+              ))}
+            </div>
+
+            <span style={{
+              fontFamily: "var(--font-mono-next)",
+              fontSize: "0.36rem", letterSpacing: "0.32em",
+              textTransform: "uppercase", color: "rgba(255,255,255,0.22)",
+            }}>
+              Hover to inspect ↑
+            </span>
+          </div>
         </div>
       </div>
     </>
