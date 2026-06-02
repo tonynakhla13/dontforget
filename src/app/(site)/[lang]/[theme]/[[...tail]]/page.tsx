@@ -33,6 +33,8 @@ import BlogPostCreative from "@/components/creative/BlogPostCreative";
 import ProjectContentCreative from "@/components/creative/ProjectContentCreative";
 import { getProject as getFullProject } from "@/features/work/[slug]/page";
 import BlogPostImmersive from "@/components/immersive/BlogPostImmersive";
+import ServiceDetailImmersive from "@/components/immersive/ServiceDetailImmersive";
+import ImmersiveThemeLayout from "@/themes/immersive/layout";
 import ImmersiveHome from "@/themes/immersive/page";
 import ImmersiveAbout from "@/themes/immersive/about/page";
 import ImmersiveWork from "@/themes/immersive/work/page";
@@ -162,24 +164,51 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
     return view ? <CreativeThemeLayout>{view}</CreativeThemeLayout> : null;
   }
   if (theme === "immersive") {
-    if (page === "home") {
-      const [projects, services] = await Promise.all([getProjects(locale), getServices(locale)]);
-      return <ImmersiveHome projects={projects} services={services} />;
-    }
-    if (page === "about" && !tail[1]) return <ImmersiveAbout />;
-    if (page === "work" && !tail[1]) return <ImmersiveWork />;
-    if (page === "services" && !tail[1]) return <ImmersiveServices />;
-    if (page === "blog" && !tail[1]) return <ImmersiveBlog locale={locale} />;
-    if (page === "blog" && tail[1]) {
-      const post = await getPost(locale, tail[1]);
-      if (!post) return null;
-      return <BlogPostImmersive post={post} locale={locale} />;
-    }
-    if (page === "contact" && !tail[1]) return <ImmersiveContact />;
-    if (page === "work" && tail[1]) return <ImmersiveProject params={Promise.resolve({ slug: tail[1] })} />;
-    if (page === "services" && tail[1]) return <ImmersiveService params={Promise.resolve({ id: tail[1] })} />;
+    const view = await renderImmersiveView(locale, page, tail);
+    return view ? <ImmersiveThemeLayout>{view}</ImmersiveThemeLayout> : null;
   }
   if (page === "request" && !tail[1]) return <RequestPage />;
+  return null;
+}
+
+async function renderImmersiveView(locale: Locale, page: string, tail: string[]) {
+  if (page === "home") {
+    const [projects, services] = await Promise.all([getProjects(locale), getServices(locale)]);
+    return <ImmersiveHome projects={projects} services={services} />;
+  }
+  if (page === "about" && !tail[1]) return <ImmersiveAbout />;
+  if (page === "work" && !tail[1]) return <ImmersiveWork />;
+  if (page === "services" && !tail[1]) return <ImmersiveServices />;
+  if (page === "blog" && !tail[1]) return <ImmersiveBlog locale={locale} />;
+  if (page === "blog" && tail[1]) {
+    const post = await getPost(locale, tail[1]);
+    if (!post) return null;
+    return <BlogPostImmersive post={post} locale={locale} />;
+  }
+  if (page === "contact" && !tail[1]) return <ImmersiveContact />;
+  if (page === "work" && tail[1]) return <ImmersiveProject params={Promise.resolve({ slug: tail[1] })} />;
+  if (page === "services" && tail[1]) {
+    const service = await getServiceWithAliases(locale, tail[1]);
+    if (service) return <ServiceDetailImmersive service={service} />;
+    return <ImmersiveService params={Promise.resolve({ id: tail[1] })} />;
+  }
+  return null;
+}
+
+async function getServiceWithAliases(locale: Locale, id: string) {
+  const aliases: Record<string, string[]> = {
+    webdev: ["web-development"],
+    uiux: ["ui-ux-design", "ui-ux"],
+    ecomm: ["ecommerce", "e-commerce"],
+    mobile: ["mobile-apps"],
+    seo: ["seo-site-health", "seo"],
+    crm: ["crm-systems"],
+  };
+  const candidates = [id, ...(aliases[id] ?? [])];
+  for (const candidate of candidates) {
+    const service = await getService(locale, candidate);
+    if (service) return service;
+  }
   return null;
 }
 

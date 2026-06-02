@@ -8,9 +8,11 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import type { WorkProject } from "./page";
+import WorkHeroCards from "./WorkHeroCards";
 
 // ─────────────────────────────────────────────────────────────────────
 // Filter drawer — slides in from the right
@@ -114,292 +116,80 @@ function FilterPanel({
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Project info side card — appears on hover
-// ─────────────────────────────────────────────────────────────────────
-function ProjectInfoPanel({ project }: { project: WorkProject }) {
-  const galleryImages: { src: string; pos: string }[] = project.images?.length
-    ? project.images.slice(0, 3).map((src) => ({ src, pos: "center center" }))
-    : project.coverImage
-    ? [
-        { src: project.coverImage, pos: "18% center" },
-        { src: project.coverImage, pos: "50% center" },
-        { src: project.coverImage, pos: "82% center" },
-      ]
-    : [];
-
-  return (
-    <div
-      className="flex h-full flex-col rounded-[var(--radius)]"
-      style={{
-        border: "1px solid rgba(58,191,138,0.22)",
-        background: "rgba(4,9,7,0.93)",
-        backdropFilter: "blur(16px)",
-        boxShadow: "0 8px 40px rgba(0,0,0,0.55)",
-        overflow: "hidden",
-      }}
-    >
-      {/* ── Cover-flow gallery — padded from top & sides, center card elevated ── */}
-      {galleryImages.length > 0 && (
-        <div
-          className="flex-shrink-0 flex items-end gap-2"
-          style={{ padding: "14px 14px 0", height: "116px" }}
-        >
-          {galleryImages.map(({ src, pos }, i) => {
-            const isCenter = i === 1;
-            return (
-              <div
-                key={i}
-                className="relative overflow-hidden"
-                style={{
-                  flex: isCenter ? "1.25 1 0" : "1 1 0",
-                  height: isCenter ? "100%" : "82%",
-                  borderRadius: "6px",
-                  boxShadow: isCenter
-                    ? "0 6px 20px rgba(0,0,0,0.6), 0 0 0 1px rgba(58,191,138,0.18)"
-                    : "0 2px 8px rgba(0,0,0,0.45)",
-                }}
-              >
-                <Image
-                  src={src}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  style={{ objectPosition: pos }}
-                  sizes="110px"
-                />
-                {isCenter && (
-                  <div
-                    className="absolute inset-0"
-                    style={{ background: "linear-gradient(180deg, transparent 55%, rgba(4,9,7,0.35) 100%)" }}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ── Text + CTAs ── */}
-      <div className="flex flex-1 flex-col justify-between p-5 min-h-0">
-        <div className="flex flex-col gap-3">
-
-          {/* Category + year */}
-          <div className="flex items-center justify-between">
-            {project.category && (
-              <span className="font-mono text-[0.44rem] uppercase tracking-[0.34em] text-[var(--teal)]">
-                {project.category}
-              </span>
-            )}
-            <span className="font-mono text-[0.42rem] uppercase tracking-[0.26em] text-[var(--body)] opacity-60">
-              {project.year}
-            </span>
-          </div>
-
-          {/* Title */}
-          <h3 className="hed text-[1.8rem] leading-[1.0] text-[var(--fg)]">
-            {project.title}
-          </h3>
-
-          <div className="h-px w-8 bg-[var(--teal)] opacity-40" />
-
-          {/* Description — brighter, slightly larger */}
-          {project.description && (
-            <p className="text-[0.80rem] leading-[1.82]" style={{ color: "rgba(220,230,225,0.78)" }}>
-              {project.description}
-            </p>
-          )}
-
-          {/* Tags — teal, bigger */}
-          {project.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-1">
-              {project.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full font-mono uppercase"
-                  style={{
-                    border: "1px solid rgba(58,191,138,0.45)",
-                    background: "rgba(58,191,138,0.09)",
-                    color: "var(--teal)",
-                    fontSize: "0.50rem",
-                    letterSpacing: "0.20em",
-                    padding: "4px 10px",
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* ── Buttons — equal size ── */}
-        <div
-          className="mt-4 pt-4 flex flex-col gap-2.5"
-          style={{ borderTop: "1px solid var(--border)" }}
-        >
-          {/* View project — outline */}
-          <Link
-            href={`/work/${project.slug ?? project.id}`}
-            className="flex items-center justify-center gap-2 rounded-full font-mono uppercase transition-all duration-200"
-            style={{
-              border: "1px solid rgba(58,191,138,0.50)",
-              color: "var(--teal)",
-              fontSize: "0.48rem",
-              letterSpacing: "0.22em",
-              padding: "10px 16px",
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(58,191,138,0.08)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-          >
-            View project
-            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M3 13L13 3M13 3H6M13 3V10" />
-            </svg>
-          </Link>
-
-          {/* Start a project — filled */}
-          <Link
-            href="/immersive/contact"
-            className="flex items-center justify-center rounded-full font-mono uppercase transition-opacity duration-200 hover:opacity-85"
-            style={{
-              background: "var(--teal)",
-              color: "rgba(3,8,6,1)",
-              fontSize: "0.48rem",
-              letterSpacing: "0.22em",
-              padding: "10px 16px",
-              fontWeight: 600,
-            }}
-          >
-            Start a project →
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────
-// Project card — 4/3 aspect, two-column
+// Project card — framed, matches the home immersive work-carousel cards
 // ─────────────────────────────────────────────────────────────────────
 function ProjectCard({
   project,
   filteredIndex,
-  onEnter,
 }: {
   project: WorkProject;
   filteredIndex: number;
-  onEnter: () => void;
 }) {
-  const innerRef = useRef<HTMLDivElement>(null);
-  const imgRef   = useRef<HTMLDivElement>(null);
-  const num      = String(filteredIndex + 1).padStart(2, "0");
+  const num = String(filteredIndex + 1).padStart(2, "0");
+  const [imageFailed, setImageFailed] = useState(false);
+  const hasImage = Boolean(project.coverImage && !imageFailed);
 
-  const onMouseMove = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width  - 0.5;
-    const y = (e.clientY - rect.top)  / rect.height - 0.5;
-    gsap.to(innerRef.current, {
-      rotationX: -y * 4, rotationY: x * 6,
-      transformPerspective: 1100, ease: "power2.out", duration: 0.65, overwrite: true,
-    });
-    gsap.to(imgRef.current, { scale: 1.045, duration: 0.75, ease: "power2.out", overwrite: true });
-  }, []);
-
-  const onMouseLeave = useCallback(() => {
-    gsap.to(innerRef.current, {
-      rotationX: 0, rotationY: 0,
-      duration: 1.0, ease: "power3.out", overwrite: true,
-    });
-    gsap.to(imgRef.current, { scale: 1, duration: 0.8, ease: "power2.out", overwrite: true });
-  }, []);
-
+  // NOTE: the global `[data-card]` rule sets `grid-column: span var(--col-span, 12)`.
+  // We set --col-span: 6 so each card spans half of the 12-col grid (2-up on desktop;
+  // the same rule falls back to a full-width row below 768px).
   return (
     <Link
       href={`/work/${project.slug ?? project.id}`}
       data-card
-      className="group relative block"
-      style={{ clipPath: "inset(0 0 100% 0)", willChange: "clip-path, transform" }}
-      onMouseMove={onMouseMove}
-      onMouseEnter={onEnter}
-      onMouseLeave={onMouseLeave}
+      className="group relative block focus-visible:outline-none"
+      style={{ clipPath: "inset(0 0 100% 0)", willChange: "clip-path, transform", "--col-span": 6 } as CSSProperties}
+      aria-label={`View ${project.title}`}
     >
-      <div
-        ref={innerRef}
-        className="relative overflow-hidden rounded-[var(--radius)] bg-[var(--surface)]"
-        style={{ transformStyle: "preserve-3d", aspectRatio: "4 / 3" }}
-      >
-        {/* Image */}
-        <div ref={imgRef} className="absolute inset-0 will-change-transform">
-          {project.coverImage ? (
+      <div className="flex h-full flex-col overflow-hidden rounded-[1.2rem] border border-[rgba(var(--teal-rgb),0.18)] bg-[linear-gradient(145deg,rgba(var(--surface-rgb),0.92),rgba(var(--bg-rgb),0.96))] transition-[border-color,transform,box-shadow] duration-500 group-hover:-translate-y-1 group-hover:border-[rgba(var(--teal-rgb),0.5)] group-hover:shadow-[inset_0_0_0_1px_rgba(var(--teal-rgb),0.22)] group-focus-visible:ring-2 group-focus-visible:ring-[var(--teal)]">
+
+        {/* header — index + year */}
+        <div className="flex items-center justify-between px-4 pb-3 pt-4 font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--teal)] md:px-5">
+          <span>{num}</span>
+          <span className="flex items-center gap-2 text-[0.5rem] text-[var(--body)]">
+            {project.year ?? "—"}
+            <i className="block h-1.5 w-1.5 bg-[var(--teal)] shadow-[0_0_10px_var(--teal)]" />
+          </span>
+        </div>
+
+        {/* media */}
+        <div className="relative mx-4 aspect-[1.78] overflow-hidden rounded-[0.75rem] border border-[rgba(var(--teal-rgb),0.2)]">
+          {hasImage ? (
             <Image
-              src={project.coverImage}
-              alt={project.title}
+              src={project.coverImage!}
+              alt={`${project.title} project preview`}
               fill
-              className="object-cover"
-              sizes="(max-width:768px) 100vw, 42vw"
+              sizes="(max-width:640px) 92vw, (max-width:1024px) 46vw, 30vw"
+              className="object-cover saturate-[0.82] transition duration-700 group-hover:scale-[1.06] group-hover:saturate-100"
+              onError={() => setImageFailed(true)}
             />
           ) : (
-            <div className="h-full w-full bg-[var(--surface2)]" />
+            <ProjectArtworkFallback project={project} num={num} />
           )}
-        </div>
-
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent transition-opacity duration-500 group-hover:from-black/90" />
-
-        {/* Teal border */}
-        <div className="absolute inset-0 rounded-[var(--radius)] border border-transparent transition-colors duration-300 group-hover:border-[rgba(58,191,138,0.30)]" />
-
-        {/* Scan line */}
-        <div className="work-card-scan absolute inset-0 pointer-events-none overflow-hidden rounded-[var(--radius)]">
-          <div className="scan-runner absolute left-0 right-0 h-[1px]" />
-        </div>
-
-        {/* GIF preview square — fits inside card with padding, centred */}
-        <div className="gif-preview absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
-          <div className="gif-preview-square relative overflow-hidden" style={{ height: "calc(100% - 52px)", maxWidth: "calc(100% - 52px)", aspectRatio: "1 / 1" }}>
-            {project.gifUrl ? (
-              <img src={project.gifUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <>
-                <div className="w-full h-full" style={{ background: "rgba(6,12,10,0.78)", backdropFilter: "blur(12px)" }} />
-                <div className="absolute inset-0" style={{ background: "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(58,191,138,0.035) 3px,rgba(58,191,138,0.035) 4px)" }} />
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                  <span className="font-mono text-[0.44rem] uppercase tracking-[0.38em] text-[var(--teal)] opacity-55">Preview</span>
-                  <div className="h-px w-8 bg-[var(--teal)] opacity-25" />
-                  <span className="font-mono text-[0.38rem] uppercase tracking-[0.22em] text-[var(--body)] opacity-40">{project.liveUrl ?? project.slug}</span>
-                </div>
-              </>
-            )}
-            <div className="gif-corner gif-corner-tl" />
-            <div className="gif-corner gif-corner-tr" />
-            <div className="gif-corner gif-corner-bl" />
-            <div className="gif-corner gif-corner-br" />
-            <div className="gif-scan-runner" />
-          </div>
-        </div>
-
-        {/* Top meta */}
-        <div className="absolute left-0 right-0 top-0 flex items-start justify-between p-5">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/15 font-mono text-[0.52rem] text-white/60 transition-all duration-300 group-hover:border-[var(--teal)] group-hover:text-[var(--teal)]">
-            {num}
-          </span>
-          {project.category && (
-            <span className="rounded-full border border-white/10 bg-black/40 px-3 py-1 font-mono text-[0.52rem] uppercase tracking-[0.24em] text-white/50 backdrop-blur-sm transition-colors duration-300 group-hover:border-[var(--teal-mid)] group-hover:text-[var(--teal)]">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(var(--bg-rgb),0.04),rgba(var(--bg-rgb),0.5))]" />
+          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 [background:radial-gradient(circle_at_45%_40%,rgba(var(--teal-rgb),0.17),transparent_56%)]" />
+          <span className="pointer-events-none absolute left-0 top-0 h-px w-full -translate-x-full bg-[linear-gradient(90deg,transparent,var(--teal),transparent)] transition-transform duration-700 group-hover:translate-x-full" />
+          {project.category ? (
+            <span className="absolute left-3 top-3 rounded-full border border-[rgba(var(--teal-rgb),0.34)] bg-black/45 px-2.5 py-1 font-mono text-[0.46rem] uppercase tracking-[0.26em] text-[var(--teal)] backdrop-blur-md">
               {project.category}
             </span>
-          )}
+          ) : null}
         </div>
 
-        {/* Bottom info */}
-        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-5 md:p-6">
-          <div>
-            <p className="mb-1 font-mono text-[0.5rem] uppercase tracking-[0.32em] text-white/40">{project.year}</p>
-            <h3 className="hed text-[1.55rem] leading-[1.0]">{project.title}</h3>
-          </div>
-          <div className="flex h-10 w-10 shrink-0 translate-x-2 translate-y-2 items-center justify-center rounded-full border border-white/10 text-white/40 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:border-[var(--teal)] group-hover:text-[var(--teal)] group-hover:opacity-100">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M3 13L13 3M13 3H6M13 3V10" />
-            </svg>
+        {/* body */}
+        <div className="flex flex-1 flex-col p-4 md:p-5">
+          <h3 className="hed text-[clamp(1.4rem,2vw,2rem)] uppercase leading-none text-[var(--fg)]">{project.title}</h3>
+          <p className="mt-1.5 text-[0.8rem] text-[var(--teal)]">{project.category ?? "Digital Experience"}</p>
+          {project.description ? (
+            <p className="mt-3 line-clamp-2 text-[0.8rem] leading-[1.55] text-[var(--body)]">{project.description}</p>
+          ) : null}
+          <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4 font-mono text-[0.54rem] uppercase tracking-[0.2em]">
+            <span className="border border-[rgba(var(--teal-rgb),0.22)] px-2.5 py-1.5 text-[var(--body)]">{project.year ?? "Current"}</span>
+            <span className="btn-glass-ghost">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face !px-3 !py-2 !text-[0.62rem]">
+                View more <span className="btn-glass-arrow">→</span>
+              </span>
+            </span>
           </div>
         </div>
       </div>
@@ -407,27 +197,47 @@ function ProjectCard({
   );
 }
 
+function ProjectArtworkFallback({ project, num }: { project: WorkProject; num: string }) {
+  return (
+    <div className="work-card-fallback absolute inset-0">
+      <div className="work-card-fallback-grid" />
+      <div className="absolute left-7 top-7 font-mono text-[0.54rem] uppercase tracking-[0.34em] text-[var(--teal)]">
+        {num} / {project.category ?? "Project"}
+      </div>
+      <div className="absolute inset-x-7 top-1/2 h-px bg-[linear-gradient(90deg,transparent,rgba(184,255,224,0.58),transparent)]" />
+      <div className="absolute right-7 top-7 h-12 w-12 rounded-full border border-[rgba(184,255,224,0.18)] shadow-[0_0_40px_rgba(58,191,138,0.18)]" />
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Hero
 // ─────────────────────────────────────────────────────────────────────
-function WorkHero({ totalCount }: { totalCount: number }) {
+function WorkHero({ totalCount, projects }: { totalCount: number; projects: WorkProject[] }) {
   const headRef    = useRef<HTMLHeadingElement>(null);
-  const bodyRef    = useRef<HTMLParagraphElement>(null);
+  const tagRef     = useRef<HTMLDivElement>(null);
+  const subRef     = useRef<HTMLParagraphElement>(null);
   const ctaRef     = useRef<HTMLDivElement>(null);
   const statsRef   = useRef<HTMLDivElement>(null);
-  const lineRef    = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const cueRef     = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const isFirstLoad = !sessionStorage.getItem("df_loader_shown");
-    const delay = isFirstLoad ? 2.2 : 0;
+    const delay = isFirstLoad ? 0.4 : 0;
     const tl = gsap.timeline({ delay });
-    tl.fromTo(lineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "expo.out" })
+    tl.fromTo(
+        [tagRef.current, headRef.current, subRef.current],
+        { autoAlpha: 0, y: 26 },
+        { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.9, ease: "power3.out" }
+      )
+      .fromTo(galleryRef.current, { autoAlpha: 0, scale: 0.94, y: 24 }, { autoAlpha: 1, scale: 1, y: 0, duration: 1.0, ease: "power3.out" }, "-=0.4")
       .fromTo(
-        [headRef.current, bodyRef.current, ctaRef.current, statsRef.current],
-        { autoAlpha: 0, y: 34 },
-        { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.95, ease: "power3.out" },
-        "-=0.2"
+        [statsRef.current, cueRef.current],
+        { autoAlpha: 0, y: 18 },
+        { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.8, ease: "power3.out" },
+        "-=0.5"
       );
     const obj = { v: 0 };
     tl.to(obj, {
@@ -440,68 +250,123 @@ function WorkHero({ totalCount }: { totalCount: number }) {
     return () => { tl.kill(); };
   }, [totalCount]);
 
+  /* CTAs unfold on scroll — each slab tilts up from flat into view */
+  useEffect(() => {
+    const row = ctaRef.current;
+    if (!row) return;
+    const btns = Array.from(row.querySelectorAll<HTMLElement>("[data-cta]"));
+    if (!btns.length) return;
+    const ctx = gsap.context(() => {
+      gsap.set(row, { autoAlpha: 1 });
+      gsap.set(btns, {
+        autoAlpha: 0, y: 52, scale: 0.82, rotateX: -55,
+        transformPerspective: 700, transformOrigin: "50% 100%",
+      });
+      ScrollTrigger.create({
+        trigger: row, start: "top 88%", once: true,
+        onEnter() {
+          gsap.to(btns, {
+            autoAlpha: 1, y: 0, scale: 1, rotateX: 0,
+            duration: 0.9, stagger: 0.16, ease: "expo.out",
+          });
+        },
+      });
+    }, row);
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
       id="hero"
-      className="relative flex min-h-[100svh] items-center overflow-hidden"
-      style={{ background: "transparent" }}
+      className="relative flex min-h-[100svh] flex-col items-center justify-start overflow-x-clip overflow-y-visible"
+      style={{ background: "transparent", paddingTop: "clamp(5rem,9vh,7rem)", paddingBottom: "clamp(2.5rem,5vh,4rem)" }}
     >
-      <div
-        ref={lineRef}
-        className="absolute left-0 right-0 h-px origin-left bg-gradient-to-r from-[var(--teal)] via-[rgba(58,191,138,0.35)] to-transparent"
-        style={{ top: "22%", transform: "scaleX(0)" }}
-      />
-      <div className="relative z-10 wrap flex items-center pt-32 pb-20">
-        <div className="max-w-[760px]">
-          <h1
-            ref={headRef}
-            className="hed text-[clamp(4.2rem,10vw,9.6rem)] leading-[0.84] text-[#F8F5EE]"
-            style={{ visibility: "hidden" }}
-          >
-            Selected<br />
-            <span className="text-[var(--teal)]">Work</span>
-          </h1>
-          <p
-            ref={bodyRef}
-            className="mt-8 max-w-[520px] text-[clamp(0.92rem,1.3vw,1.04rem)] leading-[1.9] text-[var(--body)]"
-            style={{ visibility: "hidden" }}
-          >
-            Websites that stop the scroll. Apps people keep opening. Stores built
-            to convert. Every project shipped is a reason to{" "}
-            <span className="text-[var(--fg)]">remember us.</span>
-          </p>
-          <div ref={ctaRef} className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-            <Link href="/immersive/contact" className="btn-glass">
-              <span className="btn-glass-blob" aria-hidden="true" />
-              <span className="btn-glass-face">Start a project</span>
-            </Link>
-            <Link href="/services" className="btn-glass-ghost">
-              <span className="btn-glass-blob" aria-hidden="true" />
-              <span className="btn-glass-face">Our services →</span>
-            </Link>
-          </div>
-          <div
-            ref={statsRef}
-            className="mt-14 grid max-w-[520px] grid-cols-3 border-y border-[var(--border)]"
-            style={{ visibility: "hidden" }}
-          >
-            {[
-              { value: <span ref={counterRef}>00</span>, label: "Projects" },
-              { value: "3+", label: "Years" },
-              { value: "6",  label: "Industries" },
-            ].map(({ value, label }) => (
-              <div key={label} className="border-r border-[var(--border)] py-4 last:border-r-0">
-                <span className="block font-mono text-[0.52rem] uppercase tracking-[0.26em] text-[var(--teal)]">
-                  {value} {label}
-                </span>
-              </div>
-            ))}
-          </div>
+      {/* ── heading (top) ── */}
+      <div className="relative z-10 flex flex-col items-center px-6 text-center">
+        <div ref={tagRef} style={{
+          visibility: "hidden",
+          display: "inline-flex", alignItems: "center", gap: 8, marginBottom: "1.1rem",
+        }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: "50%",
+            background: "rgba(70,174,34,1)", boxShadow: "0 0 8px rgba(70,174,34,0.8)", flexShrink: 0,
+          }} />
+          <span style={{
+            fontFamily: "var(--font-mono-next)", fontSize: "0.46rem",
+            letterSpacing: "0.44em", textTransform: "uppercase", color: "rgba(70,174,34,0.8)",
+          }}>
+            Warning: may cause competitor envy
+          </span>
         </div>
+
+        <h1
+          ref={headRef}
+          className="hed"
+          style={{
+            visibility: "hidden",
+            fontSize: "clamp(2.7rem,6.4vw,5.6rem)",
+            lineHeight: 0.9, letterSpacing: "-0.03em", color: "#F8F5EE",
+          }}
+        >
+          Selected <span style={{ color: "rgba(70,174,34,1)" }}>Works.</span>
+        </h1>
+
+        <p
+          ref={subRef}
+          style={{
+            visibility: "hidden",
+            marginTop: "1rem", maxWidth: 460,
+            fontSize: "clamp(0.85rem,1.1vw,0.98rem)", lineHeight: 1.7,
+            color: "rgba(248,245,238,0.7)",
+          }}
+        >
+          We build things that make your competitors{" "}
+          <span style={{ color: "#F8F5EE" }}>uncomfortable.</span>
+        </p>
       </div>
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-        <span className="font-mono text-[0.5rem] uppercase tracking-[0.4em] text-[var(--body)]">Scroll</span>
-        <div className="h-8 w-px bg-gradient-to-b from-[var(--teal)] to-transparent" />
+
+      {/* ── 3D carousel — drag / swipe to spin · hover a card to explore ── */}
+      <div ref={galleryRef} className="relative w-full" style={{ visibility: "hidden", marginTop: "clamp(0.4rem,1.4vw,1rem)" }}>
+        <WorkHeroCards projects={projects} />
+      </div>
+
+      {/* ── CTAs — angular neon HUD slabs, revealed on scroll (see effect) ── */}
+      <div ref={ctaRef} className="relative z-10 flex flex-wrap items-center justify-center gap-5" style={{ marginTop: "clamp(1.5rem,3vw,2.6rem)", visibility: "hidden" }}>
+        <Link href="/en/immersive/contact" className="work-cta work-cta--solid" data-cta>
+          <span className="work-cta-face">Start a project</span>
+        </Link>
+        <Link href="/en/immersive/services" className="work-cta work-cta--ghost" data-cta>
+          <span className="work-cta-face">Our services <span className="work-cta-arrow" aria-hidden="true">→</span></span>
+        </Link>
+      </div>
+
+      {/* ── slim stat line ── */}
+      <div
+        ref={statsRef}
+        className="relative z-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-2"
+        style={{ marginTop: "clamp(1.4rem,2.6vw,2rem)", visibility: "hidden" }}
+      >
+        {[
+          { value: <span ref={counterRef}>00</span>, label: "Projects" },
+          { value: "3+", label: "Years" },
+          { value: "6",  label: "Industries" },
+        ].map(({ value, label }, i) => (
+          <div key={label} className="flex items-center gap-7">
+            <span style={{
+              fontFamily: "var(--font-mono-next)", fontSize: "0.5rem",
+              textTransform: "uppercase", letterSpacing: "0.26em", color: "rgba(70,174,34,0.95)",
+            }}>
+              {value} {label}
+            </span>
+            {i < 2 && <span style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(70,174,34,0.45)" }} />}
+          </div>
+        ))}
+      </div>
+
+      {/* scroll cue */}
+      <div ref={cueRef} className="absolute bottom-9 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2" style={{ visibility: "hidden" }}>
+        <span className="font-mono text-[0.46rem] uppercase tracking-[0.4em] text-[var(--body)]">Scroll to explore</span>
+        <div className="h-8 w-px" style={{ background: "linear-gradient(to bottom, rgba(70,174,34,1), transparent)" }} />
       </div>
     </section>
   );
@@ -513,7 +378,6 @@ function WorkHero({ totalCount }: { totalCount: number }) {
 export default function WorkListContent({ projects }: { projects: WorkProject[] }) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [filterOpen, setFilterOpen]     = useState(false);
-  const [hoveredCard, setHoveredCard]   = useState<number | null>(null);
 
   const gridRef        = useRef<HTMLDivElement>(null);
   const hasRevealedRef = useRef(false);
@@ -532,13 +396,6 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
     () => activeFilter === "All" ? projects : projects.filter((p) => p.category === activeFilter),
     [projects, activeFilter]
   );
-
-  // rows of 2
-  const rows = useMemo(() => {
-    const r: [WorkProject, WorkProject | undefined][] = [];
-    for (let i = 0; i < filteredProjects.length; i += 2) r.push([filteredProjects[i], filteredProjects[i + 1]]);
-    return r;
-  }, [filteredProjects]);
 
   // Scroll reveal
   useEffect(() => {
@@ -562,7 +419,6 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
   const handleFilter = useCallback(async (cat: string) => {
     if (cat === activeFilter || isAnimating.current) return;
     isAnimating.current = true;
-    setHoveredCard(null);
 
     const grid  = gridRef.current;
     const cards = Array.from(grid?.querySelectorAll<HTMLElement>("[data-card]") ?? []);
@@ -590,8 +446,291 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
           95%  { opacity:0.7; }
           100% { top:100%; opacity:0.0; }
         }
+        .work-hero-void {
+          background:
+            radial-gradient(circle at 76% 42%, rgba(58,191,138,0.22), transparent 26%),
+            radial-gradient(circle at 62% 22%, rgba(184,255,224,0.12), transparent 18%),
+            radial-gradient(circle at 88% 74%, rgba(245,184,94,0.10), transparent 20%);
+          filter: blur(2px);
+          opacity: 0.9;
+        }
+        .work-hero-particles {
+          opacity: 0.8;
+          background-image:
+            radial-gradient(circle, rgba(184,255,224,0.72) 0 1px, transparent 1.5px),
+            radial-gradient(circle, rgba(58,191,138,0.38) 0 1px, transparent 1.5px);
+          background-size: 84px 84px, 132px 132px;
+          background-position: 0 0, 32px 54px;
+          mask-image: radial-gradient(ellipse at 72% 48%, black 0%, transparent 68%);
+          animation: work-particle-drift 18s linear infinite;
+        }
+        @keyframes work-particle-drift {
+          from { background-position: 0 0, 32px 54px; }
+          to { background-position: 84px 168px, -100px 186px; }
+        }
+        .work-device-ambient {
+          background:
+            radial-gradient(ellipse at 74% 42%, rgba(70,209,42,0.18), transparent 42%),
+            radial-gradient(ellipse at 88% 64%, rgba(184,255,224,0.08), transparent 28%),
+            radial-gradient(ellipse at 52% 56%, rgba(70,174,34,0.08), transparent 40%);
+          filter: blur(1px);
+          mask-image: radial-gradient(ellipse at 72% 48%, black 0%, transparent 72%);
+        }
+        .work-device-laptop {
+          transform-origin: 45% 52%;
+          animation: work-device-drift 8s ease-in-out infinite alternate;
+        }
+        .work-device-mobile {
+          transform-origin: 82% 48%;
+          animation: work-device-drift-mobile 7s ease-in-out infinite alternate;
+        }
+        @keyframes work-device-drift {
+          from { transform: translate3d(-4px, 6px, 0) rotate(-0.35deg); opacity: 0.86; }
+          to { transform: translate3d(8px, -4px, 0) rotate(0.55deg); opacity: 1; }
+        }
+        @keyframes work-device-drift-mobile {
+          from { transform: translate3d(5px, -8px, 0) rotate(0.7deg); opacity: 0.78; }
+          to { transform: translate3d(-7px, 5px, 0) rotate(-0.5deg); opacity: 0.96; }
+        }
+        .work-hero-orbit {
+          position: absolute;
+          right: 8vw;
+          top: 50%;
+          width: min(46vw, 620px);
+          aspect-ratio: 1;
+          border: 1px solid rgba(58,191,138,0.14);
+          border-radius: 50%;
+          transform: translateY(-50%) rotateX(68deg) rotateZ(-12deg);
+          box-shadow: 0 0 80px rgba(58,191,138,0.08);
+        }
+        .work-hero-orbit-b {
+          width: min(34vw, 450px);
+          right: 12vw;
+          opacity: 0.72;
+          transform: translateY(-50%) rotateX(62deg) rotateZ(18deg);
+        }
+        .work-puzzle-shell {
+          overflow: hidden;
+          border: 1px solid rgba(58,191,138,0.36);
+          border-radius: 18px;
+          background:
+            linear-gradient(135deg, rgba(184,255,224,0.12), transparent 26%),
+            radial-gradient(circle at 78% 0%, rgba(58,191,138,0.24), transparent 32%),
+            rgba(3,8,6,0.78);
+          box-shadow:
+            0 0 0 1px rgba(184,255,224,0.08),
+            0 24px 100px rgba(0,0,0,0.62),
+            0 0 90px rgba(58,191,138,0.18);
+          backdrop-filter: blur(18px);
+        }
+        .work-puzzle-shell::before {
+          content: "";
+          position: absolute;
+          inset: -1px;
+          pointer-events: none;
+          border-radius: inherit;
+          background:
+            linear-gradient(90deg, transparent, rgba(184,255,224,0.18), transparent),
+            repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 8px);
+          opacity: 0.38;
+          mix-blend-mode: screen;
+        }
+        .work-puzzle-topline,
+        .work-puzzle-footer {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          padding: 0.95rem 1rem;
+          font-family: var(--font-mono-next), monospace;
+          font-size: 0.52rem;
+          letter-spacing: 0.28em;
+          text-transform: uppercase;
+          color: rgba(248,245,238,0.58);
+        }
+        .work-puzzle-topline {
+          border-bottom: 1px solid rgba(58,191,138,0.16);
+        }
+        .work-puzzle-footer {
+          border-top: 1px solid rgba(58,191,138,0.16);
+          color: rgba(58,191,138,0.86);
+        }
+        .work-puzzle-grid {
+          position: relative;
+          z-index: 2;
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 0.7rem;
+          padding: 1rem;
+        }
+        .work-puzzle-tile {
+          position: relative;
+          min-height: clamp(4.4rem, 7vw, 6.7rem);
+          overflow: hidden;
+          border: 1px solid rgba(58,191,138,0.28);
+          border-radius: 10px;
+          background:
+            radial-gradient(circle at 50% -20%, rgba(184,255,224,0.14), transparent 54%),
+            rgba(7,14,11,0.9);
+          color: rgba(248,245,238,0.86);
+          font-family: var(--font-display-next), system-ui, sans-serif;
+          font-size: clamp(2.2rem, 4.8vw, 4.2rem);
+          line-height: 1;
+          transition: transform 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+        }
+        .work-puzzle-tile::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent 38%, rgba(58,191,138,0.08));
+          opacity: 0.78;
+        }
+        .work-puzzle-tile span {
+          position: relative;
+          z-index: 2;
+          text-shadow: 0 0 22px rgba(58,191,138,0.32);
+        }
+        .work-puzzle-tile:hover,
+        .work-puzzle-tile[data-selected="true"] {
+          transform: translateY(-3px) scale(1.015);
+          border-color: rgba(184,255,224,0.72);
+          color: #b8ffe0;
+          box-shadow: 0 0 28px rgba(58,191,138,0.22);
+        }
+        .work-puzzle-tile[data-solved="true"] {
+          border-color: rgba(184,255,224,0.66);
+          color: #b8ffe0;
+          background:
+            radial-gradient(circle at 50% -20%, rgba(184,255,224,0.24), transparent 58%),
+            rgba(8,26,18,0.92);
+        }
+        .work-puzzle-action {
+          border: 1px solid rgba(58,191,138,0.26);
+          border-radius: 999px;
+          padding: 0.48rem 0.7rem;
+          color: rgba(248,245,238,0.72);
+          transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+        }
+        .work-puzzle-action:hover {
+          border-color: rgba(184,255,224,0.58);
+          color: #b8ffe0;
+          background: rgba(58,191,138,0.08);
+        }
+        .work-puzzle-scan {
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          background: linear-gradient(180deg, transparent 0%, rgba(184,255,224,0.14) 48%, transparent 52%);
+          opacity: 0.7;
+          transform: translateY(-100%);
+          animation: work-puzzle-scan 4.4s linear infinite;
+        }
+        @keyframes work-puzzle-scan {
+          0% { transform: translateY(-100%); opacity: 0; }
+          12% { opacity: 0.62; }
+          52% { opacity: 0.52; }
+          100% { transform: translateY(100%); opacity: 0; }
+        }
+        .work-puzzle-solved {
+          position: absolute;
+          inset: 0;
+          z-index: 5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: radial-gradient(circle, rgba(6,18,12,0.76), rgba(3,8,6,0.88));
+          color: #f8f5ee;
+          font-family: var(--font-display-next), system-ui, sans-serif;
+          font-size: clamp(3.2rem, 7.4vw, 6.7rem);
+          line-height: 0.9;
+          text-align: center;
+          text-shadow: 0 0 36px rgba(58,191,138,0.55);
+          animation: work-solved-pop 0.58s cubic-bezier(.16,1,.3,1);
+        }
+        @keyframes work-solved-pop {
+          from { opacity: 0; transform: scale(0.92); }
+          to { opacity: 1; transform: scale(1); }
+        }
         .group:hover .scan-runner { top:-2px; animation:work-scan 0.7s ease-out forwards; }
         .scan-runner { background:linear-gradient(90deg,transparent,rgba(58,191,138,0.75),transparent); pointer-events:none; top:-2px; }
+
+        .work-project-card {
+          grid-column: auto !important;
+          filter: drop-shadow(0 18px 54px rgba(0,0,0,0.36));
+        }
+        .work-project-card > div {
+          box-shadow:
+            inset 0 0 0 1px rgba(184,255,224,0.06),
+            0 0 0 1px rgba(58,191,138,0.08);
+        }
+        .work-card-depth {
+          background:
+            radial-gradient(circle at 50% -10%, rgba(184,255,224,0.18), transparent 42%),
+            linear-gradient(135deg, rgba(58,191,138,0.10), rgba(0,0,0,0.18));
+        }
+        .work-card-image {
+          filter: saturate(0.9) contrast(1.08) brightness(0.82);
+          transition: filter 0.55s ease;
+        }
+        .group:hover .work-card-image {
+          filter: saturate(1.05) contrast(1.12) brightness(0.92);
+        }
+        .work-card-copy {
+          max-width: calc(100% - 3.6rem);
+          transform: translateY(10px);
+          transition: transform 0.36s cubic-bezier(.16,1,.3,1);
+        }
+        .group:hover .work-card-copy {
+          transform: translateY(0);
+        }
+        .work-card-tag {
+          border: 1px solid rgba(184,255,224,0.22);
+          border-radius: 999px;
+          background: rgba(3,8,6,0.42);
+          padding: 0.32rem 0.58rem;
+          color: rgba(184,255,224,0.82);
+          font-family: var(--font-mono-next), monospace;
+          font-size: 0.48rem;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          backdrop-filter: blur(10px);
+        }
+        .work-card-fallback {
+          background:
+            radial-gradient(circle at 72% 28%, rgba(58,191,138,0.22), transparent 28%),
+            radial-gradient(circle at 22% 78%, rgba(245,184,94,0.10), transparent 24%),
+            rgba(4,10,7,0.96);
+        }
+        .work-card-fallback-grid {
+          position: absolute;
+          inset: 0;
+          opacity: 0.42;
+          background-image:
+            linear-gradient(rgba(184,255,224,0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(184,255,224,0.08) 1px, transparent 1px);
+          background-size: 42px 42px;
+          mask-image: radial-gradient(circle at 50% 50%, black, transparent 72%);
+        }
+
+        @media (max-width: 767px) {
+          .work-card-copy {
+            max-width: 100%;
+            transform: none;
+          }
+          .work-project-card > div {
+            aspect-ratio: 3 / 4 !important;
+          }
+          .work-card-tag {
+            font-size: 0.43rem;
+            letter-spacing: 0.16em;
+          }
+          .gif-preview {
+            display: none;
+          }
+        }
 
         .gif-preview-square {
           transform:scale(0.90);
@@ -619,23 +758,24 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
       `}</style>
 
       {/* ── Hero ── */}
-      <WorkHero totalCount={projects.length} />
+      <WorkHero totalCount={projects.length} projects={projects} />
 
       {/* ── Grid section ── */}
-      <section className="section-py border-b border-[var(--border)]" style={{ background: "transparent" }}>
+      <section id="work" className="section-py border-b border-[var(--border)]" style={{ background: "transparent" }}>
         <div className="wrap">
 
-          {/* Top bar: count + filter button */}
-          <div className="mb-8 flex items-center justify-between">
-            <span className="font-mono text-[0.46rem] uppercase tracking-[0.38em] text-[var(--body)] opacity-55">
-              {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}
-              {activeFilter !== "All" && (
-                <span className="ml-2 text-[var(--teal)]">— {activeFilter}</span>
-              )}
-            </span>
+          {/* Section header + filter */}
+          <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="eyebrow mb-3">Selected projects</p>
+              <h2 className="hed text-[clamp(2.7rem,5.4vw,6rem)] leading-[0.88] text-[#F8F5EE]">
+                Proof in<br />
+                <span className="text-[var(--teal)]">motion.</span>
+              </h2>
+            </div>
             <button
               onClick={() => setFilterOpen(true)}
-              className="flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 font-mono text-[0.50rem] uppercase tracking-[0.22em] text-[var(--body)] transition-all duration-200 hover:border-[var(--teal)] hover:text-[var(--teal)]"
+              className="flex w-fit items-center gap-2 rounded-full border border-[var(--border)] bg-black/24 px-4 py-2 font-mono text-[0.50rem] uppercase tracking-[0.22em] text-[var(--body)] backdrop-blur-md transition-all duration-200 hover:border-[var(--teal)] hover:text-[var(--teal)]"
             >
               {/* Filter icon */}
               <svg width="11" height="9" viewBox="0 0 11 9" fill="none" stroke="currentColor" strokeWidth="1.3">
@@ -648,111 +788,39 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
             </button>
           </div>
 
-          {/* Rows */}
-          <div ref={gridRef} className="flex flex-col gap-5">
+          <div className="mb-8 flex items-center justify-between border-y border-[var(--border)] py-4">
+            <span className="font-mono text-[0.46rem] uppercase tracking-[0.38em] text-[var(--body)] opacity-65">
+              {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}
+              {activeFilter !== "All" && (
+                <span className="ml-2 text-[var(--teal)]">— {activeFilter}</span>
+              )}
+            </span>
+            <span className="hidden font-mono text-[0.46rem] uppercase tracking-[0.32em] text-[var(--body)] opacity-45 md:inline">
+              Hover to inspect
+            </span>
+          </div>
+
+          {/* Cards — 12-column grid. Each [data-card] sets --col-span:6 → 2-up on
+              desktop. `display:grid` + the 12-col template are inline so nothing can
+              purge or override them; the per-card span is what controls the layout. */}
+          <div
+            ref={gridRef}
+            className="grid gap-4 sm:gap-6 lg:gap-7"
+            style={{ display: "grid", gridTemplateColumns: "repeat(12, minmax(0, 1fr))" }}
+          >
             {filteredProjects.length === 0 ? (
-              <div className="py-32 text-center">
+              <div className="py-32 text-center" style={{ gridColumn: "1 / -1" }}>
                 <p className="eyebrow mb-4">No results</p>
                 <p className="text-[var(--body)] text-[0.9rem]">No projects in this category yet.</p>
               </div>
             ) : (
-              rows.map(([leftProj, rightProj], rowIdx) => {
-                const leftIdx     = rowIdx * 2;
-                const rightIdx    = rowIdx * 2 + 1;
-                const leftHovered  = hoveredCard === leftIdx;
-                const rightHovered = hoveredCard === rightIdx;
-                const infoTx = "cubic-bezier(0.34,1.2,0.64,1)";
-
-                return (
-                  <div
-                    key={`${leftProj.id}-${rightProj?.id ?? "empty"}`}
-                    className="relative"
-                    onMouseLeave={() => setHoveredCard(null)}
-                  >
-                    {/* 2-column card grid */}
-                    <div className="grid grid-cols-2 gap-5">
-
-                      {/* Left card wrapper — squeezes when right is hovered */}
-                      <div
-                        style={{
-                          transform: rightHovered ? "scale(0.91)" : "scale(1)",
-                          transformOrigin: "right center",
-                          transition: "transform 0.42s cubic-bezier(0.4,0,0.2,1)",
-                          position: "relative",
-                          zIndex: leftHovered ? 2 : 1,
-                        }}
-                      >
-                        <ProjectCard
-                          project={leftProj}
-                          filteredIndex={leftIdx}
-                          onEnter={() => setHoveredCard(leftIdx)}
-                        />
-                      </div>
-
-                      {/* Right card wrapper — squeezes when left is hovered */}
-                      {rightProj ? (
-                        <div
-                          style={{
-                            transform: leftHovered ? "scale(0.91)" : "scale(1)",
-                            transformOrigin: "left center",
-                            transition: "transform 0.42s cubic-bezier(0.4,0,0.2,1)",
-                            position: "relative",
-                            zIndex: rightHovered ? 2 : 1,
-                          }}
-                        >
-                          <ProjectCard
-                            project={rightProj}
-                            filteredIndex={rightIdx}
-                            onEnter={() => setHoveredCard(rightIdx)}
-                          />
-                        </div>
-                      ) : (
-                        <div />
-                      )}
-                    </div>
-
-                    {/* ── Info card for LEFT card — floats over right half ── */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 0, bottom: 0,
-                        left: "calc(50% + 10px)",
-                        right: 0,
-                        zIndex: 20,
-                        pointerEvents: leftHovered ? "auto" : "none",
-                        opacity: leftHovered ? 1 : 0,
-                        transform: leftHovered
-                          ? "translateX(0) scale(1)"
-                          : "translateX(12px) scale(0.97)",
-                        transition: `opacity 0.24s ease ${leftHovered ? "0.08s" : "0s"}, transform 0.38s ${infoTx} ${leftHovered ? "0.04s" : "0s"}`,
-                      }}
-                    >
-                      <ProjectInfoPanel project={leftProj} />
-                    </div>
-
-                    {/* ── Info card for RIGHT card — floats over left half ── */}
-                    {rightProj && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: 0, bottom: 0,
-                          right: "calc(50% + 10px)",
-                          left: 0,
-                          zIndex: 20,
-                          pointerEvents: rightHovered ? "auto" : "none",
-                          opacity: rightHovered ? 1 : 0,
-                          transform: rightHovered
-                            ? "translateX(0) scale(1)"
-                            : "translateX(-12px) scale(0.97)",
-                          transition: `opacity 0.24s ease ${rightHovered ? "0.08s" : "0s"}, transform 0.38s ${infoTx} ${rightHovered ? "0.04s" : "0s"}`,
-                        }}
-                      >
-                        <ProjectInfoPanel project={rightProj} />
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+              filteredProjects.map((project, index) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  filteredIndex={index}
+                />
+              ))
             )}
           </div>
 

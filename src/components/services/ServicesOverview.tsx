@@ -100,7 +100,7 @@ export default function ServicesOverview() {
   return (
     <section ref={sectionRef} id="services" className="relative z-10 py-28 md:py-36">
       <div className="wrap">
-        <div className="mb-12 grid gap-8 border-y border-[rgba(58,191,138,0.12)] py-10 md:grid-cols-[0.9fr_1.1fr] md:items-end">
+        <div className="mb-12 grid gap-8 border-y border-[rgba(var(--teal-rgb),0.14)] py-10 md:grid-cols-[0.9fr_1.1fr] md:items-end">
           <h2 className="hed text-[clamp(3.5rem,7vw,7.2rem)] leading-[0.9]">
             Service<br />
             <span className="text-[var(--teal)]">System</span>
@@ -115,18 +115,18 @@ export default function ServicesOverview() {
             <article
               key={service.id}
               data-service-row
-              className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(58,191,138,0.14)] bg-[rgba(7,10,9,0.46)] p-5 shadow-[0_34px_120px_rgba(0,0,0,0.3)] backdrop-blur-md md:p-7"
+              className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(var(--teal-rgb),0.18)] bg-[rgba(7,10,9,0.46)] p-5 shadow-[0_34px_120px_rgba(0,0,0,0.3)] backdrop-blur-md md:p-7"
             >
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(58,191,138,0.075),transparent_32%,rgba(248,245,238,0.018))]" />
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(var(--immersive-particles-rgb),0.075),transparent_32%,rgba(248,245,238,0.018))]" />
               <div className="relative grid gap-7 lg:grid-cols-[0.16fr_0.44fr_0.4fr] lg:items-stretch">
-                <div className="flex items-start justify-between gap-6 border-b border-[rgba(58,191,138,0.12)] pb-5 lg:flex-col lg:border-b-0 lg:border-r lg:pb-0 lg:pr-6">
+                <div className="flex items-start justify-between gap-6 border-b border-[rgba(var(--teal-rgb),0.14)] pb-5 lg:flex-col lg:border-b-0 lg:border-r lg:pb-0 lg:pr-6">
                   <span className="font-mono text-[0.62rem] uppercase tracking-[0.36em] text-[var(--teal)]">
                     {service.num}
                   </span>
                   <div className="hidden w-full space-y-5 lg:block">
                     {service.examples.map(example => (
                       <div key={example} data-service-meta>
-                        <span className="block origin-left border-l border-[rgba(83,230,178,0.24)] pl-3 font-mono text-[0.54rem] uppercase tracking-[0.18em] text-[#F8F5EE]/88 transition duration-300 ease-out hover:translate-x-1 hover:scale-110 hover:border-[#53E6B2] hover:text-[#F8F5EE]">
+                        <span className="block origin-left border-l border-[rgba(var(--immersive-particles-rgb),0.26)] pl-3 font-mono text-[0.54rem] uppercase tracking-[0.18em] text-[#F8F5EE]/88 transition duration-300 ease-out hover:translate-x-1 hover:scale-110 hover:border-[var(--immersive-particles)] hover:text-[#F8F5EE]">
                           {example}
                         </span>
                       </div>
@@ -148,7 +148,7 @@ export default function ServicesOverview() {
                   </div>
 
                   <div>
-                    <p data-service-meta className="mb-7 max-w-[620px] font-mono text-[0.66rem] uppercase tracking-[0.16em] text-[#53E6B2]">
+                    <p data-service-meta className="mb-7 max-w-[620px] font-mono text-[0.66rem] uppercase tracking-[0.16em] text-[var(--immersive-particles)]">
                       {service.line}
                     </p>
                     <div className="flex flex-wrap gap-3">

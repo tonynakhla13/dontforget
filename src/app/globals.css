@@ -751,6 +751,154 @@
 }
 
 /* ─────────────────────────────────────────
+   WORK-HERO CTA — angular neon "HUD slab" buttons
+   Scoped to the Work hero (does NOT touch global .btn-glass).
+   A layered clip-path turns a spinning conic-gradient into a
+   notched neon border; a light sweep crosses the inner face.
+───────────────────────────────────────── */
+@property --work-cta-spin {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@layer components {
+  .work-cta {
+    --notch: 15px;
+    position: relative;
+    display: inline-flex;
+    padding: 2px;                       /* gradient-border thickness */
+    isolation: isolate;
+    text-decoration: none;
+    font-family: var(--font-display-next), system-ui, sans-serif;
+    clip-path: polygon(
+      var(--notch) 0, 100% 0,
+      100% calc(100% - var(--notch)),
+      calc(100% - var(--notch)) 100%,
+      0 100%, 0 var(--notch)
+    );
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.4s ease;
+  }
+
+  /* spinning neon ring = the visible notched border */
+  .work-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    clip-path: inherit;
+    background: conic-gradient(from var(--work-cta-spin),
+      rgba(var(--teal-rgb), 0.30),
+      rgba(var(--immersive-particles-rgb), 1) 20%,
+      rgba(var(--teal-rgb), 0.30) 50%,
+      rgba(var(--immersive-particles-rgb), 1) 70%,
+      rgba(var(--teal-rgb), 0.30));
+    animation: workCtaSpin 5s linear infinite;
+  }
+
+  .work-cta-face {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1.15rem 2.6rem;            /* bigger hit area */
+    clip-path: inherit;
+    overflow: hidden;
+    font-size: 1.02rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* light sweep across the face */
+  .work-cta-face::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: skewX(-18deg);
+    pointer-events: none;
+    animation: workCtaShine 5.5s ease-in-out infinite;
+  }
+
+  /* Primary — solid neon fill, near-black text */
+  .work-cta--solid {
+    box-shadow: 0 16px 44px rgba(var(--teal-rgb), 0.42), 0 0 0 1px rgba(var(--immersive-particles-rgb), 0.18);
+  }
+  .work-cta--solid .work-cta-face {
+    background:
+      radial-gradient(130% 170% at 0% 0%, rgba(255, 255, 255, 0.4), transparent 45%),
+      linear-gradient(135deg, var(--immersive-particles), var(--teal) 72%);
+    color: #04140a;
+  }
+
+  /* Ghost — dark face, neon outline + text */
+  .work-cta--ghost {
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5), 0 0 22px rgba(var(--teal-rgb), 0.16);
+  }
+  .work-cta--ghost .work-cta-face {
+    background:
+      radial-gradient(130% 170% at 100% 0%, rgba(var(--teal-rgb), 0.20), transparent 55%),
+      rgba(var(--bg-rgb), 0.96);
+    color: var(--immersive-particles);
+  }
+
+  .work-cta-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+
+  /* Hover / focus / active */
+  .work-cta:hover {
+    transform: translateY(-3px) scale(1.015);
+    filter: brightness(1.08);
+  }
+  .work-cta--solid:hover {
+    box-shadow: 0 20px 56px rgba(var(--teal-rgb), 0.6), 0 0 40px rgba(var(--immersive-particles-rgb), 0.5);
+  }
+  .work-cta--ghost:hover {
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55), 0 0 36px rgba(var(--teal-rgb), 0.4);
+  }
+  .work-cta:hover .work-cta-arrow {
+    transform: translateX(0.45rem);
+  }
+  .work-cta:active {
+    transform: translateY(-1px) scale(0.99);
+  }
+  .work-cta:focus-visible {
+    outline: 2px solid var(--immersive-particles);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 640px) {
+    .work-cta-face {
+      padding: 1rem 1.9rem;
+      font-size: 0.92rem;
+    }
+  }
+}
+
+@keyframes workCtaSpin {
+  to { --work-cta-spin: 360deg; }
+}
+@keyframes workCtaShine {
+  0%, 50%   { left: -120%; }
+  78%, 100% { left: 130%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-cta::before { animation: none; }
+  .work-cta-face::after { display: none; }
+}
+
+/* ─────────────────────────────────────────
    MARQUEE
 ───────────────────────────────────────── */
 
