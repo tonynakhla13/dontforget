@@ -213,15 +213,12 @@ function ProjectArtworkFallback({ project, num }: { project: WorkProject; num: s
 // ─────────────────────────────────────────────────────────────────────
 // Hero
 // ─────────────────────────────────────────────────────────────────────
-function WorkHero({ totalCount, projects }: { totalCount: number; projects: WorkProject[] }) {
+function WorkHero({ projects }: { projects: WorkProject[] }) {
   const headRef    = useRef<HTMLHeadingElement>(null);
   const tagRef     = useRef<HTMLDivElement>(null);
   const subRef     = useRef<HTMLParagraphElement>(null);
-  const ctaRef     = useRef<HTMLDivElement>(null);
-  const statsRef   = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
   const cueRef     = useRef<HTMLDivElement>(null);
-  const counterRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const isFirstLoad = !sessionStorage.getItem("df_loader_shown");
@@ -234,45 +231,12 @@ function WorkHero({ totalCount, projects }: { totalCount: number; projects: Work
       )
       .fromTo(galleryRef.current, { autoAlpha: 0, scale: 0.94, y: 24 }, { autoAlpha: 1, scale: 1, y: 0, duration: 1.0, ease: "power3.out" }, "-=0.4")
       .fromTo(
-        [statsRef.current, cueRef.current],
+        cueRef.current,
         { autoAlpha: 0, y: 18 },
-        { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.8, ease: "power3.out" },
+        { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out" },
         "-=0.5"
       );
-    const obj = { v: 0 };
-    tl.to(obj, {
-      v: totalCount, duration: 0.9, snap: { v: 1 }, ease: "power2.inOut",
-      onUpdate() {
-        if (counterRef.current)
-          counterRef.current.textContent = String(Math.round(obj.v)).padStart(2, "0");
-      },
-    }, "-=0.7");
     return () => { tl.kill(); };
-  }, [totalCount]);
-
-  /* CTAs unfold on scroll — each slab tilts up from flat into view */
-  useEffect(() => {
-    const row = ctaRef.current;
-    if (!row) return;
-    const btns = Array.from(row.querySelectorAll<HTMLElement>("[data-cta]"));
-    if (!btns.length) return;
-    const ctx = gsap.context(() => {
-      gsap.set(row, { autoAlpha: 1 });
-      gsap.set(btns, {
-        autoAlpha: 0, y: 52, scale: 0.82, rotateX: -55,
-        transformPerspective: 700, transformOrigin: "50% 100%",
-      });
-      ScrollTrigger.create({
-        trigger: row, start: "top 88%", once: true,
-        onEnter() {
-          gsap.to(btns, {
-            autoAlpha: 1, y: 0, scale: 1, rotateX: 0,
-            duration: 0.9, stagger: 0.16, ease: "expo.out",
-          });
-        },
-      });
-    }, row);
-    return () => ctx.revert();
   }, []);
 
   return (
@@ -330,43 +294,10 @@ function WorkHero({ totalCount, projects }: { totalCount: number; projects: Work
         <WorkHeroCards projects={projects} />
       </div>
 
-      {/* ── CTAs — angular neon HUD slabs, revealed on scroll (see effect) ── */}
-      <div ref={ctaRef} className="relative z-10 flex flex-wrap items-center justify-center gap-5" style={{ marginTop: "clamp(1.5rem,3vw,2.6rem)", visibility: "hidden" }}>
-        <Link href="/en/immersive/contact" className="work-cta work-cta--solid" data-cta>
-          <span className="work-cta-face">Start a project</span>
-        </Link>
-        <Link href="/en/immersive/services" className="work-cta work-cta--ghost" data-cta>
-          <span className="work-cta-face">Our services <span className="work-cta-arrow" aria-hidden="true">→</span></span>
-        </Link>
-      </div>
-
-      {/* ── slim stat line ── */}
-      <div
-        ref={statsRef}
-        className="relative z-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-2"
-        style={{ marginTop: "clamp(1.4rem,2.6vw,2rem)", visibility: "hidden" }}
-      >
-        {[
-          { value: <span ref={counterRef}>00</span>, label: "Projects" },
-          { value: "3+", label: "Years" },
-          { value: "6",  label: "Industries" },
-        ].map(({ value, label }, i) => (
-          <div key={label} className="flex items-center gap-7">
-            <span style={{
-              fontFamily: "var(--font-mono-next)", fontSize: "0.5rem",
-              textTransform: "uppercase", letterSpacing: "0.26em", color: "rgba(70,174,34,0.95)",
-            }}>
-              {value} {label}
-            </span>
-            {i < 2 && <span style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(70,174,34,0.45)" }} />}
-          </div>
-        ))}
-      </div>
-
       {/* scroll cue */}
-      <div ref={cueRef} className="absolute bottom-9 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2" style={{ visibility: "hidden" }}>
-        <span className="font-mono text-[0.46rem] uppercase tracking-[0.4em] text-[var(--body)]">Scroll to explore</span>
-        <div className="h-8 w-px" style={{ background: "linear-gradient(to bottom, rgba(70,174,34,1), transparent)" }} />
+      <div ref={cueRef} className="absolute bottom-9 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3" style={{ visibility: "hidden" }}>
+        <span className="font-mono text-[0.85rem] sm:text-[1.1rem] uppercase tracking-[0.3em] text-[var(--body)]">Scroll to explore</span>
+        <div className="h-10 w-px" style={{ background: "linear-gradient(to bottom, rgba(70,174,34,1), transparent)" }} />
       </div>
     </section>
   );
@@ -380,6 +311,7 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
   const [filterOpen, setFilterOpen]     = useState(false);
 
   const gridRef        = useRef<HTMLDivElement>(null);
+  const headerRef      = useRef<HTMLDivElement>(null);
   const hasRevealedRef = useRef(false);
   const isAnimating    = useRef(false);
 
@@ -412,6 +344,32 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
         },
       });
     }, grid);
+    return () => ctx.revert();
+  }, []);
+
+  // "Proof in motion" header — scroll entrance (eyebrow → heading → filter rise in)
+  useEffect(() => {
+    const head = headerRef.current;
+    if (!head) return;
+    const eyebrow = head.querySelector<HTMLElement>(".eyebrow");
+    const title   = head.querySelector<HTMLElement>("h2");
+    const filter  = head.querySelector<HTMLElement>("button");
+    const targets = [eyebrow, title, filter].filter(Boolean) as HTMLElement[];
+    if (!targets.length) return;
+    const ctx = gsap.context(() => {
+      gsap.set(head, { autoAlpha: 1 });
+      gsap.set(targets, { autoAlpha: 0, y: 44 });
+      if (title) gsap.set(title, { y: 66 });            // heading travels a touch further
+      ScrollTrigger.create({
+        trigger: head, start: "top 85%", once: true,
+        onEnter() {
+          gsap.to(targets, {
+            autoAlpha: 1, y: 0,
+            duration: 0.95, stagger: 0.12, ease: "expo.out",
+          });
+        },
+      });
+    }, head);
     return () => ctx.revert();
   }, []);
 
@@ -758,16 +716,16 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
       `}</style>
 
       {/* ── Hero ── */}
-      <WorkHero totalCount={projects.length} projects={projects} />
+      <WorkHero projects={projects} />
 
       {/* ── Grid section ── */}
       <section id="work" className="section-py border-b border-[var(--border)]" style={{ background: "transparent" }}>
         <div className="wrap">
 
-          {/* Section header + filter */}
-          <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          {/* Section header + filter — heading centered, GSAP scroll entrance */}
+          <div ref={headerRef} className="mb-10 flex flex-col items-center gap-5 text-center" style={{ visibility: "hidden" }}>
             <div>
-              <p className="eyebrow mb-3">Selected projects</p>
+              <p className="eyebrow mb-3">All projects</p>
               <h2 className="hed text-[clamp(2.7rem,5.4vw,6rem)] leading-[0.88] text-[#F8F5EE]">
                 Proof in<br />
                 <span className="text-[var(--teal)]">motion.</span>

@@ -1,16 +1,24 @@
 "use client";
 
+/**
+ * ImmersiveFooter — one layered, immersive band.
+ *
+ * The Three.js orb is no longer a tall hero column; it glows as a backdrop on
+ * the right while the CTA overlays it. Everything else (nav, contact, socials,
+ * legal) compresses into a single meta row + hairline, with a giant ghost
+ * wordmark floating behind it all. One section, not four stacked bands.
+ */
+
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { pagePath, parseCanonicalPath, themeHome } from "@/lib/site-routing";
+import { pagePath, parseCanonicalPath } from "@/lib/site-routing";
 import { useEffect, useRef } from "react";
 import ImmersiveLogo from "@/components/immersive/ImmersiveLogo";
 
-/* ── lazy-load the heavy Three.js canvas ── */
+/* lazy-load the heavy Three.js canvas */
 const FooterOrb = dynamic(() => import("./FooterOrb"), { ssr: false });
 
-/* ── NOX data ── */
 const SOCIALS = [
   { label: "Instagram", href: "#" },
   { label: "Behance",   href: "#" },
@@ -26,7 +34,7 @@ const NAV = [
   { page: "contact",  label: "Contact" },
 ] as const;
 
-/* ── scan-line reveal on entry ── */
+/* fade/rise the whole band in on first view */
 function useFadeIn(ref: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const el = ref.current;
@@ -34,35 +42,21 @@ function useFadeIn(ref: React.RefObject<HTMLElement | null>) {
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.style.opacity    = "1";
-          el.style.transform  = "translateY(0)";
+          el.style.opacity = "1";
+          el.style.transform = "translateY(0)";
           obs.disconnect();
         }
       },
-      { threshold: 0.08 },
+      { threshold: 0.06 },
     );
     obs.observe(el);
     return () => obs.disconnect();
   }, [ref]);
 }
 
-/* ── animated scan line ── */
-function ScanLine() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px overflow-hidden">
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(90deg, transparent 0%, rgba(70,174,34,0.22) 20%, rgba(70,174,34,0.65) 50%, rgba(70,174,34,0.22) 80%, transparent 100%)",
-        animation: "nox-footer-scan 3s ease-in-out infinite alternate",
-      }} />
-    </div>
-  );
-}
-
 export default function ImmersiveFooter() {
   const pathname = usePathname();
   const route    = parseCanonicalPath(pathname);
-  const homeHref = route ? themeHome(route.locale, route.theme) : "/en/immersive";
   const hrefFor  = (page: typeof NAV[number]["page"]) =>
     route ? pagePath(route.locale, route.theme, page) : `/en/immersive/${page}`;
 
@@ -70,358 +64,161 @@ export default function ImmersiveFooter() {
   useFadeIn(footerRef as React.RefObject<HTMLElement>);
 
   return (
-    <>
-      {/* keyframe injection */}
-      <style>{`
-        @keyframes nox-footer-scan {
-          from { transform: translateX(-60%); }
-          to   { transform: translateX(60%); }
-        }
-        @keyframes nox-blink {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.2; }
-        }
-        @keyframes nox-float {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-12px); }
-        }
-      `}</style>
+    <footer ref={footerRef} className="nf">
+      <style>{CSS}</style>
 
-      <footer
-        ref={footerRef}
-        style={{
-          position: "relative", zIndex: 10, overflow: "hidden",
-          background: "linear-gradient(180deg, rgba(9,9,9,0) 0%, #090909 6%)",
-          borderTop: "1px solid rgba(70,174,34,0.18)",
-          opacity: 0, transform: "translateY(40px)",
-          transition: "opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)",
-        }}
-      >
-        {/* scan line top */}
-        <ScanLine />
+      {/* ── backdrop atmosphere ── */}
+      <div aria-hidden className="nf-scan"><span /></div>
+      <div aria-hidden className="nf-grid" />
+      <div aria-hidden className="nf-glow" />
+      <span aria-hidden className="hed nf-mark">NOX</span>
 
-        {/* grid overlay */}
-        <div aria-hidden style={{
-          pointerEvents: "none", position: "absolute", inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(70,174,34,0.028) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(70,174,34,0.022) 1px, transparent 1px)
-          `,
-          backgroundSize: "72px 72px",
-        }} />
+      {/* ── orb backdrop (right) ── */}
+      <div aria-hidden className="nf-orb">
+        <div className="nf-orb-glow" />
+        <div className="nf-orb-float"><FooterOrb size={460} /></div>
+      </div>
 
-        {/* left ambient glow */}
-        <div aria-hidden style={{
-          pointerEvents: "none", position: "absolute",
-          left: "-10%", top: "10%",
-          width: "50vw", height: "60%",
-          background: "radial-gradient(ellipse at 0% 50%, rgba(70,174,34,0.07) 0%, transparent 65%)",
-          filter: "blur(60px)",
-        }} />
-
-        {/* ═══════════════════════════════════════════════════════════
-            HERO BAND — orb LEFT · CTA RIGHT
-        ═══════════════════════════════════════════════════════════ */}
-        <div style={{
-          maxWidth: 1440, margin: "0 auto",
-          padding: "clamp(3rem,6vw,6rem) clamp(1.5rem,5vw,5rem) 0",
-        }}>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(280px, 420px) 1fr",
-            gap: "clamp(2rem,4vw,4rem)",
-            alignItems: "center",
-            borderBottom: "1px solid rgba(255,255,255,0.07)",
-            paddingBottom: "clamp(3rem,5vw,5rem)",
-          }}>
-
-            {/* ── ORB ── */}
-            <div style={{
-              display: "flex", justifyContent: "center", alignItems: "center",
-              position: "relative",
-            }}>
-              {/* glow behind orb */}
-              <div aria-hidden style={{
-                position: "absolute", inset: 0,
-                background: "radial-gradient(ellipse 80% 80% at 50% 50%, rgba(70,174,34,0.12) 0%, transparent 70%)",
-                filter: "blur(40px)",
-              }} />
-              <div style={{ animation: "nox-float 6s ease-in-out infinite" }}>
-                <FooterOrb size={380} />
-              </div>
-            </div>
-
-            {/* ── CTA ── */}
-            <div style={{ paddingLeft: "clamp(0rem,2vw,2rem)" }}>
-              {/* available pill */}
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                marginBottom: "clamp(1.8rem,3vw,2.8rem)",
-              }}>
-                <span style={{
-                  width: 7, height: 7, borderRadius: "50%",
-                  background: "rgba(70,174,34,1)",
-                  boxShadow: "0 0 10px rgba(70,174,34,0.8)",
-                  animation: "nox-blink 2.4s ease-in-out infinite",
-                  flexShrink: 0,
-                }} />
-                <span style={{
-                  fontFamily: "var(--font-mono-next)",
-                  fontSize: "0.52rem", letterSpacing: "0.44em",
-                  textTransform: "uppercase", color: "rgba(70,174,34,0.75)",
-                }}>
-                  Available for selected work
-                </span>
-              </div>
-
-              {/* big heading */}
-              <h2 className="hed" style={{
-                fontSize: "clamp(3.2rem,6.5vw,7rem)",
-                lineHeight: 0.88, letterSpacing: "-0.045em",
-                color: "var(--fg)",
-                marginBottom: "clamp(2rem,3.5vw,3.5rem)",
-              }}>
-                Make it hard<br />
-                <span style={{ color: "rgba(70,174,34,1)" }}>to forget.</span>
-              </h2>
-
-              {/* email + CTA row */}
-              <div style={{ display: "flex", alignItems: "center", gap: "clamp(1.5rem,3vw,3rem)", flexWrap: "wrap" }}>
-                <a
-                  href="mailto:hello@noxstudio.dev"
-                  style={{
-                    fontFamily: "var(--font-mono-next)",
-                    fontSize: "clamp(0.7rem,1.1vw,0.9rem)",
-                    letterSpacing: "0.06em",
-                    color: "rgba(255,255,255,0.55)",
-                    textDecoration: "none",
-                    transition: "color 0.2s",
-                    borderBottom: "1px solid rgba(255,255,255,0.12)",
-                    paddingBottom: 2,
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "rgba(70,174,34,1)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
-                >
-                  hello@noxstudio.dev
-                </a>
-
-                <Link
-                  href={hrefFor("contact")}
-                  className="btn-glass"
-                >
-                  <span className="btn-glass-blob" aria-hidden />
-                  <span className="btn-glass-face">
-                    Let&apos;s talk <span className="btn-glass-arrow">→</span>
-                  </span>
-                </Link>
-              </div>
-            </div>
-
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════════
-              INFO BAND — studio · nav · contact · socials
-          ═══════════════════════════════════════════════════════════ */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "clamp(1.5rem,3vw,3rem)",
-            padding: "clamp(2.5rem,4.5vw,4.5rem) 0",
-            borderBottom: "1px solid rgba(255,255,255,0.07)",
-          }}>
-
-            {/* Studio */}
-            <div>
-              <p style={{
-                fontFamily: "var(--font-mono-next)",
-                fontSize: "0.40rem", letterSpacing: "0.46em",
-                textTransform: "uppercase", color: "rgba(70,174,34,0.55)",
-                marginBottom: "1.25rem",
-              }}>
-                Studio
-              </p>
-              <div style={{ marginBottom: "1rem", maxWidth: 120 }}>
-                <ImmersiveLogo />
-              </div>
-              <address style={{ fontStyle: "normal", fontSize: "0.80rem", lineHeight: 1.85, color: "rgba(255,255,255,0.38)" }}>
-                Yabroud, Damascus Suburbs<br />Syria
-              </address>
-              <a
-                href="tel:+963935154501"
-                style={{
-                  display: "block", marginTop: "0.6rem",
-                  fontSize: "0.80rem", color: "rgba(255,255,255,0.38)",
-                  textDecoration: "none", transition: "color 0.2s",
-                  fontFamily: "var(--font-mono-next)", letterSpacing: "0.04em",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.color = "rgba(70,174,34,0.9)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.38)")}
-              >
-                +963 935 154 501
-              </a>
-            </div>
-
-            {/* Navigation */}
-            <div>
-              <p style={{
-                fontFamily: "var(--font-mono-next)",
-                fontSize: "0.40rem", letterSpacing: "0.46em",
-                textTransform: "uppercase", color: "rgba(70,174,34,0.55)",
-                marginBottom: "1.25rem",
-              }}>
-                Navigate
-              </p>
-              <nav aria-label="Footer navigation" style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                {NAV.map(({ page, label }) => (
-                  <Link
-                    key={page}
-                    href={hrefFor(page)}
-                    style={{
-                      fontSize: "0.85rem", color: "rgba(255,255,255,0.45)",
-                      textDecoration: "none", transition: "color 0.2s",
-                      display: "inline-flex", alignItems: "center", gap: 6,
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.color = "var(--fg)")}
-                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <p style={{
-                fontFamily: "var(--font-mono-next)",
-                fontSize: "0.40rem", letterSpacing: "0.46em",
-                textTransform: "uppercase", color: "rgba(70,174,34,0.55)",
-                marginBottom: "1.25rem",
-              }}>
-                Contact
-              </p>
-              <a
-                href="mailto:hello@noxstudio.dev"
-                style={{
-                  display: "block", fontSize: "0.85rem",
-                  color: "rgba(255,255,255,0.45)", textDecoration: "none",
-                  transition: "color 0.2s", marginBottom: "0.5rem",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.color = "rgba(70,174,34,0.9)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}
-              >
-                hello@noxstudio.dev
-              </a>
-              <Link
-                href={hrefFor("contact")}
-                style={{
-                  display: "inline-block", marginTop: "1.25rem",
-                  fontFamily: "var(--font-mono-next)",
-                  fontSize: "0.40rem", letterSpacing: "0.38em",
-                  textTransform: "uppercase",
-                  color: "rgba(70,174,34,0.7)",
-                  textDecoration: "none",
-                  borderBottom: "1px solid rgba(70,174,34,0.25)",
-                  paddingBottom: 2, transition: "color 0.2s, border-color 0.2s",
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.color = "rgba(70,174,34,1)";
-                  e.currentTarget.style.borderColor = "rgba(70,174,34,0.65)";
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.color = "rgba(70,174,34,0.7)";
-                  e.currentTarget.style.borderColor = "rgba(70,174,34,0.25)";
-                }}
-              >
-                Start a project →
-              </Link>
-            </div>
-
-            {/* Socials */}
-            <div>
-              <p style={{
-                fontFamily: "var(--font-mono-next)",
-                fontSize: "0.40rem", letterSpacing: "0.46em",
-                textTransform: "uppercase", color: "rgba(70,174,34,0.55)",
-                marginBottom: "1.25rem",
-              }}>
-                Follow
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                {SOCIALS.map(({ label, href }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    style={{
-                      fontSize: "0.85rem", color: "rgba(255,255,255,0.45)",
-                      textDecoration: "none", transition: "color 0.2s",
-                      display: "inline-flex", alignItems: "center", gap: 6,
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.color = "var(--fg)")}
-                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}
-                  >
-                    ↗ {label}
-                  </a>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════════
-              BOTTOM BAR — copyright · tagline
-          ═══════════════════════════════════════════════════════════ */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            flexWrap: "wrap", gap: "1rem",
-            padding: "clamp(1.5rem,2.5vw,2rem) 0",
-          }}>
-            <span style={{
-              fontFamily: "var(--font-mono-next)",
-              fontSize: "0.48rem", letterSpacing: "0.28em",
-              textTransform: "uppercase", color: "rgba(255,255,255,0.22)",
-            }}>
-              © {new Date().getFullYear()} NOX Studio. All rights reserved.
-            </span>
-
-            <span style={{
-              fontFamily: "var(--font-mono-next)",
-              fontSize: "0.44rem", letterSpacing: "0.28em",
-              textTransform: "uppercase", color: "rgba(255,255,255,0.18)",
-            }}>
-              Est. 2022 — Built with intent.
-            </span>
+      <div className="nf-inner">
+        {/* ── CTA ── */}
+        <div className="nf-cta">
+          <span className="nf-pill"><i />Available for selected work</span>
+          <h2 className="hed nf-h">Make it hard<br /><span className="nf-h-accent">to forget.</span></h2>
+          <div className="nf-cta-row">
+            <a href="mailto:hello@noxstudio.dev" className="nf-email-lg">hello@noxstudio.dev</a>
+            <Link href={hrefFor("contact")} className="btn-glass">
+              <span className="btn-glass-blob" aria-hidden />
+              <span className="btn-glass-face">Let&apos;s talk <span className="btn-glass-arrow">→</span></span>
+            </Link>
           </div>
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════
-            BIG WORDMARK — decorative bottom strip
-        ═══════════════════════════════════════════════════════════ */}
-        <div
-          aria-hidden
-          style={{
-            display: "flex", justifyContent: "center", alignItems: "center",
-            padding: "0 clamp(1.5rem,4vw,4rem) clamp(0.5rem,1.5vw,1.5rem)",
-            overflow: "hidden", userSelect: "none", pointerEvents: "none",
-            borderTop: "1px solid rgba(255,255,255,0.04)",
-          }}
-        >
-          <span
-            className="hed"
-            style={{
-              fontSize: "clamp(4rem,13vw,16rem)",
-              lineHeight: 0.80,
-              letterSpacing: "-0.06em",
-              color: "transparent",
-              WebkitTextStroke: "1px rgba(70,174,34,0.045)",
-              whiteSpace: "nowrap",
-            }}
-          >
-            NOX STUDIO
-          </span>
+        {/* ── meta row: brand · nav · socials ── */}
+        <div className="nf-meta">
+          <div className="nf-brand">
+            <div className="nf-logo"><ImmersiveLogo /></div>
+            <p className="nf-addr">Yabroud · Damascus Suburbs · Syria</p>
+            <a href="tel:+963935154501" className="nf-phone">+963 935 154 501</a>
+          </div>
+
+          <div className="nf-col">
+            <p className="nf-label">Navigate</p>
+            <nav aria-label="Footer navigation" className="nf-links">
+              {NAV.map(({ page, label }) => (
+                <Link key={page} href={hrefFor(page)} className="nf-link">{label}</Link>
+              ))}
+            </nav>
+          </div>
+
+          <div className="nf-col">
+            <p className="nf-label">Follow</p>
+            <div className="nf-links">
+              {SOCIALS.map(({ label, href }) => (
+                <a key={label} href={href} className="nf-link nf-social">↗ {label}</a>
+              ))}
+            </div>
+          </div>
         </div>
 
-      </footer>
-    </>
+        {/* ── hairline ── */}
+        <div className="nf-bottom">
+          <span>© {new Date().getFullYear()} NOX Studio — All rights reserved.</span>
+          <span className="nf-bottom-tag">Est. 2022 · Built with intent.</span>
+        </div>
+      </div>
+    </footer>
   );
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   SCOPED STYLES
+───────────────────────────────────────────────────────────────────────── */
+const CSS = `
+.nf { --g: 70,174,34; --gb: 70,209,42; position:relative; z-index:10; overflow:hidden;
+  border-top:1px solid rgba(var(--g),0.18);
+  background: linear-gradient(180deg, rgba(9,9,9,0) 0%, #090909 7%);
+  opacity:0; transform:translateY(40px);
+  transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
+
+/* atmosphere */
+.nf-scan { position:absolute; inset-inline:0; top:0; height:1px; overflow:hidden; pointer-events:none; z-index:3; }
+.nf-scan span { position:absolute; inset:0;
+  background: linear-gradient(90deg, transparent, rgba(var(--g),0.22) 20%, rgba(var(--g),0.65) 50%, rgba(var(--g),0.22) 80%, transparent);
+  animation: nf-scan 3s ease-in-out infinite alternate; }
+.nf-grid { position:absolute; inset:0; pointer-events:none; z-index:0; opacity:.5;
+  background-image: linear-gradient(rgba(var(--g),0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(var(--g),0.024) 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 75% at 30% 40%, #000, transparent 85%);
+  mask-image: radial-gradient(ellipse 90% 75% at 30% 40%, #000, transparent 85%); }
+.nf-glow { position:absolute; left:-12%; top:8%; width:55vw; height:70%; pointer-events:none; z-index:0;
+  background: radial-gradient(ellipse at 0% 50%, rgba(var(--g),0.08) 0%, transparent 64%); filter: blur(60px); }
+.nf-mark { position:absolute; left:50%; bottom:-6%; transform:translateX(-50%); z-index:0;
+  font-size:clamp(8rem,30vw,26rem); line-height:.74; letter-spacing:-0.06em; white-space:nowrap;
+  color:transparent; -webkit-text-stroke:1px rgba(var(--g),0.05); text-stroke:1px rgba(var(--g),0.05);
+  pointer-events:none; user-select:none; }
+
+/* orb backdrop */
+.nf-orb { position:absolute; top:50%; right:-7%; transform:translateY(-58%); z-index:1; pointer-events:none; }
+.nf-orb-glow { position:absolute; inset:8%;
+  background: radial-gradient(ellipse 75% 75% at 50% 50%, rgba(var(--g),0.13), transparent 70%); filter: blur(38px); }
+.nf-orb-float { position:relative; animation: nf-float 6.5s ease-in-out infinite; }
+
+/* layout */
+.nf-inner { position:relative; z-index:2; max-width:1320px; margin:0 auto;
+  padding: clamp(2.8rem,5.5vw,4.6rem) clamp(1.5rem,5vw,4rem) clamp(1.4rem,2.4vw,2rem); }
+
+/* CTA */
+.nf-cta { max-width:60ch; }
+.nf-pill { display:inline-flex; align-items:center; gap:8px; margin-bottom:clamp(1.4rem,2.6vw,2.2rem);
+  font-family:var(--font-mono-next); font-size:0.52rem; letter-spacing:0.44em; text-transform:uppercase;
+  color:rgba(var(--g),0.78); }
+.nf-pill i { width:7px; height:7px; border-radius:50%; background:rgb(var(--g));
+  box-shadow:0 0 10px rgba(var(--g),0.8); animation: nf-blink 2.4s ease-in-out infinite; flex-shrink:0; }
+.nf-h { font-size:clamp(2.7rem,7vw,6rem); line-height:0.88; letter-spacing:-0.045em; color:var(--fg);
+  margin-bottom:clamp(1.5rem,3vw,2.4rem); }
+.nf-h-accent { color:rgb(var(--g)); text-shadow:0 0 34px rgba(var(--g),0.4); }
+.nf-cta-row { display:flex; align-items:center; gap:clamp(1.3rem,3vw,2.6rem); flex-wrap:wrap; }
+.nf-email-lg { font-family:var(--font-mono-next); font-size:clamp(0.72rem,1.1vw,0.9rem); letter-spacing:0.05em;
+  color:rgba(255,255,255,0.55); text-decoration:none; border-bottom:1px solid rgba(255,255,255,0.14);
+  padding-bottom:2px; transition:color .2s ease, border-color .2s ease; }
+.nf-email-lg:hover { color:rgb(var(--g)); border-color:rgba(var(--g),0.5); }
+
+/* meta row */
+.nf-meta { display:flex; flex-wrap:wrap; gap:clamp(1.8rem,4vw,3.5rem); justify-content:space-between;
+  align-items:flex-start; margin-top:clamp(2.4rem,4.5vw,3.6rem);
+  padding-top:clamp(1.6rem,2.6vw,2.2rem); border-top:1px solid rgba(255,255,255,0.07); }
+.nf-brand { display:flex; flex-direction:column; gap:0.55rem; min-width:200px; }
+.nf-logo { width:108px; }
+.nf-addr { font-family:var(--font-mono-next); font-size:0.66rem; letter-spacing:0.04em;
+  color:rgba(255,255,255,0.4); }
+.nf-phone { font-family:var(--font-mono-next); font-size:0.74rem; letter-spacing:0.04em;
+  color:rgba(255,255,255,0.45); text-decoration:none; transition:color .2s ease; }
+.nf-phone:hover { color:rgb(var(--g)); }
+.nf-col { display:flex; flex-direction:column; }
+.nf-label { font-family:var(--font-mono-next); font-size:0.4rem; letter-spacing:0.46em; text-transform:uppercase;
+  color:rgba(var(--g),0.55); margin-bottom:1rem; }
+.nf-links { display:flex; flex-direction:column; gap:0.55rem; }
+.nf-link { font-size:0.85rem; color:rgba(255,255,255,0.45); text-decoration:none; transition:color .2s ease; width:fit-content; }
+.nf-link:hover { color:var(--fg); }
+
+/* hairline */
+.nf-bottom { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem;
+  margin-top:clamp(1.6rem,2.8vw,2.2rem); padding-top:clamp(1rem,1.6vw,1.2rem);
+  border-top:1px solid rgba(255,255,255,0.05);
+  font-family:var(--font-mono-next); text-transform:uppercase; }
+.nf-bottom span { font-size:0.48rem; letter-spacing:0.28em; color:rgba(255,255,255,0.24); }
+.nf-bottom-tag { color:rgba(255,255,255,0.18) !important; }
+
+@keyframes nf-scan { from { transform:translateX(-60%); } to { transform:translateX(60%); } }
+@keyframes nf-blink { 0%,100% { opacity:1; } 50% { opacity:0.25; } }
+@keyframes nf-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-12px); } }
+
+@media (max-width:900px) {
+  .nf-orb { top:auto; bottom:2%; right:50%; transform:translateX(50%); opacity:0.4; }
+  .nf-h { font-size:clamp(2.6rem,11vw,4rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nf-scan span, .nf-pill i, .nf-orb-float { animation:none !important; }
+}
+`;

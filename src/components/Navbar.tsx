@@ -219,9 +219,11 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         style={{
           height: isImmersive ? (compact ? 66 : NAV_H) : NAV_H,
           visibility: "hidden",
-          background: isImmersive && compact ? "rgba(var(--bg-rgb),0.72)" : "transparent",
+          // Opaque-enough backdrop so scrolled content (e.g. a hovered hero card's
+          // neon glow) is occluded cleanly instead of bleeding through the seam.
+          background: isImmersive && compact ? "rgba(var(--bg-rgb),0.94)" : "transparent",
           borderBottom: isImmersive && compact ? "1px solid rgba(var(--teal-rgb),0.16)" : "1px solid transparent",
-          backdropFilter: isImmersive && compact ? "blur(16px)" : "blur(0px)",
+          backdropFilter: isImmersive && compact ? "blur(20px)" : "blur(0px)",
         }}
       >
         <div className="wrap flex w-full items-center justify-between">

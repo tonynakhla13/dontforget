@@ -5,6 +5,7 @@ import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { NoxNavbar, NoxFooter, TK, SANS, DISPLAY } from "./NoxShared";
+import { ImmersiveContactPopup } from "@/components/immersive/ImmersiveContact";
 import type { PublicService } from "@/lib/public-content";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -73,6 +74,16 @@ function toStringArray(val: unknown): string[] {
     if (item && typeof item === "object") return String((item as Record<string, unknown>).title ?? (item as Record<string, unknown>).name ?? "");
     return "";
   }).filter(Boolean);
+}
+
+function requestFormServiceId(service: PublicService) {
+  const key = `${service.id} ${service.slug ?? ""} ${service.title}`.toLowerCase();
+  if (key.includes("ui") || key.includes("ux") || key.includes("design")) return "uiux";
+  if (key.includes("commerce") || key.includes("shop") || key.includes("store")) return "ecomm";
+  if (key.includes("mobile") || key.includes("app")) return "mobile";
+  if (key.includes("seo") || key.includes("search")) return "seo";
+  if (key.includes("crm") || key.includes("booking") || key.includes("platform")) return "crm";
+  return "webdev";
 }
 
 /* ── animated Nox O (eye with mouse-tracking pupil) ─────────────────────── */
@@ -368,7 +379,17 @@ function TechCarousel({ items }: { items: TechItem[] }) {
 }
 
 /* ── deliverable row ─────────────────────────────────────────────────────── */
-function DeliverableRow({ d, index, total }: { d: Deliverable; index: number; total: number }) {
+function DeliverableRow({
+  d,
+  index,
+  total,
+  onRequest,
+}: {
+  d: Deliverable;
+  index: number;
+  total: number;
+  onRequest: (deliverable: Deliverable) => void;
+}) {
   const [hov, setHov] = useState(false);
   const num = String(index + 1).padStart(2, "0");
   return (
@@ -453,6 +474,30 @@ function DeliverableRow({ d, index, total }: { d: Deliverable; index: number; to
               }}
             />
           )}
+          <button
+            type="button"
+            onClick={() => onRequest(d)}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 10,
+              marginTop: "clamp(1rem,1.5vw,1.45rem)",
+              background: C.accent, color: "#000",
+              fontFamily: SANS, fontWeight: 800, fontSize: "0.66rem",
+              letterSpacing: "0.11em", textTransform: "uppercase",
+              border: "none", cursor: "pointer",
+              padding: "0.72rem 1.15rem",
+              opacity: hov ? 1 : 0,
+              transform: hov ? "translateY(0)" : "translateY(10px)",
+              pointerEvents: hov ? "auto" : "none",
+              transition: "opacity 240ms ease, transform 240ms ease, background 180ms ease",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = C.accentHot)}
+            onMouseLeave={e => (e.currentTarget.style.background = C.accent)}
+          >
+            I want this
+            <svg width={10} height={10} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 6h8M6 2l4 4-4 4"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -545,12 +590,24 @@ export default function ServiceDetailFocused({ service, locale }: { service: Pub
   const ctaSubtext  = service.ctaSubtext ?? "";
   const ctaLabel    = service.ctaButtonLabel ?? "Start a project";
   const ctaLink     = service.ctaButtonLink ?? `/${locale}/focused/contact`;
+  const requestServiceId = requestFormServiceId(service);
 
   const stats = [
     deliverables.length > 0 && { n: deliverables.length, label: "Deliverables" },
     processSteps.length > 0 && { n: processSteps.length, label: "Process Steps" },
     benefits.length > 0     && { n: benefits.length,     label: "Benefits" },
   ].filter((s): s is { n: number; label: string } => !!s);
+
+  function openDeliverableRequest(deliverable: Deliverable) {
+    window.dispatchEvent(new CustomEvent("immersive-contact:open", {
+      detail: {
+        serviceId: requestServiceId,
+        serviceTitle: service.title,
+        deliverable: deliverable.title,
+        deliverables: deliverables.map(item => item.title),
+      },
+    }));
+  }
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -866,7 +923,7 @@ export default function ServiceDetailFocused({ service, locale }: { service: Pub
           {/* rows — edge to edge, max-width container */}
           <div style={{ maxWidth: MAX, margin: "0 auto" }}>
             {deliverables.map((d, i) => (
-              <DeliverableRow key={i} d={d} index={i} total={deliverables.length} />
+              <DeliverableRow key={i} d={d} index={i} total={deliverables.length} onRequest={openDeliverableRequest} />
             ))}
           </div>
 
@@ -1155,6 +1212,7 @@ export default function ServiceDetailFocused({ service, locale }: { service: Pub
       </section>
 
       <NoxFooter />
+      <ImmersiveContactPopup />
 
       <style>{`
         .sd-prose p { margin: 0 0 1em; }
