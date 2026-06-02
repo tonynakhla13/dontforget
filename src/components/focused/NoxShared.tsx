@@ -741,7 +741,7 @@ export function ClientCarousel({ clients }: { clients: ClientItem[] }) {
   const rafRef   = useRef<number>(0);
   const posRef   = useRef(0);
   const pauseRef = useRef(false);
-  const touchRef = useRef({ startX: 0, startPos: 0, active: false });
+  const dragRef  = useRef({ startX: 0, startPos: 0, active: false, pointerId: -1 });
 
   useEffect(() => {
     const track = trackRef.current;
@@ -761,36 +761,50 @@ export function ClientCarousel({ clients }: { clients: ClientItem[] }) {
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  function onTouchStart(e: React.TouchEvent) {
-    touchRef.current = { startX: e.touches[0].clientX, startPos: posRef.current, active: true };
-    pauseRef.current = true;
-  }
-  function onTouchMove(e: React.TouchEvent) {
-    if (!touchRef.current.active) return;
+  function moveTo(clientX: number) {
     const track = trackRef.current;
     if (!track) return;
     const half = track.scrollWidth / 2;
-    let next = touchRef.current.startPos - (e.touches[0].clientX - touchRef.current.startX);
+    let next = dragRef.current.startPos - (clientX - dragRef.current.startX);
     if (next < 0) next += half;
     if (next >= half) next -= half;
     posRef.current = next;
     track.style.transform = `translateX(-${next}px)`;
   }
-  function onTouchEnd() {
-    touchRef.current.active = false;
+
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragRef.current = { startX: e.clientX, startPos: posRef.current, active: true, pointerId: e.pointerId };
+    pauseRef.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    e.currentTarget.style.cursor = "grabbing";
+  }
+
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dragRef.current.active || dragRef.current.pointerId !== e.pointerId) return;
+    moveTo(e.clientX);
+  }
+
+  function onPointerEnd(e: React.PointerEvent<HTMLDivElement>) {
+    if (dragRef.current.pointerId === e.pointerId) {
+      dragRef.current.active = false;
+      dragRef.current.pointerId = -1;
+    }
     pauseRef.current = false;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+    e.currentTarget.style.cursor = "grab";
   }
 
   const doubled = [...clients, ...clients];
   return (
     <div
-      style={{ overflow: "hidden", padding: "clamp(2.5rem,4vw,4.5rem) 0", touchAction: "pan-y" }}
+      style={{ overflow: "hidden", padding: "clamp(2.5rem,4vw,4.5rem) 0", touchAction: "pan-y", cursor: "grab", userSelect: "none" }}
       onMouseEnter={() => { pauseRef.current = true; }}
-      onMouseLeave={() => { pauseRef.current = false; }}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-      onTouchCancel={onTouchEnd}
+      onMouseLeave={() => { if (!dragRef.current.active) pauseRef.current = false; }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerEnd}
+      onPointerCancel={onPointerEnd}
     >
       <div ref={trackRef} style={{ display: "flex", alignItems: "center", gap: "clamp(3rem,6vw,7rem)", width: "max-content", paddingLeft: "clamp(1.5rem,4vw,3.5rem)" }}>
         {doubled.map((cl, i) => {

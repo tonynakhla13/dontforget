@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { NoxNavbar, NoxFooter, NoxCTABar, NoxMusts, ClientCarousel, TK, SANS, DISPLAY } from "./NoxShared";
+import { NoxNavbar, NoxFooter, NoxCTABar, ClientCarousel, TK, SANS, DISPLAY } from "./NoxShared";
 import type { PublicClient } from "@/lib/public-content";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -120,42 +119,86 @@ function ProcessCard({ step, C }: { step: (typeof PROCESS)[0]; index: number; C:
 function TeamCarousel({ members }: { members: FocusedTeamMember[] }) {
   const wrapRef    = useRef<HTMLDivElement>(null);
   const trackRef   = useRef<HTMLDivElement>(null);
-  const targetPct  = useRef(0);
-  const currentPct = useRef(0);
   const rafRef     = useRef<number>(0);
+  const posRef     = useRef(0);
+  const pausedRef  = useRef(false);
+  const dragRef    = useRef({ active: false, startX: 0, startPos: 0, pointerId: -1 });
 
   useEffect(() => {
-    const wrap = wrapRef.current;
-    if (!wrap) return;
-    const onMove = (e: MouseEvent) => {
-      const rect = wrap.getBoundingClientRect();
-      targetPct.current = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const track = trackRef.current;
+    if (!track) return;
+
+    const getCycle = () => {
+      const paddingLeft = parseFloat(window.getComputedStyle(track).paddingLeft) || 0;
+      return (track.scrollWidth - paddingLeft) / 3;
     };
-    const onLeave = () => { targetPct.current = 0; };
-    wrap.addEventListener("mousemove", onMove);
-    wrap.addEventListener("mouseleave", onLeave);
+
+    const normalize = (value: number) => {
+      const cycle = getCycle();
+      if (!cycle) return 0;
+      return ((value % cycle) + cycle) % cycle;
+    };
+
     const tick = () => {
-      currentPct.current += (targetPct.current - currentPct.current) * 0.07;
-      const track = trackRef.current, container = wrapRef.current;
-      if (track && container) {
-        const max = track.scrollWidth - container.clientWidth;
-        if (max > 0) track.style.transform = `translateX(${-currentPct.current * max}px)`;
+      if (!pausedRef.current) {
+        posRef.current = normalize(posRef.current + 0.55);
+        track.style.transform = `translate3d(${-posRef.current}px,0,0)`;
       }
       rafRef.current = requestAnimationFrame(tick);
     };
+
     rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      wrap.removeEventListener("mousemove", onMove);
-      wrap.removeEventListener("mouseleave", onLeave);
-      cancelAnimationFrame(rafRef.current);
-    };
+    return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
+  function moveTo(clientX: number) {
+    const track = trackRef.current;
+    if (!track) return;
+    const paddingLeft = parseFloat(window.getComputedStyle(track).paddingLeft) || 0;
+    const cycle = (track.scrollWidth - paddingLeft) / 3;
+    if (!cycle) return;
+    const next = dragRef.current.startPos - (clientX - dragRef.current.startX);
+    posRef.current = ((next % cycle) + cycle) % cycle;
+    track.style.transform = `translate3d(${-posRef.current}px,0,0)`;
+  }
+
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragRef.current = { active: true, startX: e.clientX, startPos: posRef.current, pointerId: e.pointerId };
+    pausedRef.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    e.currentTarget.style.cursor = "grabbing";
+  }
+
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dragRef.current.active || dragRef.current.pointerId !== e.pointerId) return;
+    moveTo(e.clientX);
+  }
+
+  function onPointerEnd(e: React.PointerEvent<HTMLDivElement>) {
+    if (dragRef.current.pointerId === e.pointerId) {
+      dragRef.current.active = false;
+      dragRef.current.pointerId = -1;
+    }
+    pausedRef.current = false;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+    e.currentTarget.style.cursor = "grab";
+  }
+
+  const loopedMembers = [0, 1, 2].flatMap((rep) => members.map((member) => ({ ...member, rep })));
+
   return (
-    <div ref={wrapRef} style={{ overflow: "hidden", cursor: "ew-resize" }}>
+    <div
+      ref={wrapRef}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerEnd}
+      onPointerCancel={onPointerEnd}
+      style={{ overflow: "hidden", cursor: "grab", touchAction: "pan-y", userSelect: "none" }}
+    >
       <div ref={trackRef} style={{ display: "flex", gap: "clamp(1rem,2vw,2rem)", padding: `0 ${P} clamp(1rem,2vw,2rem)`, willChange: "transform" }}>
-        {members.map((m, i) => (
-          <figure key={i} className="ab-team-card" style={{ margin: 0, flexShrink: 0, width: "clamp(240px,34vw,420px)" }}>
+        {loopedMembers.map((m, i) => (
+          <figure key={`${m.rep}-${m.name}-${i}`} className="ab-team-card" style={{ margin: 0, flexShrink: 0, width: "clamp(240px,34vw,420px)" }}>
             {/* photo / placeholder */}
             <div
               className="ab-team-photo"
@@ -208,6 +251,19 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
       gsap.to(".ab-hero-title", {
         y: -80, ease: "none",
         scrollTrigger: { trigger: ".ab-hero-section", start: "top top", end: "bottom top", scrub: 1.2 },
+      });
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".ab-hero-section",
+          start: "top top",
+          end: "70% top",
+          scrub: 1.8,
+        },
+      })
+        .to(".ab-hero-that", { color: C.text, duration: 0.7, ease: "power1.inOut" }, 0)
+        .to(".ab-hero-remembered", { color: C.accent, duration: 0.9, ease: "power1.inOut" }, 0.08);
+      gsap.set([".ab-hero-that", ".ab-hero-remembered"], {
+        willChange: "color",
       });
       gsap.to(".ab-hero-lede", {
         y: -40, opacity: 0.3, ease: "none",
@@ -315,7 +371,8 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
             margin: "0 0 clamp(1.8rem,3vw,3rem)", maxWidth: "18ch",
           }}>
             we build brands{" "}
-            <span style={{ color: C.muted }}>that get remembered.</span>
+            <span className="ab-hero-that" style={{ color: C.muted, display: "inline-block" }}>that get</span>{" "}
+            <span className="ab-hero-remembered" style={{ color: C.muted, display: "inline-block" }}>remembered.</span>
           </h1>
 
           <p className="ab-hero-lede" style={{
@@ -360,22 +417,6 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
       </section>
 
       {/* ══ CLIENTS ════════════════════════════════════════════════════════ */}
-      {clients.length > 0 && (
-        <section style={{ borderBottom: `1px solid ${C.border}`, background: C.bg }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: "1.2rem",
-            padding: `clamp(1.4rem,2.2vw,2.2rem) ${P}`,
-            borderBottom: `1px solid ${TK.borderFaint}`,
-          }}>
-            <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.3em", textTransform: "uppercase", color: C.faint, flexShrink: 0 }}>
-              Trusted by founders &amp; growing teams
-            </span>
-            <div style={{ flex: 1, height: 1, background: C.border }} />
-          </div>
-          <ClientCarousel clients={clients} />
-        </section>
-      )}
-
       {/* ══ STORY ══════════════════════════════════════════════════════════ */}
       <section style={{ background: C.bg, borderBottom: `1px solid ${C.border}`, padding: `clamp(4.5rem,8vw,9rem) ${P}` }}>
         <div style={{ maxWidth: MAX, margin: "0 auto" }}>
@@ -407,6 +448,61 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
               }}>{p}</p>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ══ CLIENTS ════════════════════════════════════════════════════════ */}
+      {clients.length > 0 && (
+        <section style={{ borderBottom: `1px solid ${C.border}`, background: C.bg }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: "1.2rem",
+            padding: `clamp(1.4rem,2.2vw,2.2rem) ${P}`,
+            borderBottom: `1px solid ${TK.borderFaint}`,
+          }}>
+            <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.3em", textTransform: "uppercase", color: C.faint, flexShrink: 0 }}>
+              Trusted by founders &amp; growing teams
+            </span>
+            <div style={{ flex: 1, height: 1, background: C.border }} />
+          </div>
+          <ClientCarousel clients={clients} />
+        </section>
+      )}
+
+      {/* ══ TEAM ════════════════════════════════════════════════════════════ */}
+      <section style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, background: C.panel }}>
+        {/* header */}
+        <div className="ab-team-head" style={{
+          display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+          gap: "2rem", flexWrap: "wrap",
+          borderBottom: `1px solid ${C.border}`,
+          padding: `clamp(3rem,5.5vw,6rem) ${P}`,
+        }}>
+          <div>
+            <div className="ab-label" style={{ marginBottom: "clamp(1.2rem,2vw,2rem)" }}>
+              <Label text="/ team" />
+            </div>
+            <h2 style={{
+              fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
+              fontSize: "clamp(2.8rem,6.5vw,8rem)", lineHeight: 0.9, letterSpacing: "-0.03em",
+              color: C.text, margin: 0,
+            }}>small team,{" "}serious taste.</h2>
+          </div>
+          <p style={{
+            fontFamily: SANS, fontSize: "clamp(0.92rem,1.1vw,1.12rem)",
+            lineHeight: 1.68, color: C.muted, maxWidth: "38ch", margin: 0,
+          }}>
+            A focused studio model built around senior thinking, lean execution, and carefully chosen collaborators.
+          </p>
+        </div>
+
+        {/* carousel */}
+        <div style={{ padding: `clamp(2.5rem,4vw,5rem) 0` }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: `0 ${P}`, marginBottom: "clamp(1.5rem,2.5vw,2.5rem)" }}>
+            <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.22em", textTransform: "uppercase", color: C.faint }}>
+              ← drag to browse →
+            </span>
+          </div>
+          <TeamCarousel members={members} />
         </div>
       </section>
 
@@ -498,48 +594,6 @@ export default function AboutFocused({ team, clients = [] }: { team?: FocusedTea
         </div>
       </section>
 
-      {/* ══ NOXMUSTS ═══════════════════════════════════════════════════════ */}
-      <NoxMusts />
-
-      {/* ══ TEAM ═══════════════════════════════════════════════════════════ */}
-      <section style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, background: C.panel }}>
-        {/* header */}
-        <div className="ab-team-head" style={{
-          display: "flex", alignItems: "flex-end", justifyContent: "space-between",
-          gap: "2rem", flexWrap: "wrap",
-          borderBottom: `1px solid ${C.border}`,
-          padding: `clamp(3rem,5.5vw,6rem) ${P}`,
-        }}>
-          <div>
-            <div className="ab-label" style={{ marginBottom: "clamp(1.2rem,2vw,2rem)" }}>
-              <Label text="/ team" />
-            </div>
-            <h2 style={{
-              fontFamily: DISPLAY, fontStyle: "italic", fontWeight: 700,
-              fontSize: "clamp(2.8rem,6.5vw,8rem)", lineHeight: 0.9, letterSpacing: "-0.03em",
-              color: C.text, margin: 0,
-            }}>small team,{" "}serious taste.</h2>
-          </div>
-          <p style={{
-            fontFamily: SANS, fontSize: "clamp(0.92rem,1.1vw,1.12rem)",
-            lineHeight: 1.68, color: C.muted, maxWidth: "38ch", margin: 0,
-          }}>
-            A focused studio model built around senior thinking, lean execution, and carefully chosen collaborators.
-          </p>
-        </div>
-
-        {/* carousel */}
-        <div style={{ padding: `clamp(2.5rem,4vw,5rem) 0` }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: `0 ${P}`, marginBottom: "clamp(1.5rem,2.5vw,2.5rem)" }}>
-            <span style={{ fontFamily: SANS, fontSize: "0.58rem", letterSpacing: "0.22em", textTransform: "uppercase", color: C.faint }}>
-              ← move mouse to browse →
-            </span>
-          </div>
-          <TeamCarousel members={members} />
-        </div>
-      </section>
-
-      {/* ══ CTA ════════════════════════════════════════════════════════════ */}
       <NoxCTABar label="let's create something people remember →" />
 
       <NoxFooter />
