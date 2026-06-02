@@ -2,243 +2,344 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent as RPE } from "react";
 import type { WorkProject } from "./page";
 
-const G = "70,174,34";
+const G = "70,174,34"; // NOX green
 
-function getSlug(p: WorkProject) { return p.slug ?? p.id; }
+/* ── geometry of the curved gallery ── */
+const CW = 366;      // card width
+const CH = 480;      // card height (portrait, museum-plate ratio)
+const SPACING = 300; // horizontal step between neighbours
+const DEPTH = 196;   // how far each step recedes in Z
+const ANGLE = 40;    // rotateY per step
+const MAXA = 52;     // clamp the turn so far cards don't flip flat
+const WINDOW = 3.3;  // how many slots out stay visible
+const SPEED = 0.15;  // slots advanced per second (slow, cinematic)
+const DRAG_PX = SPACING * 0.82; // pixels dragged per slot advanced
+
+function slugOf(p: WorkProject) { return p.slug ?? p.id; }
 
 export default function WorkHeroCards({ projects }: { projects: WorkProject[] }) {
-  const cards   = projects.slice(0, 4);
-  const [active, setActive]   = useState(0);
-  const [paused, setPaused]   = useState(false);
-  const [imgErr, setImgErr]   = useState<Record<number, boolean>>({});
+  /* build a ring long enough to feel infinite — keeps EVERY project */
+  const ring = useMemo(() => {
+    const base = projects;
+    if (!base.length) return [];
+    let r = [...base];
+    while (r.length < 7) r = r.concat(base);   // pad short lists so the ring stays full
+    return r.slice(0, Math.max(7, base.length));
+  }, [projects]);
 
-  /* ── auto-play ── */
+  const N = ring.length;
+
+  const stageRef  = useRef<HTMLDivElement>(null);
+  const cardRefs  = useRef<(HTMLDivElement | null)[]>([]);
+  const posRef    = useRef(0);
+  const targetRef = useRef<number | null>(null);
+  const pausedRef = useRef(false);
+  const rafRef    = useRef(0);
+  const lastRef   = useRef(0);
+  const hoverRef  = useRef<number | null>(null);
+  const hoverAmt  = useRef<number[]>([]);
+  const draggedRef = useRef(false);
+  const drag = useRef<{ down: boolean; startX: number; startPos: number; moved: boolean }>({
+    down: false, startX: 0, startPos: 0, moved: false,
+  });
+  const [imgErr, setImgErr] = useState<Record<number, boolean>>({});
+
   useEffect(() => {
-    if (paused || cards.length < 2) return;
-    const id = setInterval(() => {
-      setActive(prev => (prev + 1) % cards.length);
-    }, 3200);
-    return () => clearInterval(id);
-  }, [paused, cards.length]);
+    if (!N) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  if (!cards.length) return null;
+    const loop = (ts: number) => {
+      rafRef.current = requestAnimationFrame(loop);
+      const last = lastRef.current || ts;
+      const dt = Math.min(0.05, (ts - last) / 1000);
+      lastRef.current = ts;
 
-  const CARD_W = 460;
-  const CARD_H = 300;
+      const dragging = drag.current.down && drag.current.moved;
+
+      /* advance — or ease toward a snap/clicked target — unless being dragged */
+      if (!dragging) {
+        if (targetRef.current !== null) {
+          const diff = targetRef.current - posRef.current;
+          if (Math.abs(diff) < 0.001) { posRef.current = targetRef.current; targetRef.current = null; }
+          else posRef.current += diff * Math.min(1, dt * 7);
+        } else if (!pausedRef.current && !reduce) {
+          posRef.current += SPEED * dt;
+        }
+      }
+      const pos = posRef.current;
+
+      for (let i = 0; i < N; i++) {
+        const el = cardRefs.current[i];
+        if (!el) continue;
+
+        /* hover lerp (suppressed while dragging) — snappy ease toward target */
+        const ht  = (!dragging && hoverRef.current === i) ? 1 : 0;
+        const cur = hoverAmt.current[i] ?? 0;
+        const hv  = cur + (ht - cur) * Math.min(1, dt * 20);
+        hoverAmt.current[i] = hv;
+
+        let rel = i - pos;
+        rel = ((rel % N) + N) % N;     // 0 .. N
+        if (rel > N / 2) rel -= N;     // -N/2 .. N/2
+        const a = Math.abs(rel);
+        const visible = a <= WINDOW || hv > 0.01;
+
+        const x  = rel * SPACING;
+        const z  = -a * DEPTH + hv * 120;                                  // lift forward on hover
+        const ry = Math.max(-MAXA, Math.min(MAXA, -rel * ANGLE)) * (1 - hv * 0.85); // face viewer on hover
+        const scale = Math.max(0.52, 1 - a * 0.075) * (1 + hv * 0.18);     // grow on hover
+        const opacity = visible ? Math.max(0, Math.min(1, (1 - a * 0.235) + hv * 0.4)) : 0;
+        const bright  = Math.max(0.42, 1 - a * 0.17) + hv * 0.25;
+        const sat     = Math.max(0.55, 1 - a * 0.16) + hv * 0.2;
+        const isFront = a < 0.6;
+
+        el.style.transform = `translate(-50%,-50%) translate3d(${x}px,0px,${z}px) rotateY(${ry}deg) scale(${scale})`;
+        el.style.opacity = String(opacity);
+        el.style.zIndex = String(1000 - Math.round(a * 10) + (hv > 0.02 ? 600 : 0));
+        el.style.filter = `brightness(${bright}) saturate(${sat}) contrast(1.06)`;
+        el.style.pointerEvents = visible ? "auto" : "none";
+        el.style.boxShadow = (isFront || hv > 0.3)
+          ? `0 44px 100px rgba(0,0,0,0.78), 0 0 0 1.5px rgba(${G},${(0.45 + hv * 0.4).toFixed(2)}), 0 0 ${64 + hv * 40}px rgba(${G},${(0.18 + hv * 0.22).toFixed(2)})`
+          : `0 ${22 + a * 8}px ${56 + a * 16}px rgba(0,0,0,0.6)`;
+        el.dataset.front = isFront ? "1" : "0";
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [N]);
+
+  if (!N) return null;
+
+  /* ── drag / swipe handlers (pointer = mouse + touch) ── */
+  const onPointerDown = (e: RPE<HTMLDivElement>) => {
+    draggedRef.current = false; // start each gesture clean (browser may suppress click after a drag)
+    drag.current = { down: true, startX: e.clientX, startPos: posRef.current, moved: false };
+    targetRef.current = null;
+    pausedRef.current = true;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const onPointerMove = (e: RPE<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d.down) return;
+    const dx = e.clientX - d.startX;
+    if (!d.moved && Math.abs(dx) > 4) {
+      d.moved = true;
+      stageRef.current?.setAttribute("data-drag", "1");
+    }
+    if (d.moved) posRef.current = d.startPos - dx / DRAG_PX;
+  };
+  const endDrag = (e: RPE<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d.down) return;
+    d.down = false;
+    draggedRef.current = d.moved;
+    stageRef.current?.setAttribute("data-drag", "0");
+    if (d.moved) targetRef.current = Math.round(posRef.current);  // snap to nearest card
+    if (e.pointerType !== "mouse") pausedRef.current = false;     // touch/pen: resume auto-rotate
+  };
 
   return (
-    <>
+    <div
+      ref={stageRef}
+      className="nox-stage"
+      data-drag="0"
+      style={{
+        position: "relative",
+        width: "100%",
+        height: CH + 72,
+        perspective: "1900px",
+        perspectiveOrigin: "50% 48%",
+        touchAction: "pan-y",
+        cursor: "grab",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+      }}
+      onMouseEnter={() => { pausedRef.current = true; }}
+      onMouseLeave={() => { pausedRef.current = false; hoverRef.current = null; }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+    >
       <style>{`
-        @keyframes whc-scan {
-          0%   { top: -2px; opacity: 0; }
-          6%   { opacity: .7; }
-          94%  { opacity: .5; }
-          100% { top: 100%; opacity: 0; }
+        .nox-stage[data-drag="1"] { cursor: grabbing !important; }
+        /* full-detail block — collapsed until hovered.
+           grid-template-rows 0fr→1fr animates real height smoothly (no max-height jank). */
+        .nox-stage .nox-detail {
+          display: grid;
+          grid-template-rows: 0fr;
+          opacity: 0;
+          transform: translateY(6px);
+          transition:
+            grid-template-rows .34s cubic-bezier(.22,1,.36,1),
+            opacity .22s ease,
+            transform .34s cubic-bezier(.22,1,.36,1);
         }
-        @keyframes whc-dot {
-          0%,100% { opacity:1; } 50% { opacity:.25; }
+        .nox-stage .nox-detail-inner { overflow: hidden; min-height: 0; }
+        .nox-stage:not([data-drag="1"]) .nox-wcard:hover .nox-detail {
+          grid-template-rows: 1fr;
+          opacity: 1;
+          transform: translateY(0);
         }
+        /* strengthen the read of the bottom panel on hover */
+        .nox-stage .nox-scrim { opacity: 0; transition: opacity .28s ease; }
+        .nox-stage:not([data-drag="1"]) .nox-wcard:hover .nox-scrim { opacity: 1; }
       `}</style>
 
-      <div
-        style={{ position: "relative", flexShrink: 0, alignSelf: "center" }}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-      >
-        {/* glow */}
-        <div aria-hidden style={{
-          position: "absolute", inset: "-25%",
-          background: `radial-gradient(ellipse at 50% 50%, rgba(${G},0.12) 0%, transparent 65%)`,
-          filter: "blur(55px)", pointerEvents: "none",
-        }} />
+      {/* floor glow that anchors the gallery in the dark */}
+      <div aria-hidden style={{
+        position: "absolute", left: "50%", bottom: "4%", width: 720, height: 200,
+        transform: "translateX(-50%)",
+        background: `radial-gradient(ellipse at 50% 50%, rgba(${G},0.16) 0%, transparent 68%)`,
+        filter: "blur(40px)", pointerEvents: "none",
+      }} />
 
-        {/* card stack */}
-        <div style={{ position: "relative", width: CARD_W, height: CARD_H }}>
-          {[...cards].reverse().map((project, ri) => {
-            const idx  = cards.length - 1 - ri;
-            const dist = (idx - active + cards.length) % cards.length; // 0=active, 1=next…
-            const isActive = dist === 0;
-
-            /* positional offsets based on distance from active */
-            const tx    = dist === 0 ? 0 : dist * 14;
-            const ty    = dist === 0 ? 0 : dist * -10;
-            const rz    = dist === 0 ? 0 : dist * 3.5;
-            const scale = dist === 0 ? 1 : 1 - dist * 0.055;
-            const tz    = dist === 0 ? 0 : -dist * 30;
-
-            return (
+      <div style={{ position: "absolute", inset: 0, transformStyle: "preserve-3d" }}>
+        {ring.map((p, i) => {
+          const failed = imgErr[i];
+          return (
+            <div
+              key={i}
+              ref={(el) => { cardRefs.current[i] = el; }}
+              className="nox-wcard"
+              onMouseEnter={() => { hoverRef.current = i; }}
+              onMouseLeave={() => { if (hoverRef.current === i) hoverRef.current = null; }}
+              style={{
+                position: "absolute", top: "50%", left: "50%",
+                width: CW, height: CH,
+                borderRadius: 14, overflow: "hidden",
+                transformStyle: "preserve-3d",
+                willChange: "transform, opacity",
+                // box-shadow + filter are driven every frame by the rAF hover-lerp,
+                // so a CSS transition here only fights it and smears the glow. None = crisp.
+                transition: "none",
+                cursor: "inherit",
+                background: "#05090b",
+              }}
+            >
               <Link
-                key={project.id}
-                href={`/work/${getSlug(project)}`}
-                onClick={e => {
-                  if (!isActive) { e.preventDefault(); setActive(idx); }
-                }}
-                style={{
-                  position: "absolute", inset: 0,
-                  borderRadius: 20, overflow: "hidden",
-                  display: "block", textDecoration: "none",
-                  transform: `perspective(1000px) translate3d(${tx}px,${ty}px,${tz}px) rotateZ(${rz}deg) scale(${scale})`,
-                  zIndex: cards.length - dist,
-                  opacity: dist === 0 ? 1 : Math.max(0.35, 1 - dist * 0.22),
-                  transition: "transform 0.6s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease, box-shadow 0.5s ease",
-                  boxShadow: isActive
-                    ? `0 40px 100px rgba(0,0,0,0.75), 0 0 0 1.5px rgba(${G},0.5), 0 0 60px rgba(${G},0.15)`
-                    : `0 ${16 + dist * 6}px ${50 + dist * 12}px rgba(0,0,0,${0.5 + dist * 0.1})`,
-                  cursor: isActive ? "pointer" : "pointer",
-                  willChange: "transform",
-                }}
+                href={`/work/${slugOf(p)}`}
+                aria-label={`Explore ${p.title}`}
+                draggable={false}
+                onClick={(e) => { if (draggedRef.current) { e.preventDefault(); draggedRef.current = false; } }}
+                style={{ position: "absolute", inset: 0, display: "block" }}
               >
                 {/* image */}
-                <div style={{ position: "absolute", inset: 0, background: "#040a07" }}>
-                  {project.coverImage && !imgErr[idx] ? (
-                    <Image
-                      src={project.coverImage}
-                      alt={project.title}
-                      fill
-                      style={{
-                        objectFit: "cover",
-                        opacity: isActive ? 0.88 : 0.55,
-                        filter: `saturate(${isActive ? 1 : 0.7}) contrast(1.1)`,
-                        transition: "opacity 0.5s, filter 0.5s",
-                      }}
-                      sizes="460px"
-                      onError={() => setImgErr(p => ({ ...p, [idx]: true }))}
-                    />
-                  ) : (
-                    <div style={{
-                      position: "absolute", inset: 0,
-                      backgroundImage: `
-                        linear-gradient(rgba(${G},0.06) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(${G},0.06) 1px, transparent 1px)
-                      `,
-                      backgroundSize: "32px 32px",
-                    }} />
-                  )}
-                </div>
-
-                {/* vignette */}
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: "linear-gradient(170deg, rgba(4,10,7,0.1) 0%, rgba(4,10,7,0.82) 100%)",
-                }} />
-
-                {/* scan line — only on active */}
-                {isActive && (
-                  <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-                    <div style={{
-                      position: "absolute", left: 0, right: 0, height: 2,
-                      background: `linear-gradient(90deg, transparent, rgba(${G},0.65), transparent)`,
-                      animation: "whc-scan 3.2s linear infinite",
-                    }} />
-                  </div>
+                {p.coverImage && !failed ? (
+                  <Image
+                    src={p.coverImage}
+                    alt={p.title}
+                    fill
+                    sizes="380px"
+                    draggable={false}
+                    style={{ objectFit: "cover" }}
+                    onError={() => setImgErr((e) => ({ ...e, [i]: true }))}
+                  />
+                ) : (
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    backgroundColor: "#05090b",
+                    backgroundImage: `linear-gradient(rgba(${G},0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(${G},0.08) 1px,transparent 1px)`,
+                    backgroundSize: "28px 28px",
+                  }} />
                 )}
 
-                {/* top: category + year */}
+                {/* cinematic vignette */}
                 <div style={{
-                  position: "absolute", top: 16, left: 16, right: 16,
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  opacity: isActive ? 1 : 0,
-                  transition: "opacity 0.4s",
-                }}>
-                  {project.category && (
-                    <span style={{
-                      fontFamily: "var(--font-mono-next)", fontSize: "0.40rem",
-                      letterSpacing: "0.38em", textTransform: "uppercase",
-                      color: `rgba(${G},0.9)`,
-                      background: "rgba(4,10,7,0.65)", backdropFilter: "blur(8px)",
-                      border: `1px solid rgba(${G},0.35)`,
-                      borderRadius: 999, padding: "4px 10px",
-                    }}>
-                      {project.category}
-                    </span>
-                  )}
-                  <span style={{
-                    fontFamily: "var(--font-mono-next)", fontSize: "0.38rem",
-                    letterSpacing: "0.32em", color: "rgba(255,255,255,0.42)",
-                    background: "rgba(4,10,7,0.5)", backdropFilter: "blur(8px)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: 999, padding: "4px 10px",
-                  }}>
-                    {project.year ?? "2025"}
-                  </span>
-                </div>
+                  position: "absolute", inset: 0,
+                  background: "linear-gradient(180deg, rgba(4,9,7,0.05) 0%, rgba(4,9,7,0.32) 46%, rgba(4,9,7,0.92) 100%)",
+                }} />
 
-                {/* bottom: title */}
-                <div style={{
-                  position: "absolute", bottom: 0, left: 0, right: 0,
-                  padding: "1.1rem 1.25rem",
-                  opacity: isActive ? 1 : 0,
-                  transform: isActive ? "translateY(0)" : "translateY(6px)",
-                  transition: "opacity 0.4s, transform 0.5s cubic-bezier(0.16,1,0.3,1)",
-                }}>
-                  <div style={{ height: 1, background: `linear-gradient(90deg, rgba(${G},0.4), transparent)`, marginBottom: "0.55rem" }} />
+                {/* top category chip */}
+                {p.category && (
+                  <span style={{
+                    position: "absolute", top: 12, left: 12,
+                    fontFamily: "var(--font-mono-next)", fontSize: "0.4rem",
+                    letterSpacing: "0.3em", textTransform: "uppercase",
+                    color: `rgba(${G},0.95)`,
+                    background: "rgba(4,9,7,0.6)", backdropFilter: "blur(6px)",
+                    border: `1px solid rgba(${G},0.34)`,
+                    borderRadius: 999, padding: "3px 8px",
+                  }}>
+                    {p.category}
+                  </span>
+                )}
+
+                {/* extra scrim that deepens the bottom on hover for legibility */}
+                <div className="nox-scrim" aria-hidden style={{
+                  position: "absolute", inset: 0, pointerEvents: "none",
+                  background: "linear-gradient(180deg, rgba(4,9,7,0) 32%, rgba(4,9,7,0.55) 64%, rgba(4,9,7,0.96) 100%)",
+                }} />
+
+                {/* bottom panel — title/year always; full detail on hover */}
+                <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "1.05rem 1.15rem" }}>
+                  <div style={{
+                    height: 1, marginBottom: "0.6rem",
+                    background: `linear-gradient(90deg, rgba(${G},0.6), transparent)`,
+                  }} />
                   <h3 style={{
                     fontFamily: "var(--font-display-next)",
-                    fontSize: "clamp(1.7rem,3vw,2.4rem)",
-                    lineHeight: 0.92, letterSpacing: "-0.02em",
+                    fontSize: "1.72rem", lineHeight: 0.95, letterSpacing: "-0.02em",
                     color: "#F8F5EE",
                   }}>
-                    {project.title}
+                    {p.title}
                   </h3>
-                  {project.description && (
-                    <p style={{
-                      marginTop: "0.45rem",
-                      fontFamily: "var(--font-mono-next)",
-                      fontSize: "0.56rem", lineHeight: 1.6,
-                      color: "rgba(255,255,255,0.52)",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
+                  <p style={{
+                    marginTop: "0.35rem",
+                    fontFamily: "var(--font-mono-next)", fontSize: "0.44rem",
+                    letterSpacing: "0.26em", textTransform: "uppercase",
+                    color: `rgba(${G},0.85)`,
+                  }}>
+                    {p.year ?? "2025"}
+                  </p>
+
+                  {/* ── revealed on hover: description + Explore button ── */}
+                  <div className="nox-detail">
+                    <div className="nox-detail-inner">
+                    {p.description ? (
+                      <p style={{
+                        marginTop: "0.75rem",
+                        fontSize: "0.8rem", lineHeight: 1.6,
+                        color: "rgba(255,255,255,0.68)",
+                        display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
+                      }}>
+                        {p.description}
+                      </p>
+                    ) : null}
+                    <span style={{
+                      marginTop: "0.95rem",
+                      display: "inline-flex", alignItems: "center", gap: 10,
+                      padding: "0.72rem 1.4rem",
+                      fontFamily: "var(--font-mono-next)", fontSize: "0.62rem",
+                      letterSpacing: "0.3em", textTransform: "uppercase",
+                      color: "#F8F5EE", whiteSpace: "nowrap",
+                      background: `rgba(${G},0.16)`,
+                      border: `1.5px solid rgba(${G},0.9)`,
+                      borderRadius: 999,
+                      backdropFilter: "blur(10px)",
+                      boxShadow: `0 0 30px rgba(${G},0.38), inset 0 0 22px rgba(${G},0.12)`,
                     }}>
-                      {project.description}
-                    </p>
-                  )}
+                      Explore
+                      <span style={{ fontSize: "0.82rem", lineHeight: 1 }}>→</span>
+                    </span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* card border */}
+                {/* inner edge */}
                 <div style={{
-                  position: "absolute", inset: 0, borderRadius: 20, pointerEvents: "none",
-                  border: `1px solid rgba(${G},${isActive ? 0.5 : 0.12})`,
-                  transition: "border-color 0.5s",
+                  position: "absolute", inset: 0, borderRadius: 14, pointerEvents: "none",
+                  border: "1px solid rgba(255,255,255,0.06)",
                 }} />
               </Link>
-            );
-          })}
-        </div>
-
-        {/* ── dot indicators ── */}
-        <div style={{
-          display: "flex", justifyContent: "center", alignItems: "center",
-          gap: 8, marginTop: 18,
-        }}>
-          {cards.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => { setActive(i); setPaused(true); setTimeout(() => setPaused(false), 6000); }}
-              style={{
-                width: i === active ? 22 : 7,
-                height: 7,
-                borderRadius: 99,
-                background: i === active ? `rgba(${G},1)` : `rgba(${G},0.25)`,
-                border: "none", cursor: "pointer", padding: 0,
-                transition: "width 0.35s cubic-bezier(0.16,1,0.3,1), background 0.3s",
-                boxShadow: i === active ? `0 0 10px rgba(${G},0.6)` : "none",
-              }}
-            />
-          ))}
-          {/* auto-play status dot */}
-          <span style={{
-            width: 5, height: 5, borderRadius: "50%", marginLeft: 4,
-            background: paused ? "rgba(255,255,255,0.2)" : `rgba(${G},0.8)`,
-            animation: paused ? "none" : "whc-dot 1.6s ease-in-out infinite",
-            transition: "background 0.3s",
-          }} />
-        </div>
+            </div>
+          );
+        })}
       </div>
-    </>
+    </div>
   );
 }

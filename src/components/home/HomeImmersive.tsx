@@ -16,7 +16,6 @@ import SmoothScroll from '@/components/SmoothScroll'
 import type { Project } from '@/components/Work'
 import ImmersiveWorkCarousel from '@/components/immersive/ImmersiveWorkCarousel'
 import ParticleLayer from '@/components/ParticleLayer'
-import ImmersiveFooter from '@/components/immersive/ImmersiveFooter'
 import ImmersiveLoader from '@/components/immersive/ImmersiveLoader'
 import type { PublicService } from '@/lib/public-content'
 
@@ -53,7 +52,6 @@ export default function HomeImmersive({
         <Principles />
         <ClientsMarquee />
         <ImmersiveContact embedded />
-        <ImmersiveFooter />
       </main>
     </>
   )

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import SmoothScroll from "@/components/SmoothScroll";
-import HoloScreensBg from "@/components/immersive/HoloScreensBg";
+import BouncyBall from "@/components/immersive/BouncyBall";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
 import WorkListContent from "@/features/work/WorkListContent";
@@ -35,7 +35,7 @@ export default async function ImmersiveWorkPage() {
   return (
     <>
       <SmoothScroll />
-      <HoloScreensBg count={22} />
+      <BouncyBall />
       <main className="relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />

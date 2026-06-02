@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useGSAP } from "@gsap/react";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 import RequestForm from "@/components/RequestForm";
 import * as THREE from "three";
 
@@ -455,155 +455,20 @@ function FormShapeVisualizer() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   GUIDED BRIEF CARD — compact CTA with inline 3D shape
-───────────────────────────────────────────────────────────────────────── */
-function GuidedBriefShape() {
-  const mountRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = mountRef.current;
-    if (!el) return;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0, 0);
-    el.appendChild(renderer.domElement);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-    camera.position.z = 3.8;
-
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0x3abf8a,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.18,
-    });
-    const shape = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(0.9, 1),
-      mat
-    );
-    scene.add(shape);
-
-    const resize = () => {
-      const rect = el.getBoundingClientRect();
-      const w = Math.max(1, rect.width);
-      const h = Math.max(1, rect.height);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h, false);
-    };
-    resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(el);
-
-    const t0 = performance.now();
-    let raf = 0;
-    const tick = () => {
-      raf = requestAnimationFrame(tick);
-      const t = (performance.now() - t0) / 1000;
-      shape.rotation.x = t * 0.35;
-      shape.rotation.y = t * 0.25;
-      shape.scale.setScalar(1 + Math.sin(t * 0.8) * 0.06);
-      renderer.render(scene, camera);
-    };
-    tick();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      shape.geometry.dispose();
-      mat.dispose();
-      renderer.dispose();
-      if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
-    };
-  }, []);
-
-  return <div ref={mountRef} aria-hidden style={{ width: 72, height: 72, flexShrink: 0 }} />;
-}
-
-function GuidedBriefCard({ onClick }: { onClick: () => void }) {
-  const ref = useRef<HTMLButtonElement>(null);
-
-  useGSAP(() => {
-    const el = ref.current; if (!el) return;
-    gsap.fromTo(el,
-      { autoAlpha: 0, y: 14 },
-      { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out", delay: 0.5 }
-    );
-  }, []);
-
-  return (
-    <button ref={ref} type="button" onClick={onClick}
-      className="group guided-brief-card"
-      style={{
-        display: "flex", alignItems: "center", gap: "0.85rem",
-        marginTop: "1.8rem",
-        padding: "0.75rem 1rem",
-        border: "1px solid rgba(var(--teal-rgb),0.22)",
-        borderRadius: "0.95rem",
-        background: "rgba(var(--teal-rgb),0.06)",
-        boxShadow: "0 12px 36px rgba(var(--bg-rgb),0.12)",
-        cursor: "pointer",
-        textAlign: "left",
-        width: "100%",
-        position: "relative",
-        overflow: "hidden",
-        transition: "background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease",
-      }}>
-
-      {/* Top accent */}
-      <div style={{
-        position: "absolute", top: 0, left: "15%", right: "15%", height: 1,
-        background: "linear-gradient(90deg, transparent, rgba(var(--teal-rgb),0.3), transparent)",
-      }} />
-
-      <GuidedBriefShape />
-
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <span style={{
-          display: "block",
-          fontFamily: "var(--font-mono-next)", fontSize: "0.44rem",
-          letterSpacing: "0.34em", textTransform: "uppercase", color: "var(--teal)",
-          marginBottom: "0.3rem",
-        }}>
-          Guided brief
-        </span>
-        <span className="hed" style={{
-          display: "block",
-          color: "var(--fg)",
-          fontSize: "clamp(1.1rem, 1.8vw, 1.4rem)",
-          lineHeight: 0.95,
-          letterSpacing: 0,
-          whiteSpace: "nowrap",
-        }}>
-          Not sure what you need?
-        </span>
-        <span style={{
-          display: "block",
-          marginTop: "0.3rem",
-          color: "rgba(240,236,227,0.5)",
-          fontSize: "0.76rem",
-          lineHeight: 1.4,
-        }}>
-          We&apos;ll walk you through it.
-        </span>
-      </div>
-
-      <svg width={18} height={18} viewBox="0 0 24 24" fill="none"
-        stroke="var(--teal)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
-        className="shrink-0 opacity-50 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100"
-        style={{ position: "relative", zIndex: 1 }}>
-        <path d="M5 12h14M12 5l7 7-7 7" />
-      </svg>
-    </button>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────
    STEP-BY-STEP MODAL — fixed to the viewport
 ───────────────────────────────────────────────────────────────────────── */
-function StepModal({ onClose }: { onClose: () => void }) {
+type GuidedRequestSelection = {
+  serviceId?: string;
+  deliverable?: string;
+};
+
+function StepModal({
+  onClose,
+  initialSelection,
+}: {
+  onClose: () => void;
+  initialSelection?: GuidedRequestSelection;
+}) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [headerMeta, setHeaderMeta] = useState({
@@ -721,7 +586,14 @@ function StepModal({ onClose }: { onClose: () => void }) {
         <div
           onWheel={e => e.stopPropagation()}
           style={{ flex: "1 1 auto", minHeight: 0, display: "flex", overflow: "hidden", overscrollBehavior: "contain" }}>
-          <RequestForm embedded onHeaderMetaChange={setHeaderMeta} onBack={close} />
+          <RequestForm
+            embedded
+            onHeaderMetaChange={setHeaderMeta}
+            onBack={close}
+            initialServiceIds={initialSelection?.serviceId ? [initialSelection.serviceId] : []}
+            initialSubServices={initialSelection?.deliverable ? [initialSelection.deliverable] : []}
+            initialStep={initialSelection?.serviceId ? 2 : 1}
+          />
         </div>
       </div>
     </div>
@@ -1347,6 +1219,7 @@ export default function ImmersiveContact({
   const [showMessageSuggestions, setShowMessageSuggestions] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
+  const contactRootRef = useRef<HTMLDivElement>(null);
   const sectionRef  = useRef<HTMLElement>(null);
   const hasMessage = form.message.trim().length > 0;
   const hasVoice = voiceClips.length > 0;
@@ -1365,6 +1238,28 @@ export default function ImmersiveContact({
       { autoAlpha: 1, y: 0, stagger: 0.09, duration: 0.7, ease: "power3.out", delay: 0.05 }
     );
   }, { scope: sectionRef });
+
+  useGSAP(() => {
+    const shape = contactRootRef.current?.querySelector("[data-contact-bg]");
+    if (!shape || !contactRootRef.current) return;
+
+    gsap.fromTo(
+      shape,
+      { y: -72, opacity: 0.16 },
+      {
+        y: 180,
+        opacity: 0.07,
+        ease: "none",
+        scrollTrigger: {
+          trigger: contactRootRef.current,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: true,
+        },
+      }
+    );
+    ScrollTrigger.refresh();
+  }, { scope: contactRootRef });
 
 
   async function handleSubmit(details: ContactDetails) {
@@ -1429,36 +1324,38 @@ export default function ImmersiveContact({
   }
 
   return (
+    <div ref={contactRootRef} className="relative overflow-hidden">
+    {!embedded ? <ContactScrollBackdrop /> : null}
     <section ref={sectionRef} id="contact"
       style={{
         minHeight: embedded ? "auto" : "calc(100dvh - 86px)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: embedded
           ? "clamp(5rem,10vh,7rem) clamp(1rem,3vw,2.5rem)"
-          : "clamp(5.25rem,10vh,6.5rem) clamp(1rem,3vw,2.5rem) clamp(1rem,2.5vh,1.75rem)",
-        position: "relative", overflow: "visible",
+          : "clamp(5.8rem,11vh,7.5rem) clamp(1rem,3vw,2.5rem) clamp(3rem,7vh,5rem)",
+        position: "relative", overflow: "hidden",
       }}>
 
-      {/* Ambient glow */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse 55% 65% at 25% 50%, rgba(var(--teal-rgb),0.05) 0%, transparent 65%)" }} />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[52%] opacity-45"
+        style={{
+          backgroundImage: "linear-gradient(rgba(var(--teal-rgb),0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--teal-rgb),0.08) 1px, transparent 1px)",
+          backgroundSize: "54px 54px",
+          maskImage: "linear-gradient(to top, black, transparent)",
+          transform: "perspective(700px) rotateX(62deg) translateY(18%)",
+          transformOrigin: "bottom",
+        }} />
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-70"
+        style={{ background: "radial-gradient(ellipse 70% 58% at 78% 36%, rgba(var(--teal-rgb),0.08), transparent 60%), radial-gradient(ellipse 46% 48% at 22% 52%, rgba(42,155,110,0.06), transparent 62%)" }} />
 
-      {/* ══════════ LEFT: heading / RIGHT: form ══════════ */}
-      <div className="grid gap-8 lg:grid-cols-[0.42fr_0.58fr] lg:items-stretch"
-        style={{ width: "100%", maxWidth: 1180, minWidth: 0, zIndex: 1 }}>
-
-        <div data-in style={{ opacity: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <p className="eyebrow" style={{ marginBottom: "0.6rem" }}>Immersive contact</p>
-          <h1 className="hed" style={{ fontSize: "clamp(2.35rem,5.8vw,5.4rem)", lineHeight: 0.88 }}>
-            Start with<br />
-            <span style={{ color: "var(--teal)" }}>the signal.</span>
+      <div className="mx-auto grid gap-8"
+        style={{ width: "100%", maxWidth: 900, minWidth: 0, zIndex: 1 }}>
+        <div data-in className="text-center" style={{ opacity: 0 }}>
+          <h1 className="hed flex flex-wrap items-baseline justify-center gap-x-4 gap-y-2 text-[clamp(2.8rem,6vw,6.2rem)] leading-[0.88]">
+            <span className="font-mono text-[clamp(0.72rem,1.2vw,0.95rem)] uppercase tracking-[0.34em] text-[var(--teal)]">
+              / contact us
+            </span>
+            <span>We are here always</span>
           </h1>
-          <p style={{ marginTop: "1.1rem", maxWidth: 440, color: "rgba(240,236,227,0.72)",
-            fontSize: "clamp(0.95rem,1.4vw,1.06rem)", lineHeight: 1.75 }}>
-            Write a message, record a voice note, or use the guided brief.
-          </p>
-
-          <GuidedBriefCard onClick={() => setModal(true)} />
         </div>
 
         <form onSubmit={e => e.preventDefault()}
@@ -1466,18 +1363,22 @@ export default function ImmersiveContact({
 
           <div data-in className="grid gap-4" style={{ opacity: 0, flex: 1 }}>
 
-            <div style={{ height: "100%", minHeight: embedded ? "clamp(260px,34vh,320px)" : "clamp(330px,48vh,390px)", minWidth: 0, display: "flex", flexDirection: "column",
-              borderRadius: "1rem", overflow: "hidden",
-              border: "1px solid rgba(var(--teal-rgb),0.20)",
-              background: "linear-gradient(145deg,rgba(var(--surface2-rgb),0.92),rgba(var(--bg-rgb),0.86))",
-              backdropFilter: "blur(12px)",
+            <div style={{ height: "100%", minHeight: embedded ? "clamp(300px,38vh,360px)" : "clamp(390px,48vh,470px)", minWidth: 0, display: "flex", flexDirection: "column",
+              borderRadius: "1.2rem", overflow: "hidden",
+              border: "1px solid rgba(var(--teal-rgb),0.36)",
+              background: "linear-gradient(150deg,rgba(5,13,12,0.88),rgba(0,5,8,0.76))",
+              backdropFilter: "blur(18px)",
               position: "relative",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.035), 0 24px 60px rgba(var(--bg-rgb),0.22)" }}>
+              boxShadow: "0 28px 90px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.03), 0 0 70px rgba(var(--teal-rgb),0.08), inset 0 1px 0 rgba(255,255,255,0.045)" }}>
               <div style={{ position: "absolute", inset: "0 0 auto 0", height: 1,
-                background: "linear-gradient(90deg,transparent,rgba(var(--teal-rgb),0.35),transparent)" }} />
+                background: "linear-gradient(90deg,transparent,rgba(var(--teal-rgb),0.72),transparent)" }} />
               <FormShapeVisualizer />
+              <div className="relative z-[2] flex items-center justify-between border-b border-[rgba(var(--teal-rgb),0.14)] px-5 py-4">
+                <span className="font-mono text-[0.54rem] uppercase tracking-[0.28em] text-[var(--teal)]">Your message</span>
+                <span className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-[rgba(240,236,227,0.34)]">Voice optional</span>
+              </div>
               <textarea
-                placeholder="Describe the project, idea, problem, or dream. Voice-only is fine too."
+                placeholder="Tell us what you are working on, what feels stuck, or what needs to happen next..."
                 value={form.message}
                 onFocus={() => setShowMessageSuggestions(true)}
                 onClick={() => setShowMessageSuggestions(true)}
@@ -1490,8 +1391,8 @@ export default function ImmersiveContact({
                 }}
                 style={{ flex: 1, minHeight: 0, resize: "none", background: "transparent",
                   border: "none", outline: "none",
-                  padding: "1.2rem 1.25rem 0.8rem",
-                  color: "var(--fg)", fontSize: "1rem",
+                  padding: "1.1rem 1.35rem 0.9rem",
+                  color: "var(--fg)", fontSize: "1.03rem",
                   fontFamily: "inherit", lineHeight: 1.75,
                   position: "relative", zIndex: 1,
                   overflow: "hidden" }} />
@@ -1512,8 +1413,8 @@ export default function ImmersiveContact({
                         style={{
                           borderRadius: 999,
                           border: "1px solid rgba(var(--teal-rgb),0.16)",
-                          background: "rgba(var(--teal-rgb),0.055)",
-                          color: "rgba(240,236,227,0.58)",
+                          background: "rgba(var(--teal-rgb),0.075)",
+                          color: "rgba(240,236,227,0.66)",
                           padding: "0.42rem 0.65rem",
                           fontSize: "0.72rem",
                           lineHeight: 1.25,
@@ -1527,8 +1428,9 @@ export default function ImmersiveContact({
 
               <div style={{
                 position: "relative", zIndex: 1,
-                minHeight: 142,
-                background: "linear-gradient(180deg,rgba(var(--teal-rgb),0.035),rgba(4,7,6,0.5))",
+                minHeight: 154,
+                borderTop: "1px solid rgba(var(--teal-rgb),0.13)",
+                background: "linear-gradient(180deg,rgba(var(--teal-rgb),0.04),rgba(2,9,9,0.72))",
               }}>
                 <VoiceHero onRecorded={setVoiceClips} onRecordingChange={setIsRecording} />
               </div>
@@ -1549,7 +1451,7 @@ export default function ImmersiveContact({
                   onClick={() => setContactModal(true)}
                   style={{
                     display: "flex", alignItems: "center", gap: "0.5rem",
-                    padding: "0.75rem 1.5rem",
+                    padding: "0.82rem 1.45rem",
                     borderRadius: "0.75rem",
                     border: "none",
                     background: "linear-gradient(135deg, rgba(var(--teal-rgb),0.88), rgba(42,155,110,0.88))",
@@ -1567,7 +1469,7 @@ export default function ImmersiveContact({
                     background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.14) 50%, transparent 100%)",
                     animation: "sendShimmer 2.8s ease-in-out infinite",
                   }} />
-                  <span style={{ position: "relative", zIndex: 1 }}>Send</span>
+                  <span style={{ position: "relative", zIndex: 1 }}>Send signal</span>
                   <svg width={15} height={15} viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
                     style={{ position: "relative", zIndex: 1 }}>
@@ -1575,9 +1477,7 @@ export default function ImmersiveContact({
                   </svg>
                 </button>
               </div>
-              <style>{`@keyframes sendShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-.guided-brief-card{transition:background 0.3s ease,border-color 0.3s ease,box-shadow 0.3s ease,transform 0.3s ease}
-.guided-brief-card:hover{background:rgba(var(--teal-rgb),0.12) !important;border-color:rgba(var(--teal-rgb),0.35) !important;box-shadow:0 12px 36px rgba(var(--bg-rgb),0.12),0 0 20px rgba(var(--teal-rgb),0.08) !important;transform:scale(1.02)}`}</style>
+              <style>{`@keyframes sendShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}`}</style>
             </div>
 
 
@@ -1598,14 +1498,21 @@ export default function ImmersiveContact({
       )}
 
     </section>
+    {!embedded ? <DirectContactSection /> : null}
+    </div>
   );
 }
 
 export function ImmersiveContactPopup() {
   const [open, setOpen] = useState(false);
+  const [selection, setSelection] = useState<GuidedRequestSelection | undefined>();
 
   useEffect(() => {
-    const openPopup = () => setOpen(true);
+    const openPopup = (event: Event) => {
+      const detail = event instanceof CustomEvent ? event.detail as GuidedRequestSelection | undefined : undefined;
+      setSelection(detail);
+      setOpen(true);
+    };
     window.addEventListener("immersive-contact:open", openPopup);
     return () => window.removeEventListener("immersive-contact:open", openPopup);
   }, []);
@@ -1613,7 +1520,191 @@ export function ImmersiveContactPopup() {
   if (!open) return null;
 
   return createPortal(
-    <StepModal onClose={() => setOpen(false)} />,
+    <StepModal onClose={() => setOpen(false)} initialSelection={selection} />,
     document.body
+  );
+}
+
+function ContactScrollBackdrop() {
+  return (
+    <div
+      data-contact-bg
+      className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-[150vh]"
+      aria-hidden
+      style={{
+        opacity: 0.12,
+        mixBlendMode: "screen",
+        transform: "translateZ(0)",
+      }}
+    >
+      <div className="absolute left-1/2 top-[6vh] h-[min(86vw,760px)] w-[min(86vw,760px)] -translate-x-1/2">
+        <ContactSignalShape />
+      </div>
+      <div className="absolute inset-x-0 top-0 h-[60vh] bg-[radial-gradient(ellipse_at_50%_10%,rgba(var(--teal-rgb),0.06),transparent_62%)]" />
+    </div>
+  );
+}
+
+function ContactSignalShape() {
+  const mountRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = mountRef.current;
+    if (!el) return;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0, 0);
+    el.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+    camera.position.z = 5.5;
+
+    const lineMat = new THREE.MeshBasicMaterial({
+      color: 0x46d12a,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.18,
+    });
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0xb8ffe0,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.09,
+    });
+
+    const torus = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.18, 18, 96), lineMat);
+    const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(0.72, 0.14, 132, 12, 2, 3), glowMat);
+    const node = new THREE.Mesh(new THREE.IcosahedronGeometry(0.44, 2), lineMat.clone());
+    node.position.set(1.25, -0.45, 0.35);
+    scene.add(torus, knot, node);
+
+    const resize = () => {
+      const rect = el.getBoundingClientRect();
+      renderer.setSize(Math.max(1, rect.width), Math.max(1, rect.height), false);
+      camera.aspect = Math.max(1, rect.width) / Math.max(1, rect.height);
+      camera.updateProjectionMatrix();
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(el);
+
+    let raf = 0;
+    const startedAt = performance.now();
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      const t = (performance.now() - startedAt) / 1000;
+      torus.rotation.x = 0.9 + Math.sin(t * 0.35) * 0.12;
+      torus.rotation.y = t * 0.18;
+      knot.rotation.x = t * -0.22;
+      knot.rotation.y = t * 0.32;
+      node.rotation.x = t * 0.4;
+      node.rotation.y = t * 0.25;
+      renderer.render(scene, camera);
+    };
+    tick();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      torus.geometry.dispose();
+      knot.geometry.dispose();
+      node.geometry.dispose();
+      lineMat.dispose();
+      glowMat.dispose();
+      renderer.dispose();
+      if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
+    };
+  }, []);
+
+  return <div ref={mountRef} className="absolute inset-0" aria-hidden />;
+}
+
+function ContactMapPanel() {
+  return (
+    <div className="relative min-h-[390px] overflow-hidden bg-[rgba(5,12,8,0.56)]">
+      <div className="absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(var(--teal-rgb),0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(var(--teal-rgb),0.1)_1px,transparent_1px)] [background-size:42px_42px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_58%_44%,rgba(var(--teal-rgb),0.26),transparent_48%)]" />
+      <svg viewBox="0 0 520 360" className="absolute inset-0 h-full w-full" fill="none" aria-hidden>
+        <path d="M42 254 C116 190 168 214 224 154 S340 70 458 110" stroke="rgba(184,255,224,0.42)" strokeWidth="1.4" />
+        <path d="M66 118 C126 154 194 104 252 134 S354 216 470 178" stroke="rgba(70,209,42,0.34)" strokeWidth="1.2" />
+        <path d="M110 306 C178 244 260 268 330 224 S410 154 492 220" stroke="rgba(70,174,34,0.3)" strokeWidth="1" />
+        <circle cx="296" cy="176" r="46" stroke="rgba(184,255,224,0.22)" />
+        <circle cx="296" cy="176" r="18" fill="rgba(70,209,42,0.22)" stroke="rgba(184,255,224,0.64)" />
+        <circle cx="296" cy="176" r="4" fill="#b8ffe0" />
+      </svg>
+      <div className="absolute left-5 top-5 font-mono text-[0.5rem] uppercase tracking-[0.3em] text-[var(--teal)]">
+        Studio signal / remote-first
+      </div>
+      <div className="absolute bottom-5 left-5 right-5 rounded-[0.7rem] border border-[rgba(var(--teal-rgb),0.16)] bg-[rgba(0,0,0,0.36)] p-4 backdrop-blur-md">
+        <p className="font-mono text-[0.52rem] uppercase tracking-[0.24em] text-[var(--teal)]">Location</p>
+        <p className="mt-2 text-[0.92rem] leading-[1.65] text-[rgba(240,236,227,0.72)]">
+          Remote studio. Available for projects across time zones.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function DirectContactSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    gsap.fromTo(
+      sectionRef.current?.querySelectorAll("[data-direct-in]") ?? [],
+      { autoAlpha: 0, y: 32 },
+      {
+        autoAlpha: 1,
+        y: 0,
+        stagger: 0.08,
+        duration: 0.75,
+        ease: "power3.out",
+        scrollTrigger: { trigger: sectionRef.current, start: "top 78%" },
+      }
+    );
+  }, { scope: sectionRef });
+
+  return (
+    <section ref={sectionRef} className="relative z-10 px-4 py-20 md:py-28">
+      <div
+        data-direct-in
+        className="relative z-10 mx-auto grid w-full max-w-[1180px] overflow-hidden border border-[rgba(var(--teal-rgb),0.2)] bg-[rgba(3,9,8,0.62)] backdrop-blur-xl lg:grid-cols-[0.45fr_0.55fr]"
+        style={{ borderRadius: "1.25rem", boxShadow: "0 32px 110px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+      >
+        <div className="relative flex min-h-[390px] flex-col justify-between p-6 md:p-8">
+          <div className="pointer-events-none absolute inset-y-8 right-0 w-px bg-[linear-gradient(transparent,rgba(var(--teal-rgb),0.28),transparent)]" />
+          <div>
+            <h2 className="hed text-[clamp(3.2rem,6vw,6.4rem)] leading-[0.86]">
+              Need help<br />
+              <span className="text-[var(--teal)]">or support?</span>
+            </h2>
+            <p className="mt-7 max-w-[470px] text-[0.98rem] leading-[1.85] text-[var(--body)]">
+              Questions, fixes, partnerships, and existing project requests all start here. The map and contact lines stay together so the next step is easy to scan.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-3">
+            {[
+              ["Email", "hello@dontforget.studio", "M18 8 12 13 6 8M5 6h14v12H5z"],
+              ["Phone", "+1 555 123 4567", "M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2 3.6 1.1v3.2c0 .8-.7 1.5-1.5 1.5C9.5 21 3 14.5 3 6.5 3 5.7 3.7 5 4.5 5h3.2l1.1 3.6-2.2 2.2z"],
+              ["Reply window", "Within 24 hours", "M12 6v6l4 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"],
+            ].map(([label, value, path]) => (
+              <div key={label} className="grid grid-cols-[2.3rem_1fr] items-center gap-3 border-t border-[rgba(var(--teal-rgb),0.12)] pt-3">
+                <div className="grid h-9 w-9 place-items-center rounded-full border border-[rgba(var(--teal-rgb),0.2)] bg-[rgba(var(--teal-rgb),0.07)] text-[var(--teal)]">
+                  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                    <path d={path} />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-mono text-[0.46rem] uppercase tracking-[0.24em] text-[rgba(var(--teal-rgb),0.86)]">{label}</p>
+                  <p className="mt-1 text-[0.9rem] text-[rgba(240,236,227,0.72)]">{value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <ContactMapPanel />
+      </div>
+    </section>
   );
 }

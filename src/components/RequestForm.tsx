@@ -155,15 +155,21 @@ export default function RequestForm({
   embedded = false,
   onHeaderMetaChange,
   onBack,
+  initialServiceIds = [],
+  initialSubServices = [],
+  initialStep,
 }: {
   embedded?: boolean;
   onHeaderMetaChange?: (meta: RequestFormHeaderMeta) => void;
   onBack?: () => void;
+  initialServiceIds?: string[];
+  initialSubServices?: string[];
+  initialStep?: 1 | 2 | 3;
 } = {}) {
-  const [step, setStep]     = useState(1);
+  const [step, setStep]     = useState<1 | 2 | 3>(initialStep ?? (initialServiceIds.length ? 2 : 1));
   const [navDirection, setNavDirection] = useState<1 | -1>(1);
   const [data, setData]     = useState<FormData>({
-    serviceIds: [], subServices: [], timeline: "", budget: "", name: "", contactMethod: "whatsapp", contactValue: "", note: "",
+    serviceIds: initialServiceIds, subServices: initialSubServices, timeline: "", budget: "", name: "", contactMethod: "whatsapp", contactValue: "", note: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
@@ -212,7 +218,7 @@ export default function RequestForm({
   });
 
   // ── Navigation helpers ──────────────────────────────────────────────────
-  function navigate(next: number, direction: 1 | -1) {
+  function navigate(next: 1 | 2 | 3, direction: 1 | -1) {
     if (next === step) return;
     setNavDirection(direction);
     setStep(next);
@@ -225,7 +231,7 @@ export default function RequestForm({
 
   function advance() {
     if (!canAdvance) return;
-    if (step < 3) { navigate(step + 1, 1); return; }
+    if (step < 3) { navigate((step + 1) as 1 | 2 | 3, 1); return; }
     handleSubmit();
   }
 
@@ -238,7 +244,7 @@ export default function RequestForm({
       window.location.href = "/";
       return;
     }
-    navigate(step - 1, -1);
+    navigate((step - 1) as 1 | 2 | 3, -1);
   }
 
   // ── Sub-service toggle ──────────────────────────────────────────────────
@@ -534,7 +540,7 @@ function Step2({
   onToggleSub: (ex: string) => void;
   onToggleAll: () => void;
 }) {
-  const examples = Array.from(new Set(services.flatMap(service => service.examples)));
+  const examples = Array.from(new Set([...services.flatMap(service => service.examples), ...data.subServices]));
   const allSelected = data.subServices.length === examples.length;
   return (
     <div className="w-full">

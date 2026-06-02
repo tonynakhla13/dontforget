@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import type { WorkProject } from "./page";
@@ -115,7 +116,7 @@ function FilterPanel({
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Project card — 4/3 aspect, two-column
+// Project card — framed, matches the home immersive work-carousel cards
 // ─────────────────────────────────────────────────────────────────────
 function ProjectCard({
   project,
@@ -124,112 +125,71 @@ function ProjectCard({
   project: WorkProject;
   filteredIndex: number;
 }) {
-  const innerRef = useRef<HTMLDivElement>(null);
-  const imgRef   = useRef<HTMLDivElement>(null);
-  const num      = String(filteredIndex + 1).padStart(2, "0");
+  const num = String(filteredIndex + 1).padStart(2, "0");
   const [imageFailed, setImageFailed] = useState(false);
   const hasImage = Boolean(project.coverImage && !imageFailed);
 
-  const onMouseMove = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width  - 0.5;
-    const y = (e.clientY - rect.top)  / rect.height - 0.5;
-    gsap.to(innerRef.current, {
-      rotationX: -y * 4, rotationY: x * 6,
-      transformPerspective: 1100, ease: "power2.out", duration: 0.65, overwrite: true,
-    });
-    gsap.to(imgRef.current, { scale: 1.045, duration: 0.75, ease: "power2.out", overwrite: true });
-  }, []);
-
-  const onMouseLeave = useCallback(() => {
-    gsap.to(innerRef.current, {
-      rotationX: 0, rotationY: 0,
-      duration: 1.0, ease: "power3.out", overwrite: true,
-    });
-    gsap.to(imgRef.current, { scale: 1, duration: 0.8, ease: "power2.out", overwrite: true });
-  }, []);
-
+  // NOTE: the global `[data-card]` rule sets `grid-column: span var(--col-span, 12)`.
+  // We set --col-span: 6 so each card spans half of the 12-col grid (2-up on desktop;
+  // the same rule falls back to a full-width row below 768px).
   return (
     <Link
       href={`/work/${project.slug ?? project.id}`}
       data-card
-      className="group work-project-card relative block"
-      style={{ clipPath: "inset(0 0 100% 0)", willChange: "clip-path, transform" }}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
+      className="group relative block focus-visible:outline-none"
+      style={{ clipPath: "inset(0 0 100% 0)", willChange: "clip-path, transform", "--col-span": 6 } as CSSProperties}
+      aria-label={`View ${project.title}`}
     >
-      <div
-        ref={innerRef}
-        className="relative overflow-hidden rounded-[18px] bg-[var(--surface)]"
-        style={{ transformStyle: "preserve-3d", aspectRatio: "4 / 3" }}
-      >
-        <div className="work-card-depth absolute inset-0" />
+      <div className="flex h-full flex-col overflow-hidden rounded-[1.2rem] border border-[rgba(var(--teal-rgb),0.18)] bg-[linear-gradient(145deg,rgba(var(--surface-rgb),0.92),rgba(var(--bg-rgb),0.96))] transition-[border-color,transform,box-shadow] duration-500 group-hover:-translate-y-1 group-hover:border-[rgba(var(--teal-rgb),0.5)] group-hover:shadow-[inset_0_0_0_1px_rgba(var(--teal-rgb),0.22)] group-focus-visible:ring-2 group-focus-visible:ring-[var(--teal)]">
 
-        {/* Image */}
-        <div ref={imgRef} className="absolute inset-0 will-change-transform">
+        {/* header — index + year */}
+        <div className="flex items-center justify-between px-4 pb-3 pt-4 font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--teal)] md:px-5">
+          <span>{num}</span>
+          <span className="flex items-center gap-2 text-[0.5rem] text-[var(--body)]">
+            {project.year ?? "—"}
+            <i className="block h-1.5 w-1.5 bg-[var(--teal)] shadow-[0_0_10px_var(--teal)]" />
+          </span>
+        </div>
+
+        {/* media */}
+        <div className="relative mx-4 aspect-[1.78] overflow-hidden rounded-[0.75rem] border border-[rgba(var(--teal-rgb),0.2)]">
           {hasImage ? (
             <Image
               src={project.coverImage!}
-              alt={project.title}
+              alt={`${project.title} project preview`}
               fill
-              className="object-cover work-card-image"
-              sizes="(max-width:768px) 100vw, 42vw"
+              sizes="(max-width:640px) 92vw, (max-width:1024px) 46vw, 30vw"
+              className="object-cover saturate-[0.82] transition duration-700 group-hover:scale-[1.06] group-hover:saturate-100"
               onError={() => setImageFailed(true)}
             />
           ) : (
             <ProjectArtworkFallback project={project} num={num} />
           )}
-        </div>
-
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,8,6,0.06)_0%,rgba(3,8,6,0.28)_38%,rgba(3,8,6,0.94)_100%)] transition-opacity duration-500 group-hover:opacity-95" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(58,191,138,0.20),transparent_36%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
-        {/* Teal border */}
-        <div className="absolute inset-0 rounded-[18px] border border-[rgba(184,255,224,0.10)] transition-colors duration-300 group-hover:border-[rgba(184,255,224,0.42)]" />
-
-        {/* Scan line */}
-        <div className="work-card-scan absolute inset-0 pointer-events-none overflow-hidden rounded-[var(--radius)]">
-          <div className="scan-runner absolute left-0 right-0 h-[1px]" />
-        </div>
-
-        {/* Top meta */}
-        <div className="absolute left-0 right-0 top-0 flex items-start justify-between p-5">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-black/28 font-mono text-[0.52rem] text-white/62 backdrop-blur-md transition-all duration-300 group-hover:border-[var(--teal)] group-hover:text-[var(--teal)]">
-            {num}
-          </span>
-          {project.category && (
-            <span className="rounded-full border border-white/10 bg-black/42 px-3 py-1.5 font-mono text-[0.5rem] uppercase tracking-[0.24em] text-white/58 backdrop-blur-md transition-colors duration-300 group-hover:border-[var(--teal-mid)] group-hover:text-[var(--teal)]">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(var(--bg-rgb),0.04),rgba(var(--bg-rgb),0.5))]" />
+          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 [background:radial-gradient(circle_at_45%_40%,rgba(var(--teal-rgb),0.17),transparent_56%)]" />
+          <span className="pointer-events-none absolute left-0 top-0 h-px w-full -translate-x-full bg-[linear-gradient(90deg,transparent,var(--teal),transparent)] transition-transform duration-700 group-hover:translate-x-full" />
+          {project.category ? (
+            <span className="absolute left-3 top-3 rounded-full border border-[rgba(var(--teal-rgb),0.34)] bg-black/45 px-2.5 py-1 font-mono text-[0.46rem] uppercase tracking-[0.26em] text-[var(--teal)] backdrop-blur-md">
               {project.category}
             </span>
-          )}
+          ) : null}
         </div>
 
-        {/* Bottom info */}
-        <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
-          <div className="work-card-copy">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="font-mono text-[0.5rem] uppercase tracking-[0.32em] text-white/46">{project.year}</p>
-              <span className="h-px flex-1 bg-[linear-gradient(90deg,rgba(58,191,138,0.45),transparent)]" />
-            </div>
-            <h3 className="hed text-[clamp(1.9rem,3vw,3.35rem)] leading-[0.9] text-[#F8F5EE]">{project.title}</h3>
-            {project.description ? (
-              <p className="mt-4 max-w-[34rem] text-[0.83rem] leading-[1.75] text-white/68">
-                {project.description}
-              </p>
-            ) : null}
-            {project.tags.length > 0 ? (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {project.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="work-card-tag">{tag}</span>
-                ))}
-              </div>
-            ) : null}
-          </div>
-          <div className="absolute bottom-5 right-5 flex h-11 w-11 shrink-0 translate-x-2 translate-y-2 items-center justify-center rounded-full border border-white/10 bg-black/35 text-white/48 opacity-0 backdrop-blur-md transition-all duration-300 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:border-[var(--teal)] group-hover:text-[var(--teal)] group-hover:opacity-100">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M3 13L13 3M13 3H6M13 3V10" />
-            </svg>
+        {/* body */}
+        <div className="flex flex-1 flex-col p-4 md:p-5">
+          <h3 className="hed text-[clamp(1.4rem,2vw,2rem)] uppercase leading-none text-[var(--fg)]">{project.title}</h3>
+          <p className="mt-1.5 text-[0.8rem] text-[var(--teal)]">{project.category ?? "Digital Experience"}</p>
+          {project.description ? (
+            <p className="mt-3 line-clamp-2 text-[0.8rem] leading-[1.55] text-[var(--body)]">{project.description}</p>
+          ) : null}
+          <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4 font-mono text-[0.54rem] uppercase tracking-[0.2em]">
+            <span className="border border-[rgba(var(--teal-rgb),0.22)] px-2.5 py-1.5 text-[var(--body)]">{project.year ?? "Current"}</span>
+            <span className="btn-glass-ghost">
+              <span className="btn-glass-blob" aria-hidden="true" />
+              <span className="btn-glass-face !px-3 !py-2 !text-[0.62rem]">
+                View more <span className="btn-glass-arrow">→</span>
+              </span>
+            </span>
           </div>
         </div>
       </div>
@@ -255,22 +215,29 @@ function ProjectArtworkFallback({ project, num }: { project: WorkProject; num: s
 // ─────────────────────────────────────────────────────────────────────
 function WorkHero({ totalCount, projects }: { totalCount: number; projects: WorkProject[] }) {
   const headRef    = useRef<HTMLHeadingElement>(null);
-  const tagRef     = useRef<HTMLParagraphElement>(null);
+  const tagRef     = useRef<HTMLDivElement>(null);
+  const subRef     = useRef<HTMLParagraphElement>(null);
   const ctaRef     = useRef<HTMLDivElement>(null);
   const statsRef   = useRef<HTMLDivElement>(null);
-  const lineRef    = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const cueRef     = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const isFirstLoad = !sessionStorage.getItem("df_loader_shown");
-    const delay = isFirstLoad ? 2.2 : 0;
+    const delay = isFirstLoad ? 0.4 : 0;
     const tl = gsap.timeline({ delay });
-    tl.fromTo(lineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "expo.out" })
+    tl.fromTo(
+        [tagRef.current, headRef.current, subRef.current],
+        { autoAlpha: 0, y: 26 },
+        { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.9, ease: "power3.out" }
+      )
+      .fromTo(galleryRef.current, { autoAlpha: 0, scale: 0.94, y: 24 }, { autoAlpha: 1, scale: 1, y: 0, duration: 1.0, ease: "power3.out" }, "-=0.4")
       .fromTo(
-        [headRef.current, tagRef.current, ctaRef.current, statsRef.current],
-        { autoAlpha: 0, y: 34 },
-        { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.95, ease: "power3.out" },
-        "-=0.2"
+        [statsRef.current, cueRef.current],
+        { autoAlpha: 0, y: 18 },
+        { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.8, ease: "power3.out" },
+        "-=0.5"
       );
     const obj = { v: 0 };
     tl.to(obj, {
@@ -283,120 +250,122 @@ function WorkHero({ totalCount, projects }: { totalCount: number; projects: Work
     return () => { tl.kill(); };
   }, [totalCount]);
 
+  /* CTAs unfold on scroll — each slab tilts up from flat into view */
+  useEffect(() => {
+    const row = ctaRef.current;
+    if (!row) return;
+    const btns = Array.from(row.querySelectorAll<HTMLElement>("[data-cta]"));
+    if (!btns.length) return;
+    const ctx = gsap.context(() => {
+      gsap.set(row, { autoAlpha: 1 });
+      gsap.set(btns, {
+        autoAlpha: 0, y: 52, scale: 0.82, rotateX: -55,
+        transformPerspective: 700, transformOrigin: "50% 100%",
+      });
+      ScrollTrigger.create({
+        trigger: row, start: "top 88%", once: true,
+        onEnter() {
+          gsap.to(btns, {
+            autoAlpha: 1, y: 0, scale: 1, rotateX: 0,
+            duration: 0.9, stagger: 0.16, ease: "expo.out",
+          });
+        },
+      });
+    }, row);
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
       id="hero"
-      className="relative flex min-h-[100svh] items-center overflow-hidden"
-      style={{ background: "transparent" }}
+      className="relative flex min-h-[100svh] flex-col items-center justify-start overflow-x-clip overflow-y-visible"
+      style={{ background: "transparent", paddingTop: "clamp(5rem,9vh,7rem)", paddingBottom: "clamp(2.5rem,5vh,4rem)" }}
     >
-      <div
-        ref={lineRef}
-        className="absolute left-0 right-0 h-px origin-left"
-        style={{
-          top: "22%", transform: "scaleX(0)",
-          background: "linear-gradient(90deg, rgba(70,174,34,1), rgba(70,174,34,0.35), transparent)",
-        }}
-      />
-
-      <div className="relative z-10 wrap flex items-center justify-between gap-12 pt-32 pb-20">
-
-        {/* ── LEFT: copy ── */}
-        <div style={{ maxWidth: 500, flexShrink: 0 }}>
-          {/* funny tagline */}
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            marginBottom: "1.5rem",
+      {/* ── heading (top) ── */}
+      <div className="relative z-10 flex flex-col items-center px-6 text-center">
+        <div ref={tagRef} style={{
+          visibility: "hidden",
+          display: "inline-flex", alignItems: "center", gap: 8, marginBottom: "1.1rem",
+        }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: "50%",
+            background: "rgba(70,174,34,1)", boxShadow: "0 0 8px rgba(70,174,34,0.8)", flexShrink: 0,
+          }} />
+          <span style={{
+            fontFamily: "var(--font-mono-next)", fontSize: "0.46rem",
+            letterSpacing: "0.44em", textTransform: "uppercase", color: "rgba(70,174,34,0.8)",
           }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: "50%",
-              background: "rgba(70,174,34,1)",
-              boxShadow: "0 0 8px rgba(70,174,34,0.8)",
-              flexShrink: 0,
-            }} />
-            <span style={{
-              fontFamily: "var(--font-mono-next)",
-              fontSize: "0.46rem", letterSpacing: "0.44em",
-              textTransform: "uppercase", color: "rgba(70,174,34,0.7)",
-            }}>
-              Warning: may cause competitor envy
-            </span>
-          </div>
-
-          <h1
-            ref={headRef}
-            className="hed"
-            style={{
-              fontSize: "clamp(4rem,9vw,9rem)",
-              lineHeight: 0.84, color: "#F8F5EE",
-              visibility: "hidden",
-            }}
-          >
-            Selected<br />
-            <span style={{ color: "rgba(70,174,34,1)" }}>Work.</span>
-          </h1>
-
-          <p
-            ref={tagRef}
-            style={{
-              marginTop: "clamp(1.2rem,2vw,1.8rem)",
-              fontSize: "clamp(0.88rem,1.2vw,1rem)",
-              lineHeight: 1.85,
-              color: "var(--body)",
-              maxWidth: 420,
-              visibility: "hidden",
-            }}
-          >
-            We build things that make your competitors{" "}
-            <span style={{ color: "var(--fg)" }}>uncomfortable.</span>
-          </p>
-
-          <div ref={ctaRef} className="flex flex-wrap gap-4" style={{ marginTop: "clamp(1.5rem,3vw,2.5rem)", visibility: "hidden" }}>
-            <Link href="/en/immersive/contact" className="btn-glass">
-              <span className="btn-glass-blob" aria-hidden="true" />
-              <span className="btn-glass-face">Start a project</span>
-            </Link>
-            <Link href="/en/immersive/services" className="btn-glass-ghost">
-              <span className="btn-glass-blob" aria-hidden="true" />
-              <span className="btn-glass-face">Our services →</span>
-            </Link>
-          </div>
-
-          <div
-            ref={statsRef}
-            style={{
-              marginTop: "clamp(2rem,4vw,3.5rem)",
-              display: "grid", gridTemplateColumns: "repeat(3,1fr)",
-              borderTop: "1px solid var(--border)",
-              borderBottom: "1px solid var(--border)",
-              visibility: "hidden",
-            }}
-          >
-            {[
-              { value: <span ref={counterRef}>00</span>, label: "Projects" },
-              { value: "3+", label: "Years" },
-              { value: "6",  label: "Industries" },
-            ].map(({ value, label }) => (
-              <div key={label} style={{ borderRight: "1px solid var(--border)", padding: "1rem 0" }} className="last:border-r-0">
-                <span style={{
-                  display: "block", fontFamily: "var(--font-mono-next)",
-                  fontSize: "0.52rem", textTransform: "uppercase",
-                  letterSpacing: "0.26em", color: "rgba(70,174,34,1)",
-                }}>
-                  {value} {label}
-                </span>
-              </div>
-            ))}
-          </div>
+            Warning: may cause competitor envy
+          </span>
         </div>
 
-        {/* ── RIGHT: stacked project cards ── */}
-        <WorkHeroCards projects={projects} />
+        <h1
+          ref={headRef}
+          className="hed"
+          style={{
+            visibility: "hidden",
+            fontSize: "clamp(2.7rem,6.4vw,5.6rem)",
+            lineHeight: 0.9, letterSpacing: "-0.03em", color: "#F8F5EE",
+          }}
+        >
+          Selected <span style={{ color: "rgba(70,174,34,1)" }}>Works.</span>
+        </h1>
 
+        <p
+          ref={subRef}
+          style={{
+            visibility: "hidden",
+            marginTop: "1rem", maxWidth: 460,
+            fontSize: "clamp(0.85rem,1.1vw,0.98rem)", lineHeight: 1.7,
+            color: "rgba(248,245,238,0.7)",
+          }}
+        >
+          We build things that make your competitors{" "}
+          <span style={{ color: "#F8F5EE" }}>uncomfortable.</span>
+        </p>
+      </div>
+
+      {/* ── 3D carousel — drag / swipe to spin · hover a card to explore ── */}
+      <div ref={galleryRef} className="relative w-full" style={{ visibility: "hidden", marginTop: "clamp(0.4rem,1.4vw,1rem)" }}>
+        <WorkHeroCards projects={projects} />
+      </div>
+
+      {/* ── CTAs — angular neon HUD slabs, revealed on scroll (see effect) ── */}
+      <div ref={ctaRef} className="relative z-10 flex flex-wrap items-center justify-center gap-5" style={{ marginTop: "clamp(1.5rem,3vw,2.6rem)", visibility: "hidden" }}>
+        <Link href="/en/immersive/contact" className="work-cta work-cta--solid" data-cta>
+          <span className="work-cta-face">Start a project</span>
+        </Link>
+        <Link href="/en/immersive/services" className="work-cta work-cta--ghost" data-cta>
+          <span className="work-cta-face">Our services <span className="work-cta-arrow" aria-hidden="true">→</span></span>
+        </Link>
+      </div>
+
+      {/* ── slim stat line ── */}
+      <div
+        ref={statsRef}
+        className="relative z-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-2"
+        style={{ marginTop: "clamp(1.4rem,2.6vw,2rem)", visibility: "hidden" }}
+      >
+        {[
+          { value: <span ref={counterRef}>00</span>, label: "Projects" },
+          { value: "3+", label: "Years" },
+          { value: "6",  label: "Industries" },
+        ].map(({ value, label }, i) => (
+          <div key={label} className="flex items-center gap-7">
+            <span style={{
+              fontFamily: "var(--font-mono-next)", fontSize: "0.5rem",
+              textTransform: "uppercase", letterSpacing: "0.26em", color: "rgba(70,174,34,0.95)",
+            }}>
+              {value} {label}
+            </span>
+            {i < 2 && <span style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(70,174,34,0.45)" }} />}
+          </div>
+        ))}
       </div>
 
       {/* scroll cue */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-        <span className="font-mono text-[0.5rem] uppercase tracking-[0.4em] text-[var(--body)]">Scroll</span>
+      <div ref={cueRef} className="absolute bottom-9 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2" style={{ visibility: "hidden" }}>
+        <span className="font-mono text-[0.46rem] uppercase tracking-[0.4em] text-[var(--body)]">Scroll to explore</span>
         <div className="h-8 w-px" style={{ background: "linear-gradient(to bottom, rgba(70,174,34,1), transparent)" }} />
       </div>
     </section>
@@ -831,10 +800,16 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
             </span>
           </div>
 
-          {/* Cards */}
-          <div ref={gridRef} className="grid gap-5 md:grid-cols-2">
+          {/* Cards — 12-column grid. Each [data-card] sets --col-span:6 → 2-up on
+              desktop. `display:grid` + the 12-col template are inline so nothing can
+              purge or override them; the per-card span is what controls the layout. */}
+          <div
+            ref={gridRef}
+            className="grid gap-4 sm:gap-6 lg:gap-7"
+            style={{ display: "grid", gridTemplateColumns: "repeat(12, minmax(0, 1fr))" }}
+          >
             {filteredProjects.length === 0 ? (
-              <div className="py-32 text-center md:col-span-2">
+              <div className="py-32 text-center" style={{ gridColumn: "1 / -1" }}>
                 <p className="eyebrow mb-4">No results</p>
                 <p className="text-[var(--body)] text-[0.9rem]">No projects in this category yet.</p>
               </div>

@@ -8,7 +8,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
 import Navbar from "@/components/Navbar";
-import ImmersiveFooter from "@/components/immersive/ImmersiveFooter";
 import ParticleLayer from "@/components/ParticleLayer";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -505,8 +504,6 @@ export default function BlogPostImmersive({ post, locale = "en" }: { post: FullP
           </Link>
         </div>
       </section>
-
-      <ImmersiveFooter />
     </div>
   );
 }
