@@ -81,11 +81,17 @@ export default function ServicesDFParticles() {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(width, height);
-    renderer.setClearColor(0, 0);
-    mount.appendChild(renderer.domElement);
+    let renderer: THREE.WebGLRenderer | null = null;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+    } catch {
+      return;
+    }
+    const r = renderer;
+    r.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    r.setSize(width, height);
+    r.setClearColor(0, 0);
+    mount.appendChild(r.domElement);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 100);
@@ -149,7 +155,7 @@ export default function ServicesDFParticles() {
       const nextHeight = window.innerHeight;
       camera.aspect = nextWidth / nextHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(nextWidth, nextHeight);
+      r.setSize(nextWidth, nextHeight);
       points.position.set(0, 0, -1.4);
       points.scale.setScalar(nextWidth < 900 ? 0.9 : 1);
     };
@@ -165,7 +171,7 @@ export default function ServicesDFParticles() {
       frame = requestAnimationFrame(tick);
       timer.update(timestamp);
       uniforms.uTime.value = timer.getElapsed();
-      renderer.render(scene, camera);
+      r.render(scene, camera);
     };
     frame = requestAnimationFrame(tick);
 
@@ -176,10 +182,10 @@ export default function ServicesDFParticles() {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("resize", onResize);
-      renderer.dispose();
+      r.dispose();
       geometry.dispose();
       material.dispose();
-      if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+      if (mount.contains(r.domElement)) mount.removeChild(r.domElement);
     };
   }, []);
 

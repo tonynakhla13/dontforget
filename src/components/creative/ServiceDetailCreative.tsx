@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { PublicService } from "@/lib/public-content";
 import CreativeNavbar from "@/components/creative/CreativeNavbar";
 import CreativeFooter from "@/components/creative/CreativeFooter";
+import { ImmersiveContactPopup } from "@/components/immersive/ImmersiveContact";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -55,6 +56,16 @@ function toStringArray(val: unknown): string[] {
     if (item && typeof item === "object") return String((item as Record<string, unknown>).title ?? (item as Record<string, unknown>).name ?? "");
     return "";
   }).filter(Boolean);
+}
+
+function requestFormServiceId(service: PublicService) {
+  const key = `${service.id} ${service.slug ?? ""} ${service.title}`.toLowerCase();
+  if (key.includes("ui") || key.includes("ux") || key.includes("design")) return "uiux";
+  if (key.includes("commerce") || key.includes("shop") || key.includes("store")) return "ecomm";
+  if (key.includes("mobile") || key.includes("app")) return "mobile";
+  if (key.includes("seo") || key.includes("search")) return "seo";
+  if (key.includes("crm") || key.includes("booking") || key.includes("platform")) return "crm";
+  return "webdev";
 }
 
 /* ── pixel icons ─────────────────────────────────────────────────────────── */
@@ -231,8 +242,20 @@ export default function ServiceDetailCreative({ service, locale }: { service: Pu
   const ctaLink     = service.ctaButtonLink  || `/${locale}/creative/contact`;
   const ctaLabel    = service.ctaButtonLabel || "Get started";
   const hasStats    = deliverables.length > 0 || processSteps.length > 0 || benefits.length > 0;
+  const requestServiceId = requestFormServiceId(service);
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  function openDeliverableRequest(deliverable: Deliverable) {
+    window.dispatchEvent(new CustomEvent("immersive-contact:open", {
+      detail: {
+        serviceId: requestServiceId,
+        serviceTitle: service.title,
+        deliverable: deliverable.title,
+        deliverables: deliverables.map(item => item.title),
+      },
+    }));
+  }
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -465,9 +488,13 @@ export default function ServiceDetailCreative({ service, locale }: { service: Pu
                 )}
                 {/* CTA — slides in on hover */}
                 <div className="c-svc-dbox__cta-wrap">
-                  <Link href={`/${locale}/creative/contact`} className="c-svc-dbox__cta">
-                    Start this project →
-                  </Link>
+                  <button
+                    type="button"
+                    className="c-svc-dbox__cta"
+                    onClick={() => openDeliverableRequest(d)}
+                  >
+                    I want this →
+                  </button>
                 </div>
               </div>
             ))}
@@ -605,6 +632,7 @@ export default function ServiceDetailCreative({ service, locale }: { service: Pu
       </section>
 
       <CreativeFooter />
+      <ImmersiveContactPopup />
     </div>
   );
 }

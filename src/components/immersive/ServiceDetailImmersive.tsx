@@ -9,6 +9,7 @@ import AmbientGlow from "@/components/AmbientGlow";
 import ServicesDFParticles from "@/components/services/ServicesDFParticles";
 import ServiceBrickBreaker from "@/components/services/ServiceBrickBreaker";
 import ServiceHeroHologram from "@/features/services/[id]/ServiceHeroHologram";
+import ImmersiveDeliverables from "@/components/immersive/ImmersiveDeliverables";
 import ImmersiveContact from "@/components/immersive/ImmersiveContact";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { pagePath, parseCanonicalPath } from "@/lib/site-routing";
@@ -143,7 +144,9 @@ export default function ServiceDetailImmersive({ service }: { service: PublicSer
     window.dispatchEvent(new CustomEvent("immersive-contact:open", {
       detail: {
         serviceId: requestServiceId,
+        serviceTitle: service.title,
         deliverable: deliverable.title,
+        deliverables: deliverables.map(item => item.title),
       },
     }));
   }
@@ -261,35 +264,7 @@ export default function ServiceDetailImmersive({ service }: { service: PublicSer
         </div>
 
         {deliverables.length > 0 ? (
-          <section data-detail-section className="relative z-10 py-20 md:py-28">
-            <div className="wrap">
-              <div className="mb-10 flex flex-col gap-5 border-b border-[rgba(var(--teal-rgb),0.14)] pb-8 md:flex-row md:items-end md:justify-between">
-                <h2 className="hed text-[clamp(3.4rem,7vw,7.6rem)] leading-[0.86]">What you<br /><span className="text-[var(--teal)]">get.</span></h2>
-                <p className="max-w-[460px] text-[0.95rem] leading-[1.8] text-[var(--body)]">Deliverables pulled from the service content in the dashboard.</p>
-              </div>
-              <div className="grid gap-5 md:grid-cols-2">
-                {deliverables.map((item, index) => (
-                  <article key={`${item.title}-${index}`} className="relative overflow-hidden rounded-[1.4rem] border border-[rgba(var(--teal-rgb),0.16)] bg-[rgba(7,10,9,0.44)] p-6 backdrop-blur-md">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(var(--teal-rgb),0.12),transparent_56%)]" />
-                    <div className="relative">
-                      <span className="font-mono text-[0.55rem] uppercase tracking-[0.3em] text-[var(--teal)]">{String(index + 1).padStart(2, "0")}</span>
-                      <h3 className="hed mt-8 text-[clamp(2.2rem,4vw,4rem)] leading-[0.9]">{item.title}</h3>
-                      {item.tagline ? <p className="mt-4 font-mono text-[0.58rem] uppercase tracking-[0.22em] text-[var(--teal)]">{item.tagline}</p> : null}
-                      {item.description ? <div className="mt-5 text-[0.92rem] leading-[1.8] text-[var(--body)]" dangerouslySetInnerHTML={{ __html: item.description }} /> : null}
-                      <button
-                        type="button"
-                        onClick={() => openDeliverableRequest(item)}
-                        className="btn-glass-ghost mt-8 inline-flex"
-                      >
-                        <span className="btn-glass-blob" aria-hidden="true" />
-                        <span className="btn-glass-face">Give me this service</span>
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
+          <ImmersiveDeliverables deliverables={deliverables} onRequest={openDeliverableRequest} />
         ) : null}
 
         {process.length > 0 ? (

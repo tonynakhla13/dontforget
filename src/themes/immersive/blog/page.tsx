@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
-import ParticleLayer from "@/components/ParticleLayer";
+import BlogParticleLayer from "@/components/blog/BlogParticleLayer";
 import DarkBlogList from "@/components/blog/DarkBlogList";
 
 export const metadata: Metadata = {
@@ -29,7 +29,7 @@ export default async function ImmersiveBlogPage({ locale = "en" }: { locale?: st
   return (
     <>
       <SmoothScroll />
-      <ParticleLayer />
+      <BlogParticleLayer />
       <main className="immersive-mode relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />

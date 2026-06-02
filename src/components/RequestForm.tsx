@@ -157,6 +157,7 @@ export default function RequestForm({
   onBack,
   initialServiceIds = [],
   initialSubServices = [],
+  initialServiceDetails = [],
   initialStep,
 }: {
   embedded?: boolean;
@@ -164,6 +165,11 @@ export default function RequestForm({
   onBack?: () => void;
   initialServiceIds?: string[];
   initialSubServices?: string[];
+  initialServiceDetails?: Array<{
+    id: string;
+    title?: string;
+    deliverables?: string[];
+  }>;
   initialStep?: 1 | 2 | 3;
 } = {}) {
   const [step, setStep]     = useState<1 | 2 | 3>(initialStep ?? (initialServiceIds.length ? 2 : 1));
@@ -179,7 +185,28 @@ export default function RequestForm({
 
   const barRef      = useRef<HTMLDivElement>(null);
 
-  const selectedServices = SERVICES.filter(s => data.serviceIds.includes(s.id));
+  const serviceOptions = [
+    ...SERVICES.map(service => {
+      const detail = initialServiceDetails.find(item => item.id === service.id);
+      const deliverables = detail?.deliverables?.filter(Boolean);
+      if (!detail || !deliverables?.length) return service;
+      return {
+        ...service,
+        title: detail.title || service.title,
+        examples: Array.from(new Set(deliverables)),
+      };
+    }),
+    ...initialServiceDetails
+      .filter(detail => detail.id && !SERVICES.some(service => service.id === detail.id))
+      .map((detail, index) => ({
+        id: detail.id,
+        num: String(SERVICES.length + index + 1).padStart(2, "0"),
+        title: detail.title || "Selected service",
+        tagline: "Deliverables from this service",
+        examples: Array.from(new Set(detail.deliverables?.filter(Boolean) ?? [])),
+      })),
+  ];
+  const selectedServices = serviceOptions.filter(s => data.serviceIds.includes(s.id));
   const selectedServiceTitle = selectedServices.map(service => service.title).join(" + ");
   const reduceMotion = useReducedMotion();
 
@@ -374,7 +401,7 @@ export default function RequestForm({
               {done ? (
                 <SuccessScreen data={data} services={selectedServices} embedded={embedded} onBack={onBack} />
               ) : step === 1 ? (
-                <Step1 data={data} setData={setData} />
+                <Step1 data={data} setData={setData} services={serviceOptions} />
               ) : step === 2 ? (
                 <Step2
                   services={selectedServices}
@@ -446,9 +473,11 @@ export default function RequestForm({
 function Step1({
   data,
   setData,
+  services,
 }: {
   data: FormData;
   setData: React.Dispatch<React.SetStateAction<FormData>>;
+  services: typeof SERVICES;
 }) {
   return (
     <div className="flex flex-col items-center text-center">
@@ -460,7 +489,7 @@ function Step1({
       </p>
 
       <div className="grid w-full grid-cols-2 gap-2.5 md:grid-cols-3">
-        {SERVICES.map(svc => {
+        {services.map(svc => {
           const selected = data.serviceIds.includes(svc.id);
           return (
             <button

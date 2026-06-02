@@ -9,9 +9,8 @@ import OurStory from "@/components/about/OurStory";
 import MissionVision from "@/components/about/MissionVision";
 import TeamSection from "@/components/about/TeamSection";
 import ClientsMarquee from "@/components/about/ClientsMarquee";
-import AboutContact from "@/components/about/AboutContact";
+import ImmersiveContact from "@/components/immersive/ImmersiveContact";
 import NoxPipeHologram from "@/components/about/NoxPipeHologram";
-import PrinciplesWrapper from "@/components/about/PrinciplesWrapper";
 import type { StatItem } from "@/components/about/StatsSection";
 import type { StoryEvent } from "@/components/about/OurStory";
 
@@ -42,11 +41,14 @@ export default async function ImmersiveAboutPage() {
         <AboutHero />
         <StatsSection stats={stats} />
         <OurStory story={story} />
-        <MissionVision mission={mission} vision={vision} />
-        <PrinciplesWrapper />
-        <TeamSection />
         <ClientsMarquee />
-        <AboutContact />
+        <TeamSection />
+        <MissionVision mission={mission} vision={vision} />
+        {/* "Our musts" (PrinciplesWrapper) hidden per request */}
+        {/* Dark overlay so the embedded contact matches the sections above */}
+        <div style={{ position: "relative", background: "rgba(9,9,9,0.92)", backdropFilter: "blur(8px)", borderTop: "1px solid var(--border)" }}>
+          <ImmersiveContact embedded />
+        </div>
       </main>
     </>
   );

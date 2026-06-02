@@ -3017,6 +3017,7 @@ body:has(.creative-mode) {
   padding: 12px 22px; border: 1.5px solid var(--c-ink);
   transition: background .2s, color .2s;
   white-space: nowrap;
+  cursor: pointer;
 }
 .creative-mode .c-svc-dbox__cta:hover {
   background: var(--c-paper); color: var(--c-ink);

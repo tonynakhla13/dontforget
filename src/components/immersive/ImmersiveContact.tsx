@@ -459,7 +459,9 @@ function FormShapeVisualizer() {
 ───────────────────────────────────────────────────────────────────────── */
 type GuidedRequestSelection = {
   serviceId?: string;
+  serviceTitle?: string;
   deliverable?: string;
+  deliverables?: string[];
 };
 
 function StepModal({
@@ -592,6 +594,11 @@ function StepModal({
             onBack={close}
             initialServiceIds={initialSelection?.serviceId ? [initialSelection.serviceId] : []}
             initialSubServices={initialSelection?.deliverable ? [initialSelection.deliverable] : []}
+            initialServiceDetails={initialSelection?.serviceId ? [{
+              id: initialSelection.serviceId,
+              title: initialSelection.serviceTitle,
+              deliverables: initialSelection.deliverables,
+            }] : []}
             initialStep={initialSelection?.serviceId ? 2 : 1}
           />
         </div>
@@ -1332,7 +1339,7 @@ export default function ImmersiveContact({
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: embedded
           ? "clamp(5rem,10vh,7rem) clamp(1rem,3vw,2.5rem)"
-          : "clamp(5.8rem,11vh,7.5rem) clamp(1rem,3vw,2.5rem) clamp(3rem,7vh,5rem)",
+          : "clamp(8rem,14vh,11rem) clamp(1rem,3vw,2.5rem) clamp(3rem,7vh,5rem)",
         position: "relative", overflow: "hidden",
       }}>
 
@@ -1349,6 +1356,7 @@ export default function ImmersiveContact({
 
       <div className="mx-auto grid gap-8"
         style={{ width: "100%", maxWidth: 900, minWidth: 0, zIndex: 1 }}>
+
         <div data-in className="text-center" style={{ opacity: 0 }}>
           <h1 className="hed flex flex-wrap items-baseline justify-center gap-x-4 gap-y-2 text-[clamp(2.8rem,6vw,6.2rem)] leading-[0.88]">
             <span className="font-mono text-[clamp(0.72rem,1.2vw,0.95rem)] uppercase tracking-[0.34em] text-[var(--teal)]">
@@ -1482,6 +1490,46 @@ export default function ImmersiveContact({
 
 
           </div>
+
+          {/* Project planner CTA */}
+          <button
+            type="button"
+            onClick={() => setModal(true)}
+            className="group relative w-full overflow-hidden transition-all duration-300 hover:scale-[1.015]"
+            style={{
+              padding: "1.15rem 2rem",
+              borderRadius: "1rem",
+              border: "1.5px solid rgba(var(--teal-rgb),0.35)",
+              background: "linear-gradient(135deg,rgba(var(--teal-rgb),0.08) 0%,rgba(var(--teal-rgb),0.03) 100%)",
+              backdropFilter: "blur(12px)",
+              boxShadow: "0 0 40px rgba(var(--teal-rgb),0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+            {/* shimmer on hover */}
+            <div className="pointer-events-none absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"
+              style={{ background: "linear-gradient(90deg,transparent,rgba(var(--teal-rgb),0.08),transparent)" }} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.3rem" }}>
+              <span className="font-mono text-[0.48rem] uppercase tracking-[0.36em]"
+                style={{ color: "rgba(var(--teal-rgb),0.7)" }}>
+                structured brief
+              </span>
+              <span style={{ fontSize: "clamp(1rem,2vw,1.3rem)", fontWeight: 600, color: "var(--fg)", letterSpacing: "-0.01em" }}>
+                Try our Project Planner
+              </span>
+            </div>
+            <div style={{
+              width: 48, height: 48, borderRadius: "50%",
+              border: "1.5px solid rgba(var(--teal-rgb),0.3)",
+              background: "rgba(var(--teal-rgb),0.1)",
+              display: "grid", placeItems: "center", flexShrink: 0,
+            }}
+              className="group-hover:bg-[rgba(var(--teal-rgb),0.2)] group-hover:border-[rgba(var(--teal-rgb),0.6)] transition-all duration-300">
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none"
+                stroke="var(--teal)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
 
         </form>
       </div>
