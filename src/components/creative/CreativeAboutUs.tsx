@@ -28,11 +28,11 @@ export default function CreativeAboutUs() {
         </div>
         <div className="c-about__right">
           <p className="c-about__body">
-            At Don&rsquo;t Forget Agency, we are passionate about bringing your brand&rsquo;s vision to life.<br /><br />
-            Our team of talented creatives is dedicated to delivering innovative solutions that resonate with your audience and elevate your brand.
+            At nox Studio, we help ideas find their shape.<br /><br />
+            We are a small creative technology studio building websites, apps, stores, SEO-ready pages, CRM systems, and digital experiences for businesses that want to be seen clearly.
           </p>
           <div className="c-about__tags">
-            {["Creativity", "Passionate", "Branding", "Talented", "Visionary", "Dedicated"].map((tag) => (
+            {["Creative", "Clear", "Useful", "Human", "Sharp", "Built"].map((tag) => (
               <span key={tag} className="c-tag">{tag}</span>
             ))}
           </div>
@@ -41,10 +41,10 @@ export default function CreativeAboutUs() {
 
       <div className="c-about__pills">
         {[
-          { n: "50+",   d: "Awards\nWon" },
-          { n: "300+",  d: "Happy\nClients" },
-          { n: "80%",   d: "Repeat\nBusiness" },
-          { n: "500K+", d: "Social Media\nImpressions" },
+          { n: "50+",   d: "Projects\nShaped" },
+          { n: "300+",  d: "Ideas\nClarified" },
+          { n: "80%",   d: "Repeat\nClients" },
+          { n: "500K+", d: "Digital\nImpressions" },
         ].map(({ n, d }) => (
           <div key={n} className="c-pill">
             <div className="c-pill__n">{n}</div>

@@ -69,6 +69,19 @@ model Project {
   testimonialText    String?   @db.Text
   gallery            Json      @default("[]")
   extraMile          String?   @db.Text
+  heroImage          String?
+  tallImage          String?
+  useTallImage       Boolean   @default(false)
+  clientGoals        Json      @default("[]")
+  challenges         Json      @default("[]")
+  results            Json      @default("[]")
+  testimonialAuthor  String?
+  testimonialRole    String?
+  testimonialCompany String?
+  extraMilePlanned   String?   @db.Text
+
+  attachments Attachment[]
+  services    ProjectService[]
 }
 
 model TechItem {
@@ -112,16 +125,86 @@ model TeamMember {
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  title       String
-  titleAr     String?
-  description String?  @db.Text
+  id            String   @id @default(cuid())
+  title         String
+  titleAr       String?
+  slug          String   @unique
+  description   String?  @db.Text
   descriptionAr String? @db.Text
-  icon        String?
-  order       Int      @default(0)
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  shortDescription String? @db.Text
+  tagline      String?
+  benefits     Json     @default("[]")
+  deliverables Json     @default("[]")
+  process      Json     @default("[]")
+  techStack    Json     @default("[]")
+  featured     Boolean  @default(false)
+  seoTitle     String?
+  seoDescription String? @db.Text
+  icon          String?
+  order         Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  faq              Json     @default("[]")
+  ctaHeadline      String?
+  ctaSubtext       String?  @db.Text
+  ctaButtonLabel   String?
+  ctaButtonLink    String?
+
+  attachments Attachment[]
+  projects    ProjectService[]
+}
+
+model MediaAsset {
+  id           String       @id @default(cuid())
+  url          String       @unique
+  filename     String?
+  originalName String?
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  alt          String?
+  caption      String?      @db.Text
+  folder       String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  attachments Attachment[]
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  mediaId   String
+  projectId String?
+  serviceId String?
+  theme     String?
+  role      String
+  order     Int      @default(0)
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  media   MediaAsset @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  project Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  service Service?   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, role, theme])
+  @@index([serviceId, role, theme])
+  @@index([mediaId])
+}
+
+model ProjectService {
+  projectId String
+  serviceId String
+  order     Int     @default(0)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, serviceId])
+  @@index([serviceId])
 }
 
 model ContactPage {
@@ -136,6 +219,15 @@ model ContactPage {
   addressAr    String?
   socialLinks  Json     @default("{}")
   updatedAt    DateTime @updatedAt
+}
+
+model AboutPage {
+  id        Int      @id @default(autoincrement())
+  stats     Json     @default("[]")
+  story     Json     @default("[]")
+  mission   String?  @db.Text
+  vision    String?  @db.Text
+  updatedAt DateTime @updatedAt
 }
 
 model Admin {
@@ -156,6 +248,7 @@ model Post {
   content     String     @default("") @db.Text
   contentAr   String?    @db.Text
   coverImage  String?
+  heroImage   String?
   tags        String[]
   tagsAr      String[]   @default([])
   status      PostStatus @default(DRAFT)

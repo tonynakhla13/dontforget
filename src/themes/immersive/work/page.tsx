@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import SmoothScroll from "@/components/SmoothScroll";
-import KnotOnly from "@/components/KnotOnly";
-import MeshGrid from "@/components/MeshGrid";
+import BouncyBall from "@/components/immersive/BouncyBall";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
 import WorkListContent from "@/features/work/WorkListContent";
@@ -36,8 +35,7 @@ export default async function ImmersiveWorkPage() {
   return (
     <>
       <SmoothScroll />
-      <KnotOnly />
-      <MeshGrid />
+      <BouncyBall />
       <main className="relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />

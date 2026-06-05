@@ -8,7 +8,6 @@ import ServicesPipeHologram from "@/components/services/ServicesPipeHologram";
 import ServicesDFParticles from "@/components/services/ServicesDFParticles";
 import Work from "@/components/Work";
 import ImmersiveContact from "@/components/immersive/ImmersiveContact";
-import ImmersiveFooter from "@/components/immersive/ImmersiveFooter";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
@@ -92,7 +91,7 @@ export default function ImmersiveServicesPage() {
   return (
     <>
       <SmoothScroll />
-      <main className="relative z-[1] overflow-x-clip">
+      <main className="immersive-mode relative z-[1] overflow-x-clip">
         <ServicesBackground />
         <ServicesDFParticles />
         <div className="noise" />
@@ -102,7 +101,6 @@ export default function ImmersiveServicesPage() {
         <ServicesOverview />
         <Work projects={projects} />
         <ImmersiveContact embedded />
-        <ImmersiveFooter />
       </main>
     </>
   );

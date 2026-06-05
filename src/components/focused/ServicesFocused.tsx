@@ -44,7 +44,7 @@ const SERVICES = [
   },
   {
     n:        "03",
-    slug:     "e-commerce",
+    slug:     "ecommerce",
     title:    "E-Commerce",
     tag:      "Shopify, WooCommerce & custom",
     body:     "Stores engineered around one goal — selling more. We handle everything from storefront design to checkout flow, payment integration, and post-purchase experience. Every decision is made with conversion rate in mind.",
@@ -75,8 +75,8 @@ const SERVICES = [
   },
   {
     n:        "05",
-    slug:     "seo",
-    title:    "SEO",
+    slug:     "seo-site-health",
+    title:    "SEO & Site Health",
     tag:      "Technical, content & AI search",
     body:     "SEO that compounds. We combine technical audits, content architecture, and Core Web Vitals optimisation with AI search visibility strategies — the kind of work that keeps paying back long after the engagement ends.",
     delivers: ["Technical audits", "Content strategy", "Core Web Vitals", "Schema markup", "Link building", "AI search readiness"],
@@ -90,7 +90,7 @@ const SERVICES = [
   },
   {
     n:        "06",
-    slug:     "crm-platforms",
+    slug:     "crm-systems",
     title:    "CRM Platforms",
     tag:      "Bookings, pipelines & automations",
     body:     "Custom operational systems built around how your team actually works. Booking engines, sales pipelines, client dashboards, and internal tools — designed to reduce manual work and give leadership real-time visibility.",

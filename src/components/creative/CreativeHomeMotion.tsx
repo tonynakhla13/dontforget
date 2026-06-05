@@ -24,7 +24,7 @@ export default function CreativeHomeMotion() {
         .from(".c-hero__card", { autoAlpha: 0, y: 60, rotate: -34, duration: 0.8 }, "-=0.45")
         .from(".c-hero__sub > *", { autoAlpha: 0, y: 26, stagger: 0.1, duration: 0.72 }, "-=0.42")
         .from(".c-hero__stats", { autoAlpha: 0, y: 70, duration: 0.75 }, "-=0.4")
-        .from(".c-hero__clients .c-client", { autoAlpha: 0, yPercent: 100, stagger: 0.05, duration: 0.65 }, "-=0.5");
+        .fromTo(".c-hero__clients", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.65 }, "-=0.5");
 
       gsap.to(".c-hero__earth", {
         rotate: 24,

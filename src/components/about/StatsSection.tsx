@@ -4,35 +4,28 @@ import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   DATA  — 4 stats
+   TYPES
 ───────────────────────────────────────────────────────────────────────── */
-const STATS = [
-  {
-    value: 14, suffix: "+", label: "Projects shipped",
-    desc: "From zero to live — design, build, and hand-off.",
-    index: "01",
-  },
-  {
-    value: 6, suffix: "", label: "Countries served",
-    desc: "Clients across 6 countries, same standard everywhere.",
-    index: "02",
-  },
-  {
-    value: 3, suffix: "yr", label: "Since '22",
-    desc: "Three years of shipping things worth remembering.",
-    index: "03",
-  },
-  {
-    value: 100, suffix: "%", label: "On-time delivery",
-    desc: "Deadlines aren't guidelines. We've never missed one.",
-    index: "04",
-  },
+export type StatItem = {
+  value: number; suffix: string; label: string; desc: string;
+};
+
+const DEFAULT_STATS: StatItem[] = [
+  { value: 14, suffix: "+", label: "Projects shipped", desc: "From zero to live — design, build, and hand-off." },
+  { value: 6,  suffix: "",  label: "Countries served", desc: "Clients across 6 countries, same standard everywhere." },
+  { value: 3,  suffix: "yr",label: "Since '22",        desc: "Three years of shipping things worth remembering." },
+  { value: 100,suffix: "%", label: "On-time delivery",  desc: "Deadlines aren't guidelines. We've never missed one." },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────────
    COMPONENT
 ───────────────────────────────────────────────────────────────────────── */
-export default function StatsSection() {
+export default function StatsSection({ stats: statsProp }: { stats?: StatItem[] }) {
+  const STATS = (statsProp && statsProp.length > 0 ? statsProp : DEFAULT_STATS).map((s, i) => ({
+    ...s,
+    index: String(i + 1).padStart(2, "0"),
+  }));
+
   const sectionRef = useRef<HTMLElement>(null);
   const headerRef  = useRef<HTMLDivElement>(null);
   const gridRef    = useRef<HTMLDivElement>(null);
@@ -77,6 +70,7 @@ export default function StatsSection() {
       }
 
       /* Per-stat: bar draw + count-up */
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       STATS.forEach((stat, i) => {
         gsap.fromTo(barRefs.current[i],
           { scaleX: 0, transformOrigin: "left center" },
@@ -110,7 +104,7 @@ export default function StatsSection() {
       style={{
         /* Solid dark surface with subtle green tint */
         background: [
-          "linear-gradient(180deg, rgba(9,9,9,0) 0%, rgba(5,13,9,0.97) 5%, rgba(5,13,9,0.97) 95%, rgba(9,9,9,0) 100%)",
+          "linear-gradient(180deg, rgba(9,9,9,0) 0%, rgba(9,9,9,0.97) 5%, rgba(9,9,9,0.97) 95%, rgba(9,9,9,0) 100%)",
         ].join(","),
         padding: "clamp(4.5rem,9vh,8rem) 0 clamp(5rem,10vh,9rem)",
       }}
@@ -118,29 +112,21 @@ export default function StatsSection() {
       {/* Top border glow */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0" style={{
         height: 1,
-        background: "linear-gradient(90deg, transparent 0%, rgba(58,191,138,0.35) 30%, rgba(58,191,138,0.55) 60%, transparent 100%)",
+        background: "linear-gradient(90deg, transparent 0%, rgba(70,174,34,0.35) 30%, rgba(70,174,34,0.55) 60%, transparent 100%)",
       }} />
 
       {/* Bottom border glow */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0" style={{
         height: 1,
-        background: "linear-gradient(90deg, transparent 0%, rgba(58,191,138,0.2) 40%, rgba(58,191,138,0.35) 70%, transparent 100%)",
+        background: "linear-gradient(90deg, transparent 0%, rgba(70,174,34,0.2) 40%, rgba(70,174,34,0.35) 70%, transparent 100%)",
       }} />
 
-      {/* Dot grid */}
+      {/* Dot grid — neutral white dots, no green tint */}
       <div aria-hidden className="pointer-events-none absolute inset-0" style={{
-        backgroundImage: "radial-gradient(rgba(58,191,138,0.065) 1px, transparent 1px)",
+        backgroundImage: "radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)",
         backgroundSize: "38px 38px",
         maskImage: "radial-gradient(ellipse 95% 85% at 50% 50%, black 40%, transparent 100%)",
         WebkitMaskImage: "radial-gradient(ellipse 95% 85% at 50% 50%, black 40%, transparent 100%)",
-      }} />
-
-      {/* Centre ambient glow */}
-      <div aria-hidden className="pointer-events-none absolute" style={{
-        top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-        width: "70vw", height: "50vw",
-        background: "radial-gradient(ellipse at 50% 50%, rgba(58,191,138,0.09) 0%, transparent 60%)",
-        filter: "blur(56px)",
       }} />
 
       <div className="wrap relative z-10">
@@ -148,7 +134,7 @@ export default function StatsSection() {
         {/* Scan line */}
         <div ref={scanRef} style={{
           height: 1,
-          background: "linear-gradient(90deg, transparent 0%, rgba(58,191,138,0.5) 15%, rgba(58,191,138,1) 55%, rgba(58,191,138,0.25) 100%)",
+          background: "linear-gradient(90deg, transparent 0%, rgba(70,174,34,0.5) 15%, rgba(70,174,34,1) 55%, rgba(70,174,34,0.25) 100%)",
           marginBottom: "clamp(2rem,3.5vh,3.5rem)",
         }} />
 
@@ -157,7 +143,7 @@ export default function StatsSection() {
           <span style={{
             fontFamily: "var(--font-mono-next)",
             fontSize: "0.42rem", letterSpacing: "0.5em",
-            textTransform: "uppercase", color: "rgba(58,191,138,0.65)",
+            textTransform: "uppercase", color: "rgba(70,174,34,0.65)",
           }}>
             Studio metrics
           </span>
@@ -184,7 +170,7 @@ export default function StatsSection() {
               <span aria-hidden className="hed" style={{
                 position: "absolute", top: "-0.5em", right: 0,
                 fontSize: "clamp(4rem,10vw,11rem)", lineHeight: 1,
-                color: "rgba(58,191,138,0.05)",
+                color: "rgba(70,174,34,0.05)",
                 userSelect: "none", pointerEvents: "none",
                 letterSpacing: "-0.04em",
               }}>
@@ -195,7 +181,7 @@ export default function StatsSection() {
               <p style={{
                 fontFamily: "var(--font-mono-next)",
                 fontSize: "0.38rem", letterSpacing: "0.46em",
-                textTransform: "uppercase", color: "rgba(58,191,138,0.42)",
+                textTransform: "uppercase", color: "rgba(70,174,34,0.42)",
                 marginBottom: "clamp(0.6rem,1vh,1rem)",
               }}>
                 {stat.index} / 04
@@ -217,7 +203,7 @@ export default function StatsSection() {
               {/* Teal bar */}
               <div ref={(el) => { barRefs.current[i] = el; }} style={{
                 height: 2,
-                background: "linear-gradient(90deg, rgba(58,191,138,0.9) 0%, rgba(58,191,138,0.15) 100%)",
+                background: "linear-gradient(90deg, rgba(70,174,34,0.9) 0%, rgba(70,174,34,0.15) 100%)",
                 borderRadius: 2,
                 marginBottom: "clamp(0.7rem,1.2vh,1.2rem)",
               }} />
@@ -247,7 +233,7 @@ export default function StatsSection() {
         {/* Bottom rule */}
         <div style={{
           marginTop: "clamp(3rem,5vh,5rem)", height: 1,
-          background: "linear-gradient(90deg, rgba(58,191,138,0.25) 0%, rgba(255,255,255,0.07) 50%, transparent 100%)",
+          background: "linear-gradient(90deg, rgba(70,174,34,0.25) 0%, rgba(255,255,255,0.07) 50%, transparent 100%)",
         }} />
 
       </div>

@@ -1,31 +1,62 @@
-"use client";
-
 import Link from "next/link";
+import type { Locale } from "@/i18n/config";
 import CreativeNavbar from "@/components/creative/CreativeNavbar";
 import CreativePageHero from "@/components/creative/CreativePageHero";
 import CreativeFAQ from "@/components/creative/CreativeFAQ";
 import CreativeFooter from "@/components/creative/CreativeFooter";
 
 const SERVICES = [
-  { n: "01", id: "webdev", t: "Web\nDev", d: "Fast, scalable, interactive websites and applications built around performance, clarity, CMS needs, SEO, and measurable results." },
-  { n: "02", id: "uiux", t: "UI /\nUX", d: "Research, competitive analysis, wireframes, prototypes, design systems, interaction design, and usability refinement." },
-  { n: "03", id: "ecomm", t: "E-\nCommerce", d: "Custom storefronts, payments, inventory, retention flows, analytics, reporting, and SEO-ready sales paths." },
-  { n: "04", id: "mobile", t: "Mobile", d: "iOS and Android product flows with native-feeling interaction, push notifications, offline support, and release preparation." },
-  { n: "05", id: "seo", t: "SEO", d: "Technical audits, keyword strategy, content planning, link building, Core Web Vitals, and AI-powered search visibility." },
-  { n: "06", id: "crm", t: "CRM", d: "Custom workflow platforms with role-based access, dashboards, reporting, integrations, automation, and data migration." },
+  {
+    n: "01",
+    slug: "web-development",
+    title: "Web Development",
+    body: "We build fast, scalable digital products that perform under pressure and look impossible to ignore. From marketing sites to full-stack web applications - everything is engineered to convert, load in milliseconds, and hold up at scale.",
+  },
+  {
+    n: "02",
+    slug: "ui-ux-design",
+    title: "UI / UX Design",
+    body: "We start with behavior before aesthetics. Every interface is grounded in how real users think - not how designers imagine they think. The result is work that feels obvious, reduces friction, and converts better than it looks.",
+  },
+  {
+    n: "03",
+    slug: "ecommerce",
+    title: "E-Commerce",
+    body: "Stores engineered around one goal - selling more. We handle everything from storefront design to checkout flow, payment integration, and post-purchase experience. Every decision is made with conversion rate in mind.",
+  },
+  {
+    n: "04",
+    slug: "mobile-apps",
+    title: "Mobile Apps",
+    body: "Native-feeling apps built for real users. Tight onboarding, frictionless flows, and retention mechanics baked in from day one - not bolted on after launch. We ship on both platforms without doubling the timeline.",
+  },
+  {
+    n: "05",
+    slug: "seo-site-health",
+    title: "SEO & Site Health",
+    body: "SEO that compounds. We combine technical audits, content architecture, and Core Web Vitals optimisation with AI search visibility strategies - the kind of work that keeps paying back long after the engagement ends.",
+  },
+  {
+    n: "06",
+    slug: "crm-systems",
+    title: "CRM Platforms",
+    body: "Custom operational systems built around how your team actually works. Booking engines, sales pipelines, client dashboards, and internal tools - designed to reduce manual work and give leadership real-time visibility.",
+  },
 ];
 
 const PROCESS = [
-  { n: "01", t: "Listen.", d: "A 60-minute call. You talk, we take a lot of notes and ask the questions you weren't expecting." },
-  { n: "02", t: "Shape.", d: "A written direction — territory, tone, references and what we'd cut. No mood boards from Pinterest. Promise." },
-  { n: "03", t: "Make.", d: "We design in public — Figma open, shared link, working sessions on Wednesdays. You see it as it happens." },
-  { n: "04", t: "Ship.", d: "A delivery week. Files, guidelines, walk-throughs and a half-day with whoever inherits the work." },
+  { n: "01", t: "Intake", d: "We understand your goals, audience, timeline, and what success needs to look like." },
+  { n: "02", t: "Discovery", d: "We audit your market, competitors, current brand, and digital experience." },
+  { n: "03", t: "Strategy", d: "We define the direction, messaging, structure, and creative approach." },
+  { n: "04", t: "Build", d: "We design and develop the system with precision, speed, and polish." },
+  { n: "05", t: "Launch", d: "We refine, test, ship, and make sure everything is ready to perform." },
 ];
 
-const PRICING = [
-  { label: "Sprint", price: "$8k", period: "two-week burst", desc: "For when you need shape — a wordmark, a one-pager, a campaign concept. Fast, focused, finished.", cta: "Book a sprint →", highlight: false },
-  { label: "Project", price: "$24k+", period: "six to ten weeks", desc: "A full identity system, a marketing site or a campaign with deliverables across surfaces. Most clients land here.", cta: "Scope a project →", highlight: true },
-  { label: "Retainer", price: "$12k/mo", period: "ongoing partner", desc: "An embedded design team for in-house brands and product orgs. Monthly cadence, shared boards, slack channel.", cta: "Talk retainer →", highlight: false },
+const HOW_WE_WORK = [
+  { label: "No retainers, no billable hours", detail: "You pay for outcomes, not time." },
+  { label: "Direct access to the makers", detail: "You talk to the people doing the work." },
+  { label: "Ship in 4-8 weeks", detail: "Most projects don't need to take longer." },
+  { label: "Radical honesty always", detail: "If something won't work, we say so first." },
 ];
 
 function ArrowSvg() {
@@ -36,55 +67,65 @@ function ArrowSvg() {
   );
 }
 
-export default function CreativeServicesPage() {
+export default function CreativeServicesPage({ locale }: { locale: Locale }) {
   return (
     <>
       <CreativeNavbar active="services" />
 
       <CreativePageHero
         crumb="Home / Services"
-        title={<>Six things<br />we do<br /><em>obsessively</em>.</>}
-        sub="No fifty-line capabilities deck. We do six things, and we do them properly. Pick one, or chain them together as a full system."
+        title={<>Strategy to<br /><em>launch</em>.</>}
+        sub="Six disciplines. One integrated team. We move from brand strategy and design to code, commerce, and growth under one roof, no handoffs, no gaps."
       />
 
-      {/* Service list rows */}
       <section className="c-svc-list">
-        {SERVICES.map(({ n, id, t, d }) => (
-          <div key={n} className="c-svc-row">
-            <div className="c-svc-row__n">{n}</div>
-            <div className="c-svc-row__t" style={{ whiteSpace: "pre-line" }}>{t}</div>
-            <p className="c-svc-row__d">{d}</p>
-            <Link href={`/services/${id}`} className="c-iconbtn c-svc-row__arr" aria-label={`More about ${t.replace(/\s+/g, " ")}`}>
+        <div className="c-svc-list__head">
+          <span>/ what we do</span>
+          <span>{SERVICES.length} services</span>
+        </div>
+        {SERVICES.map((service) => (
+          <div key={service.slug} className="c-svc-row">
+            <div className="c-svc-row__n">{service.n}</div>
+            <div className="c-svc-row__t">{service.title}</div>
+            <p className="c-svc-row__d">{service.body}</p>
+            <Link
+              href={`/${locale}/creative/services/${service.slug}`}
+              className="c-iconbtn c-svc-row__arr"
+              aria-label={`More about ${service.title}`}
+            >
               <ArrowSvg />
             </Link>
           </div>
         ))}
       </section>
 
-      {/* Pricing panel */}
-      <section className="c-pricing-panel">
-        <div className="c-pricing-card">
-          <h2 className="c-pricing-title">How we<br />work together.</h2>
-          <div className="c-pricing-grid">
-            {PRICING.map(({ label, price, period, desc, cta, highlight }) => (
-              <div key={label} className={`c-pricing-tier${highlight ? " c-pricing-tier--highlight" : ""}`}>
-                <div>
-                  <div className="c-tier__label">{label}</div>
-                  <div className="c-tier__price">{price}</div>
-                  <p className="c-tier__period">{period}</p>
-                </div>
-                <p className="c-tier__desc">{desc}</p>
-                <Link href="/creative/contact" className="c-btn" style={{ marginTop: 20 }}>{cta}</Link>
+      <section className="c-service-principles">
+        <div>
+          <p className="c-section-kicker">/ how we work</p>
+          <h2>Every project starts with the right question.</h2>
+        </div>
+        <div className="c-service-principles__list">
+          {HOW_WE_WORK.map((item) => (
+            <div key={item.label} className="c-service-principle">
+              <span />
+              <div>
+                <h3>{item.label}</h3>
+                <p>{item.detail}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Process */}
-      <section className="c-process">
-        <h2 className="c-process__title">The<br />process.</h2>
-        <div className="c-process__grid">
+      <section className="c-process c-process--services">
+        <div className="c-process__head">
+          <div>
+            <p className="c-section-kicker">/ process</p>
+            <h2 className="c-process__title">Simple process,<br />sharp output.</h2>
+          </div>
+          <p>No bloated workshops. No endless revision loops. Just a clear path from idea to launch.</p>
+        </div>
+        <div className="c-process__grid c-process__grid--five">
           {PROCESS.map(({ n, t, d }) => (
             <div key={n} className="c-step">
               <div className="c-step__n">{n}</div>

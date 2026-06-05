@@ -18,7 +18,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const { id } = await params;
   const body = await request.json();
-  const { title, titleAr, slug, excerpt, excerptAr, content, contentAr, coverImage, tags, tagsAr, status, order } = body;
+  const { title, titleAr, slug, excerpt, excerptAr, content, contentAr, coverImage, heroImage, tags, tagsAr, status, order } = body;
 
   const current = await prisma.post.findUnique({ where: { id } });
   if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -37,6 +37,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       content: content || "",
       contentAr: contentAr || null,
       coverImage: coverImage || null,
+      heroImage: heroImage || null,
       tags: tags || [],
       tagsAr: tagsAr || [],
       status,

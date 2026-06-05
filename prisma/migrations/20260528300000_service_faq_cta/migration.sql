@@ -1,0 +1,6 @@
+ALTER TABLE "Service"
+  ADD COLUMN IF NOT EXISTS "faq"            JSONB NOT NULL DEFAULT '[]',
+  ADD COLUMN IF NOT EXISTS "ctaHeadline"    TEXT,
+  ADD COLUMN IF NOT EXISTS "ctaSubtext"     TEXT,
+  ADD COLUMN IF NOT EXISTS "ctaButtonLabel" TEXT,
+  ADD COLUMN IF NOT EXISTS "ctaButtonLink"  TEXT;

@@ -3,6 +3,9 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
+const PIPE_GREEN = 0x46d12a;
+const PIPE_GREEN_BRIGHT = 0x7cff5f;
+
 function makeStroke(points: THREE.Vector3[], radius: number, material: THREE.Material) {
   const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.12);
   const geometry = new THREE.TubeGeometry(curve, 96, radius, 12, false);
@@ -33,17 +36,17 @@ export default function ServicesPipeHologram() {
     const target = new THREE.Vector2(0, 0);
 
     const material = new THREE.LineBasicMaterial({
-      color: 0x35c592,
+      color: PIPE_GREEN,
       transparent: true,
-      opacity: 0.055,
+      opacity: 0.064,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
 
     const brightMaterial = new THREE.LineBasicMaterial({
-      color: 0x53e6b2,
+      color: PIPE_GREEN_BRIGHT,
       transparent: true,
-      opacity: 0.105,
+      opacity: 0.115,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });

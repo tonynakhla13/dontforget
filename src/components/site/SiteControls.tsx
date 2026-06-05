@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { selectLocale, selectTheme } from "@/app/(site)/[lang]/actions";
-import { replaceLocale, replaceTheme, type Locale, type Theme, THEMES } from "@/lib/site-routing";
+import { parseCanonicalPath, replaceLocale, replaceTheme, type Locale, type Theme, THEMES } from "@/lib/site-routing";
 import { useThemeTransition } from "./ThemeLoadingExperience";
 
 type Props = { locale: Locale; theme: Theme; labels: { theme: string; language: string; current: string } };
@@ -24,6 +24,23 @@ export function LocaleControl({ locale, theme, labels }: LocaleProps) {
       <button type="button" aria-current={locale === "en"} onClick={() => changeLocale("en")}>EN</button>
       <span>/</span>
       <button type="button" aria-current={locale === "ar"} onClick={() => changeLocale("ar")}>AR</button>
+    </div>
+  );
+}
+
+export function HeaderLocaleControl({ theme, className }: { theme: Theme; className?: string }) {
+  const pathname = usePathname();
+  const route = parseCanonicalPath(pathname);
+
+  if (!route) return null;
+
+  return (
+    <div className={className}>
+      <LocaleControl
+        locale={route.locale}
+        theme={theme}
+        labels={{ language: "Switch language", theme: "Switch theme", current: "Current" }}
+      />
     </div>
   );
 }

@@ -17,6 +17,9 @@ import FocusedAbout from "@/themes/focused/about/page";
 import FocusedWork from "@/themes/focused/work/page";
 import FocusedServices from "@/themes/focused/services/page";
 import FocusedBlog from "@/themes/focused/blog/page";
+import ServiceDetailFocused from "@/components/focused/ServiceDetailFocused";
+import BlogPostFocused from "@/components/focused/BlogPostFocused";
+import ProjectContentFocused from "@/components/focused/ProjectContentFocused";
 import FocusedContact from "@/themes/focused/contact/page";
 import ServiceDetailFocused from "@/components/focused/ServiceDetailFocused";
 import CreativeThemeLayout from "@/themes/creative/layout";
@@ -26,6 +29,13 @@ import CreativeWork from "@/themes/creative/work/page";
 import CreativeServices from "@/themes/creative/services/page";
 import CreativeBlog from "@/themes/creative/blog/page";
 import CreativeContact from "@/themes/creative/contact/page";
+import ServiceDetailCreative from "@/components/creative/ServiceDetailCreative";
+import BlogPostCreative from "@/components/creative/BlogPostCreative";
+import ProjectContentCreative from "@/components/creative/ProjectContentCreative";
+import { getProject as getFullProject } from "@/features/work/[slug]/page";
+import BlogPostImmersive from "@/components/immersive/BlogPostImmersive";
+import ServiceDetailImmersive from "@/components/immersive/ServiceDetailImmersive";
+import ImmersiveThemeLayout from "@/themes/immersive/layout";
 import ImmersiveHome from "@/themes/immersive/page";
 import ImmersiveAbout from "@/themes/immersive/about/page";
 import ImmersiveWork from "@/themes/immersive/work/page";
@@ -46,10 +56,41 @@ async function routeParams(params: Params) {
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { locale, theme, tail } = await routeParams(params);
+  const tailPath = tail.length ? `/${tail.join("/")}` : "";
+
+  /* ── Individual blog post — rich OG metadata ── */
+  if (tail[0] === "blog" && tail[1]) {
+    const post = await getPost(locale, tail[1]);
+    if (post) {
+      const desc = post.excerpt ?? post.content.replace(/[#*`]/g, "").substring(0, 155).trimEnd() + "…";
+      return {
+        title:       `${post.title} — NOX Studio`,
+        description: desc,
+        keywords:    post.tags.join(", "),
+        openGraph: {
+          type:             "article",
+          title:            post.title,
+          description:      desc,
+          ...(post.coverImage && { images: [{ url: post.coverImage, width: 1200, height: 630, alt: post.title }] }),
+          ...(post.publishedAt && { publishedTime: new Date(post.publishedAt).toISOString() }),
+          tags:             post.tags,
+          siteName:         "NOX Studio",
+        },
+        twitter: {
+          card:        "summary_large_image",
+          title:       post.title,
+          description: desc,
+          ...(post.coverImage && { images: [post.coverImage] }),
+        },
+        alternates: { languages: { en: `/en/${theme}${tailPath}`, ar: `/ar/${theme}${tailPath}` } },
+      };
+    }
+  }
+
+  /* ── Default page metadata ── */
   const d = await getDictionary(locale);
   const page = tail[0] as keyof typeof d.pages | undefined;
   const title = page ? `${d.pages[page][0]} - ${d.brand}` : d.meta.title;
-  const tailPath = tail.length ? `/${tail.join("/")}` : "";
   return {
     title,
     description: page ? d.pages[page][1] : d.meta.description,
@@ -76,9 +117,24 @@ export default async function ThemePage({ params }: { params: Params }) {
 async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: string[]) {
   const page = tail[0] ?? "home";
   if (theme === "focused") {
+    if (page === "services" && tail[1]) {
+      const service = await getService(locale, tail[1]);
+      if (!service) return null;
+      return <FocusedThemeLayout><ServiceDetailFocused service={service} locale={locale} /></FocusedThemeLayout>;
+    }
+    if (page === "blog" && tail[1]) {
+      const post = await getPost(locale, tail[1]);
+      if (!post) return null;
+      return <FocusedThemeLayout><BlogPostFocused post={post} locale={locale} /></FocusedThemeLayout>;
+    }
+    if (page === "work" && tail[1]) {
+      const project = await getFullProject(tail[1]);
+      if (!project) return null;
+      return <FocusedThemeLayout><ProjectContentFocused project={project} /></FocusedThemeLayout>;
+    }
     const view = page === "home" ? <FocusedHome /> :
       page === "about" && !tail[1] ? <FocusedAbout /> :
-      page === "work" && !tail[1] ? <FocusedWork /> :
+      page === "work" && !tail[1] ? <FocusedWork locale={locale} /> :
       page === "services" && !tail[1] ? <FocusedServices /> :
       page === "services" && tail[1] ? <ServiceDetailFocused slug={tail[1]} /> :
       page === "blog" && !tail[1] ? <FocusedBlog /> :
@@ -86,25 +142,75 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
     return view ? <FocusedThemeLayout>{view}</FocusedThemeLayout> : null;
   }
   if (theme === "creative") {
-    const view = page === "home" ? <CreativeHome /> :
+    if (page === "services" && tail[1]) {
+      const service = await getService(locale, tail[1]);
+      if (!service) return null;
+      return <CreativeThemeLayout><ServiceDetailCreative service={service} locale={locale} /></CreativeThemeLayout>;
+    }
+    if (page === "blog" && tail[1]) {
+      const post = await getPost(locale, tail[1]);
+      if (!post) return null;
+      return <CreativeThemeLayout><BlogPostCreative post={post} locale={locale} /></CreativeThemeLayout>;
+    }
+    if (page === "work" && tail[1]) {
+      const project = await getFullProject(tail[1]);
+      if (!project) return null;
+      return <CreativeThemeLayout><ProjectContentCreative project={project} /></CreativeThemeLayout>;
+    }
+    const view = page === "home" ? <CreativeHome locale={locale} /> :
       page === "about" && !tail[1] ? <CreativeAbout /> :
       page === "work" && !tail[1] ? <CreativeWork /> :
-      page === "services" && !tail[1] ? <CreativeServices /> :
-      page === "blog" && !tail[1] ? <CreativeBlog /> :
+      page === "services" && !tail[1] ? <CreativeServices locale={locale} /> :
+      page === "blog" && !tail[1] ? <CreativeBlog locale={locale} /> :
       page === "contact" && !tail[1] ? <CreativeContact /> : null;
     return view ? <CreativeThemeLayout>{view}</CreativeThemeLayout> : null;
   }
   if (theme === "immersive") {
-    if (page === "home") return <ImmersiveHome projects={await getProjects(locale)} />;
-    if (page === "about" && !tail[1]) return <ImmersiveAbout />;
-    if (page === "work" && !tail[1]) return <ImmersiveWork />;
-    if (page === "services" && !tail[1]) return <ImmersiveServices />;
-    if (page === "blog" && !tail[1]) return <ImmersiveBlog />;
-    if (page === "contact" && !tail[1]) return <ImmersiveContact />;
-    if (page === "work" && tail[1]) return <ImmersiveProject params={Promise.resolve({ slug: tail[1] })} />;
-    if (page === "services" && tail[1]) return <ImmersiveService params={Promise.resolve({ id: tail[1] })} />;
+    const view = await renderImmersiveView(locale, page, tail);
+    return view ? <ImmersiveThemeLayout>{view}</ImmersiveThemeLayout> : null;
   }
   if (page === "request" && !tail[1]) return <RequestPage />;
+  return null;
+}
+
+async function renderImmersiveView(locale: Locale, page: string, tail: string[]) {
+  if (page === "home") {
+    const [projects, services] = await Promise.all([getProjects(locale), getServices(locale)]);
+    return <ImmersiveHome projects={projects} services={services} />;
+  }
+  if (page === "about" && !tail[1]) return <ImmersiveAbout />;
+  if (page === "work" && !tail[1]) return <ImmersiveWork />;
+  if (page === "services" && !tail[1]) return <ImmersiveServices />;
+  if (page === "blog" && !tail[1]) return <ImmersiveBlog locale={locale} />;
+  if (page === "blog" && tail[1]) {
+    const post = await getPost(locale, tail[1]);
+    if (!post) return null;
+    return <BlogPostImmersive post={post} locale={locale} />;
+  }
+  if (page === "contact" && !tail[1]) return <ImmersiveContact />;
+  if (page === "work" && tail[1]) return <ImmersiveProject params={Promise.resolve({ slug: tail[1] })} />;
+  if (page === "services" && tail[1]) {
+    const service = await getServiceWithAliases(locale, tail[1]);
+    if (service) return <ServiceDetailImmersive service={service} />;
+    return <ImmersiveService params={Promise.resolve({ id: tail[1] })} />;
+  }
+  return null;
+}
+
+async function getServiceWithAliases(locale: Locale, id: string) {
+  const aliases: Record<string, string[]> = {
+    webdev: ["web-development"],
+    uiux: ["ui-ux-design", "ui-ux"],
+    ecomm: ["ecommerce", "e-commerce"],
+    mobile: ["mobile-apps"],
+    seo: ["seo-site-health", "seo"],
+    crm: ["crm-systems"],
+  };
+  const candidates = [id, ...(aliases[id] ?? [])];
+  for (const candidate of candidates) {
+    const service = await getService(locale, candidate);
+    if (service) return service;
+  }
   return null;
 }
 

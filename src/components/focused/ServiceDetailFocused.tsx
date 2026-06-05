@@ -45,7 +45,7 @@ export const SERVICES_DATA = [
     ],
   },
   {
-    slug:     "e-commerce",
+    slug:     "ecommerce",
     n:        "03",
     title:    "E-Commerce",
     tag:      "Shopify, WooCommerce & custom",
@@ -75,9 +75,9 @@ export const SERVICES_DATA = [
     ],
   },
   {
-    slug:     "seo",
+    slug:     "seo-site-health",
     n:        "05",
-    title:    "SEO",
+    title:    "SEO & Site Health",
     tag:      "Technical, content & AI search",
     body:     "SEO that compounds. We combine technical audits, content architecture, and Core Web Vitals optimisation with AI search visibility strategies — the kind of work that keeps paying back long after the engagement ends.",
     delivers: ["Technical audits", "Content strategy", "Core Web Vitals", "Schema markup", "Link building", "AI search readiness"],
@@ -90,7 +90,7 @@ export const SERVICES_DATA = [
     ],
   },
   {
-    slug:     "crm-platforms",
+    slug:     "crm-systems",
     n:        "06",
     title:    "CRM Platforms",
     tag:      "Bookings, pipelines & automations",

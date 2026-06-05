@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { prisma } from "@/lib/prisma";
 import SmoothScroll from "@/components/SmoothScroll";
-import AltParticleLayer from "@/components/AltParticleLayer";
+import ParticleLayer from "@/components/ParticleLayer";
 import Navbar from "@/components/Navbar";
 import AmbientGlow from "@/components/AmbientGlow";
 import ProjectContent from "./ProjectContent";
@@ -21,7 +21,7 @@ const FALLBACK_PROJECTS: ProjectData[] = [
     tags: ["Next.js", "GSAP", "CMS", "Motion Design"],
     liveUrl: null,
     coverImage:
-      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=85&auto=format&fit=crop",
+      "/uploads/projects/1779936842782-d284d4d0-9e01-41cc-9dbc-3a58d355afbe.png",
     images: [
       "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=1400&q=85&auto=format&fit=crop",
@@ -110,27 +110,81 @@ export type ProjectData = {
   year: string | null;
   description: string | null;
   client: string | null;
+  clientId?: string | null;
+  clientLogo?: string | null;
   tags: string[];
   liveUrl: string | null;
+  githubUrl?: string | null;
+  caseStudyUrl?: string | null;
   coverImage: string | null;
+  heroImage?: string | null;
+  tallImage?: string | null;
+  useTallImage?: boolean | null;
   images: string[];
   tagline?: string | null;
   shortDescription?: string | null;
   fullDescription?: string | null;
   location?: string | null;
+  techStack?: unknown;
+  techStackItems?: { id: string; name: string; icon: string | null; iconUrl: string | null }[];
   challengePoints?: unknown;
   challengeResponses?: unknown;
   resultSlides?: unknown;
+  clientGoals?: unknown;
+  challenges?: unknown;
+  results?: unknown;
   gallery?: unknown;
   extraMile?: string | null;
+  services?: { id: string; title: string; slug: string; icon: string | null; shortDescription: string | null }[];
 };
 
-async function getProject(slug: string): Promise<ProjectData | null> {
+export async function getProject(slug: string): Promise<ProjectData | null> {
   const fallback = FALLBACK_PROJECTS.find((project) => project.slug === slug) ?? null;
   try {
-    const project = await prisma.project.findUnique({ where: { slug } });
+    const project = await prisma.project.findUnique({
+      where: { slug },
+      include: {
+        attachments: { include: { media: true }, orderBy: { order: "asc" } },
+        services: { include: { service: true }, orderBy: { order: "asc" } },
+      },
+    });
     if (project) {
-      const record = project as ProjectData;
+      const record = project as unknown as ProjectData;
+      const coverAttachment = project.attachments.find((item) => item.role === "project_cover")?.media.url;
+      const heroAttachment = project.attachments.find((item) => item.role === "project_hero")?.media.url;
+      const tallAttachment = project.attachments.find((item) => item.role === "project_tall_screenshot")?.media.url;
+      const galleryAttachments = project.attachments.filter((item) => item.role === "project_gallery").map((item) => item.media.url);
+      const resultAttachments = project.attachments.filter((item) => item.role === "project_result");
+      const projectServices = project.services.map((item) => ({
+        id: item.service.id,
+        title: item.service.title,
+        slug: item.service.slug,
+        icon: item.service.icon,
+        shortDescription: item.service.shortDescription,
+      }));
+      const normalizedResults = Array.isArray(record.results)
+        ? record.results.map((item, index) => {
+            if (!item || typeof item !== "object") return item;
+            const mediaUrl = resultAttachments.find((attachment) => attachment.order === index)?.media.url;
+            return mediaUrl ? { ...(item as Record<string, unknown>), mediaUrl } : item;
+          })
+        : record.results;
+      const techIds = Array.isArray(record.techStack)
+        ? record.techStack.filter((item): item is string => typeof item === "string")
+        : [];
+      const techItems = techIds.length
+        ? await prisma.techItem.findMany({ where: { id: { in: techIds } }, select: { id: true, name: true, icon: true, iconUrl: true } })
+        : [];
+      const techStack = techItems.length
+        ? techItems.sort((a, b) => techIds.indexOf(a.id) - techIds.indexOf(b.id)).map((item) => item.name)
+        : record.techStack;
+      const clientItem = record.clientId
+        ? await prisma.clientItem.findUnique({
+            where: { id: record.clientId },
+            select: { company: true, logo: true, website: true },
+          })
+        : null;
+
       return fallback
         ? {
             ...fallback,
@@ -142,12 +196,37 @@ async function getProject(slug: string): Promise<ProjectData | null> {
             challengePoints: record.challengePoints ?? fallback.challengePoints,
             challengeResponses: record.challengeResponses ?? fallback.challengeResponses,
             resultSlides: record.resultSlides ?? fallback.resultSlides,
+            clientGoals: record.clientGoals ?? fallback.clientGoals,
+            challenges: record.challenges ?? fallback.challenges,
+            results: normalizedResults ?? fallback.results,
             gallery: record.gallery ?? fallback.gallery,
             extraMile: record.extraMile ?? fallback.extraMile,
-            images: record.images?.length ? record.images : fallback.images,
-            coverImage: record.coverImage ?? fallback.coverImage,
+            services: projectServices.length ? projectServices : fallback.services,
+            techStack,
+            techStackItems: techItems.length ? techItems : undefined,
+            client: clientItem?.company ?? record.client ?? fallback.client,
+            clientLogo: clientItem?.logo ?? record.clientLogo ?? fallback.clientLogo,
+            liveUrl: record.liveUrl ?? clientItem?.website ?? fallback.liveUrl,
+            images: galleryAttachments.length ? galleryAttachments : record.images?.length ? record.images : fallback.images,
+            coverImage: coverAttachment ?? record.coverImage ?? fallback.coverImage,
+            heroImage: heroAttachment ?? record.heroImage ?? fallback.heroImage,
+            tallImage: tallAttachment ?? record.tallImage ?? fallback.tallImage,
+            useTallImage: record.useTallImage ?? fallback.useTallImage,
           }
-        : record;
+        : {
+            ...record,
+            results: normalizedResults,
+            services: projectServices,
+            techStack,
+            techStackItems: techItems.length ? techItems : undefined,
+            client: clientItem?.company ?? record.client,
+            clientLogo: clientItem?.logo ?? record.clientLogo,
+            liveUrl: record.liveUrl ?? clientItem?.website ?? null,
+            images: galleryAttachments.length ? galleryAttachments : record.images,
+            coverImage: coverAttachment ?? record.coverImage,
+            heroImage: heroAttachment ?? record.heroImage,
+            tallImage: tallAttachment ?? record.tallImage,
+          };
     }
   } catch {}
 
@@ -180,8 +259,8 @@ export default async function WorkPage({
   return (
     <>
       <SmoothScroll />
-      <AltParticleLayer mode="galaxy" />
-      <main className="relative z-[1] overflow-x-clip">
+      <ParticleLayer />
+      <main className="immersive-mode relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />
         <Navbar inner />

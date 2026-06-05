@@ -78,10 +78,10 @@ function ruleStrokes(shape: RulePipeShape): StrokeSpec[] {
 
 function createRulePipeHologram(shape: RulePipeShape, color: THREE.ColorRepresentation): THREE.Group {
   const group = new THREE.Group();
-  const mat = makeMat(color, 0.055);
-  const bright = makeMat(color, 0.105);
-  const echoMat = makeMat(color, 0.026);
-  const echoBright = makeMat(color, 0.04);
+  const mat = makeMat(color, 0.13);
+  const bright = makeMat(color, 0.26);
+  const echoMat = makeMat(color, 0.055);
+  const echoBright = makeMat(color, 0.10);
 
   const echo = new THREE.Group();
   echo.position.set(0.12, -0.1, -0.32);
@@ -116,8 +116,8 @@ function RuleMeshCanvas({ shape }: { shape: RulePipeShape }) {
     el.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const cam = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    cam.position.set(0, 0, 6.5);
+    const cam = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
+    cam.position.set(0, 0, 4.8);
 
     const group = createRulePipeHologram(shape, getParticleColor());
     scene.add(group);
@@ -147,9 +147,9 @@ function RuleMeshCanvas({ shape }: { shape: RulePipeShape }) {
     const tick = () => {
       raf = requestAnimationFrame(tick);
       const t = (performance.now() - t0) / 1000;
-      group.rotation.y += 0.002;
-      group.rotation.x = -0.08 + Math.sin(t * 0.12) * 0.018;
-      group.position.y = Math.sin(t * 0.18) * 0.022;
+      group.rotation.y += 0.005;
+      group.rotation.x = -0.08 + Math.sin(t * 0.18) * 0.06;
+      group.position.y = Math.sin(t * 0.22) * 0.08;
       renderer.render(scene, cam);
     };
     tick();
@@ -281,14 +281,14 @@ export default function Principles() {
       </div>
 
       {/* ── 2×2 rules grid ── */}
-      <div ref={gridRef} className="absolute inset-0 z-10 flex flex-col gap-4 px-[clamp(1rem,2.5vw,2rem)] pb-[clamp(1rem,2.5vw,2rem)] pt-[calc(86px+clamp(0.75rem,1.5vw,1.25rem))]">
+      <div ref={gridRef} className="absolute inset-0 z-10 flex flex-col gap-5 px-[clamp(2rem,4vw,4.5rem)] pb-[clamp(2rem,4vw,3.5rem)] pt-[calc(86px+clamp(2rem,4vw,3rem))]">
         {/* Eyebrow */}
         <div className="flex items-center justify-between shrink-0">
           <p className="eyebrow">The rules we work by</p>
         </div>
 
         {/* Grid */}
-        <div className="grid flex-1 grid-cols-2 grid-rows-2 gap-4 min-h-0 max-h-[calc(100vh-160px)]">
+        <div className="grid flex-1 grid-cols-2 grid-rows-2 gap-5 min-h-0 max-h-[calc(100vh-160px)]">
           {rules.map((rule, index) => (
             <article
               key={rule.n}

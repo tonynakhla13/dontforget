@@ -42,7 +42,7 @@ export default function BlogFocused({ posts }: { posts?: FocusedPost[] }) {
 
   return (
     <div ref={rootRef} style={{ background: TK.ink, color: TK.green, fontFamily: SANS }}>
-      <NoxNavbar />
+      <NoxNavbar active="blog" />
 
       <NoxPageIntro
         eyebrow="/ our blog"

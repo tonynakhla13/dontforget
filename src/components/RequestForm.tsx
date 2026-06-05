@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { gsap } from "@/lib/gsap";
 import Link from "next/link";
 
@@ -96,9 +97,12 @@ interface FormData {
   timeline:    string;
   budget:      string;
   name:        string;
-  email:       string;
+  contactMethod: ContactMethod;
+  contactValue:  string;
   note:        string;
 }
+
+type ContactMethod = "whatsapp" | "phone" | "email";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -150,14 +154,28 @@ type RequestFormHeaderMeta = {
 export default function RequestForm({
   embedded = false,
   onHeaderMetaChange,
+  onBack,
+  initialServiceIds = [],
+  initialSubServices = [],
+  initialServiceDetails = [],
+  initialStep,
 }: {
   embedded?: boolean;
   onHeaderMetaChange?: (meta: RequestFormHeaderMeta) => void;
+  onBack?: () => void;
+  initialServiceIds?: string[];
+  initialSubServices?: string[];
+  initialServiceDetails?: Array<{
+    id: string;
+    title?: string;
+    deliverables?: string[];
+  }>;
+  initialStep?: 1 | 2 | 3;
 } = {}) {
-  const [step, setStep]     = useState(1);
-  const [dir,  setDir]      = useState<1 | -1>(1);
+  const [step, setStep]     = useState<1 | 2 | 3>(initialStep ?? (initialServiceIds.length ? 2 : 1));
+  const [navDirection, setNavDirection] = useState<1 | -1>(1);
   const [data, setData]     = useState<FormData>({
-    serviceIds: [], subServices: [], timeline: "", budget: "", name: "", email: "", note: "",
+    serviceIds: initialServiceIds, subServices: initialSubServices, timeline: "", budget: "", name: "", contactMethod: "whatsapp", contactValue: "", note: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
@@ -165,11 +183,32 @@ export default function RequestForm({
   const [assetFiles, setAssetFiles] = useState<File[]>([]);
   const [voiceClips, setVoiceClips] = useState<GuidedVoiceClip[]>([]);
 
-  const contentRef  = useRef<HTMLDivElement>(null);
   const barRef      = useRef<HTMLDivElement>(null);
 
-  const selectedServices = SERVICES.filter(s => data.serviceIds.includes(s.id));
+  const serviceOptions = [
+    ...SERVICES.map(service => {
+      const detail = initialServiceDetails.find(item => item.id === service.id);
+      const deliverables = detail?.deliverables?.filter(Boolean);
+      if (!detail || !deliverables?.length) return service;
+      return {
+        ...service,
+        title: detail.title || service.title,
+        examples: Array.from(new Set(deliverables)),
+      };
+    }),
+    ...initialServiceDetails
+      .filter(detail => detail.id && !SERVICES.some(service => service.id === detail.id))
+      .map((detail, index) => ({
+        id: detail.id,
+        num: String(SERVICES.length + index + 1).padStart(2, "0"),
+        title: detail.title || "Selected service",
+        tagline: "Deliverables from this service",
+        examples: Array.from(new Set(detail.deliverables?.filter(Boolean) ?? [])),
+      })),
+  ];
+  const selectedServices = serviceOptions.filter(s => data.serviceIds.includes(s.id));
   const selectedServiceTitle = selectedServices.map(service => service.title).join(" + ");
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (!embedded || !onHeaderMetaChange) return;
@@ -186,16 +225,6 @@ export default function RequestForm({
   }, [done, embedded, onHeaderMetaChange, selectedServiceTitle, step]);
 
   // ── Animate step enter ──────────────────────────────────────────────────
-  useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
-    gsap.fromTo(
-      el,
-      { x: dir === 1 ? 44 : -44, autoAlpha: 0 },
-      { x: 0, autoAlpha: 1, duration: 0.34, ease: "power2.out" }
-    );
-  }, [step, done, dir]);
-
   // ── Animate progress bar ────────────────────────────────────────────────
   useEffect(() => {
     const bar = barRef.current;
@@ -216,32 +245,33 @@ export default function RequestForm({
   });
 
   // ── Navigation helpers ──────────────────────────────────────────────────
-  function navigate(next: number, direction: 1 | -1) {
-    setDir(direction);
-    const el = contentRef.current;
-    gsap.to(el, {
-      x: direction === 1 ? -44 : 44,
-      autoAlpha: 0,
-      duration: 0.22,
-      ease: "power2.in",
-      onComplete: () => setStep(next),
-    });
+  function navigate(next: 1 | 2 | 3, direction: 1 | -1) {
+    if (next === step) return;
+    setNavDirection(direction);
+    setStep(next);
   }
 
   const canAdvance =
     step === 1 ? data.serviceIds.length > 0 :
     step === 2 ? data.subServices.length > 0 && !!data.timeline && !!data.budget :
-    step === 3 ? !!data.name.trim() && !!data.email.trim() : false;
+    step === 3 ? !!data.name.trim() && !!data.contactValue.trim() : false;
 
   function advance() {
     if (!canAdvance) return;
-    if (step < 3) { navigate(step + 1, 1); return; }
+    if (step < 3) { navigate((step + 1) as 1 | 2 | 3, 1); return; }
     handleSubmit();
   }
 
   function goBack() {
-    if (step === 1) { window.location.href = "/"; return; }
-    navigate(step - 1, -1);
+    if (step === 1) {
+      if (embedded && onBack) {
+        onBack();
+        return;
+      }
+      window.location.href = "/";
+      return;
+    }
+    navigate((step - 1) as 1 | 2 | 3, -1);
   }
 
   // ── Sub-service toggle ──────────────────────────────────────────────────
@@ -292,9 +322,11 @@ export default function RequestForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name,
-          email: data.email,
+          email: data.contactMethod === "email" ? data.contactValue : `${data.contactMethod}@dontforget.local`,
           projectType,
           message,
+          contactMethod: data.contactMethod,
+          contactValue: data.contactValue,
           source: "guided-request",
           audioUrls,
           assetNames,
@@ -313,12 +345,8 @@ export default function RequestForm({
         }),
       });
       if (res.ok) {
-        setDir(1);
-        const el = contentRef.current;
-        gsap.to(el, {
-          x: -44, autoAlpha: 0, duration: 0.22, ease: "power2.in",
-          onComplete: () => setDone(true),
-        });
+        setNavDirection(1);
+        setDone(true);
       } else {
         setSubmitError(true);
         setSubmitting(false);
@@ -361,33 +389,42 @@ export default function RequestForm({
         ? "flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-5 pb-4 pt-7"
         : "flex flex-1 flex-col items-center justify-center px-5 pb-10 pt-36"}>
         <div className="w-full max-w-[940px]">
-          <div ref={contentRef}>
-            {done ? (
-              <SuccessScreen data={data} services={selectedServices} />
-            ) : step === 1 ? (
-              <Step1 data={data} setData={setData} />
-            ) : step === 2 ? (
-              <Step2
-                services={selectedServices}
-                data={data}
-                setData={setData}
-                onToggleSub={toggleSub}
-                onToggleAll={toggleAll}
-              />
-            ) : (
-              <Step3
-                data={data}
-                setData={setData}
-                field={field}
-                label={label}
-                submitError={submitError}
-                assetFiles={assetFiles}
-                setAssetFiles={setAssetFiles}
-                voiceClips={voiceClips}
-                setVoiceClips={setVoiceClips}
-              />
-            )}
-          </div>
+          <AnimatePresence initial={false} mode="wait" custom={navDirection}>
+            <motion.div
+              key={done ? "done" : `step-${step}`}
+              custom={navDirection}
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0, x: navDirection * 28, filter: "blur(6px)" }}
+              animate={reduceMotion ? { opacity: 1 } : { opacity: 1, x: 0, filter: "blur(0px)" }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0, x: navDirection * -24, filter: "blur(6px)" }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {done ? (
+                <SuccessScreen data={data} services={selectedServices} embedded={embedded} onBack={onBack} />
+              ) : step === 1 ? (
+                <Step1 data={data} setData={setData} services={serviceOptions} />
+              ) : step === 2 ? (
+                <Step2
+                  services={selectedServices}
+                  data={data}
+                  setData={setData}
+                  onToggleSub={toggleSub}
+                  onToggleAll={toggleAll}
+                />
+              ) : (
+                <Step3
+                  data={data}
+                  setData={setData}
+                  field={field}
+                  label={label}
+                  submitError={submitError}
+                  assetFiles={assetFiles}
+                  setAssetFiles={setAssetFiles}
+                  voiceClips={voiceClips}
+                  setVoiceClips={setVoiceClips}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
 
@@ -396,7 +433,7 @@ export default function RequestForm({
         <nav className={`${embedded ? "shrink-0" : "sticky bottom-0"} z-50 flex items-center justify-between border-t border-[var(--border)] bg-[rgba(9,9,9,0.88)] px-6 py-5 backdrop-blur-xl md:px-10`}>
           <button onClick={goBack} className="btn-glass-ghost">
             <span className="btn-glass-blob" aria-hidden="true" />
-            <span className="btn-glass-face">{step === 1 ? "← Home" : "← Back"}</span>
+            <span className="btn-glass-face">{step === 1 && !embedded ? "Home" : "Back"}</span>
           </button>
 
           <div className="flex items-center gap-4">
@@ -436,9 +473,11 @@ export default function RequestForm({
 function Step1({
   data,
   setData,
+  services,
 }: {
   data: FormData;
   setData: React.Dispatch<React.SetStateAction<FormData>>;
+  services: typeof SERVICES;
 }) {
   return (
     <div className="flex flex-col items-center text-center">
@@ -450,7 +489,7 @@ function Step1({
       </p>
 
       <div className="grid w-full grid-cols-2 gap-2.5 md:grid-cols-3">
-        {SERVICES.map(svc => {
+        {services.map(svc => {
           const selected = data.serviceIds.includes(svc.id);
           return (
             <button
@@ -530,7 +569,7 @@ function Step2({
   onToggleSub: (ex: string) => void;
   onToggleAll: () => void;
 }) {
-  const examples = Array.from(new Set(services.flatMap(service => service.examples)));
+  const examples = Array.from(new Set([...services.flatMap(service => service.examples), ...data.subServices]));
   const allSelected = data.subServices.length === examples.length;
   return (
     <div className="w-full">
@@ -881,6 +920,9 @@ function Step3({
   setVoiceClips: React.Dispatch<React.SetStateAction<GuidedVoiceClip[]>>;
 }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const contactLabel = data.contactMethod === "email" ? "Email" : data.contactMethod === "whatsapp" ? "WhatsApp" : "Phone";
+  const contactPlaceholder = data.contactMethod === "email" ? "hello@you.com" : "+1 555 123 4567";
+  const inlineLabel = label.replace(" mb-2.5", "");
   const suggestions = [
     "I have a company that needs a clearer website and better lead flow.",
     "We are launching a new offer and need the page, visuals, and funnel.",
@@ -901,7 +943,9 @@ function Step3({
       <div className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className={label}>Your name</label>
+            <div className="mb-2.5 flex h-7 items-center justify-start text-left">
+              <label className={inlineLabel}>Your name</label>
+            </div>
             <input
               type="text"
               placeholder="Tony Nakhla"
@@ -912,14 +956,34 @@ function Step3({
             />
           </div>
           <div>
-            <label className={label}>Email</label>
+            <div className="mb-2.5 flex h-7 items-center justify-between gap-3">
+              <span className={inlineLabel}>{contactLabel}</span>
+              <div className="flex items-center gap-1.5">
+              {(["whatsapp", "phone", "email"] as ContactMethod[]).map(method => (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => setData(d => ({ ...d, contactMethod: method, contactValue: "" }))}
+                  className="rounded-full border px-2.5 py-1 font-mono text-[0.5rem] uppercase tracking-[0.18em] transition-colors"
+                  style={{
+                    borderColor: data.contactMethod === method ? "var(--teal)" : "var(--border)",
+                    background: data.contactMethod === method ? "rgba(58,191,138,0.14)" : "transparent",
+                    color: data.contactMethod === method ? "var(--teal)" : "var(--body)",
+                  }}
+                >
+                  {method === "whatsapp" ? "WhatsApp" : method === "phone" ? "Phone" : "Email"}
+                </button>
+              ))}
+              </div>
+            </div>
             <input
-              type="email"
-              placeholder="your best email — we reply within 24h"
+              type={data.contactMethod === "email" ? "email" : "tel"}
+              placeholder={contactPlaceholder}
               className={field}
-              autoComplete="email"
-              value={data.email}
-              onChange={e => setData(d => ({ ...d, email: e.target.value }))}
+              aria-label={contactLabel}
+              autoComplete={data.contactMethod === "email" ? "email" : "tel"}
+              value={data.contactValue}
+              onChange={e => setData(d => ({ ...d, contactValue: e.target.value }))}
             />
           </div>
         </div>
@@ -1042,9 +1106,13 @@ function Step3({
 function SuccessScreen({
   data,
   services,
+  embedded = false,
+  onBack,
 }: {
   data: FormData;
   services: typeof SERVICES;
+  embedded?: boolean;
+  onBack?: () => void;
 }) {
   const rowsRef = useRef<HTMLDivElement>(null);
 
@@ -1102,10 +1170,18 @@ function SuccessScreen({
         ))}
       </div>
 
-      <Link href="/" className="btn-glass-ghost inline-flex">
-        <span className="btn-glass-blob" aria-hidden="true" />
-        <span className="btn-glass-face">← Back to home</span>
-      </Link>
+      {embedded && onBack ? (
+        <button type="button" onClick={onBack} className="btn-glass-ghost inline-flex">
+          <span className="btn-glass-blob" aria-hidden="true" />
+          <span className="btn-glass-face">Back</span>
+        </button>
+      ) : (
+        <Link href="/" className="btn-glass-ghost inline-flex">
+          <span className="btn-glass-blob" aria-hidden="true" />
+          <span className="btn-glass-face">Back to home</span>
+        </Link>
+      )}
     </div>
   );
 }
+

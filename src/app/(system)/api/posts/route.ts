@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   if (authError) return authError.error;
 
   const body = await request.json();
-  const { title, titleAr, slug, excerpt, excerptAr, content, contentAr, coverImage, tags, tagsAr, status, order } = body;
+  const { title, titleAr, slug, excerpt, excerptAr, content, contentAr, coverImage, heroImage, tags, tagsAr, status, order } = body;
 
   if (!title || !slug) {
     return NextResponse.json({ error: "Title and slug are required" }, { status: 400 });
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       content: content || "",
       contentAr: contentAr || null,
       coverImage: coverImage || null,
+      heroImage: heroImage || null,
       tags: tags || [],
       tagsAr: tagsAr || [],
       status: status || "DRAFT",
