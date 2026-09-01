@@ -273,13 +273,14 @@ function WebsiteFrame({
     <figure data-first-frame={tall ? "true" : undefined} className={`relative h-[68vh] w-[min(88vw,1080px)] shrink-0 overflow-hidden bg-gradient-to-br from-[#faf9f2] via-[#cfd4cb] to-[#6b7268] shadow-[0_34px_100px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.65)] ${tall ? "rounded-[1.55rem] p-1.5" : "rounded-[2.35rem] p-3"}`}>
       <div className={`relative h-full overflow-hidden ${tall ? "rounded-[1.15rem]" : "rounded-[1.75rem]"} ${variant === "light" ? "bg-[#eef1ed]" : "bg-[#070a0f]"}`}>
         {videoSrc ? (
-          /* Scroll-scrubbed: playback position is driven by ScrollTrigger, never by
-             autoplay, so it seeks both ways as the visitor scrolls up or down. */
+          /* Starts on the visitor's first scroll, then plays at its own pace.
+             Muted + playsInline is what lets it start without a click. */
           <video
-            data-scrub-video
+            data-frame-video
             src={videoSrc}
             className="absolute inset-0 h-full w-full object-cover object-top saturate-[0.9]"
             muted
+            loop
             playsInline
             preload="auto"
             aria-label={`${title} website walkthrough`}
@@ -353,116 +354,93 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
 
       const firstFrame = root.querySelector<HTMLElement>("[data-first-frame='true']");
       const tallScreen = root.querySelector<HTMLElement>("[data-tall-screen]");
-      const scrubVideo = root.querySelector<HTMLVideoElement>("[data-scrub-video]");
-      // Scroll distance (px) that one second of video occupies. Raise it to slow
-      // the scrub down, lower it to speed it up.
-      const VIDEO_SCRUB_PX_PER_SECOND = 450;
-      // Units consumed by the four steps either side of the centre beat. They map
-      // onto the horizontal travel, which is what makes the centre beat's own unit
-      // count derivable below.
-      const SURROUNDING_UNITS = 1.2 + 0.45 + 0.45 + 8;
+      const frameVideo = root.querySelector<HTMLVideoElement>("[data-frame-video]");
 
       const horizontalDistance = () => Math.max(1, track.scrollWidth - window.innerWidth);
-      const scrubDistance = () => {
-        if (scrubVideo) {
-          return Math.round((scrubVideo.duration || 0) * VIDEO_SCRUB_PX_PER_SECOND);
-        }
+      // A video plays at its own pace, so it needs no scroll distance of its own.
+      // Only the tall screenshot has to be panned through.
+      const panDistance = () => {
+        if (frameVideo) return 0;
         if (tallScreen?.parentElement) {
           return Math.max(0, tallScreen.offsetHeight - tallScreen.parentElement.clientHeight);
         }
         return 0;
-      };
-      // A timeline splits its scroll distance by relative duration, so a fixed unit
-      // count would hand the video whatever share happened to fall out of the other
-      // steps. Deriving it keeps VIDEO_SCRUB_PX_PER_SECOND literally true.
-      const centreUnits = () => {
-        if (!scrubVideo) return 5.4;
-        return Math.max(0.1, (scrubDistance() * SURROUNDING_UNITS) / horizontalDistance());
       };
 
       const refresh = () => ScrollTrigger.refresh();
       const refreshFrame = requestAnimationFrame(refresh);
       window.addEventListener("load", refresh, { once: true });
 
-      let timeline: gsap.core.Timeline | null = null;
-
-      const build = () => {
-        timeline?.scrollTrigger?.kill();
-        timeline?.kill();
-
-        timeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: root,
-            start: "top top",
-            end: () => `+=${horizontalDistance() + scrubDistance()}`,
-            scrub: 1,
-            pin: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
-        })
-          .to(track, {
-            x: () => {
-              if (!firstFrame) return 0;
-              const centerStop = firstFrame.offsetLeft + firstFrame.offsetWidth / 2 - window.innerWidth / 2;
-              return -Math.max(0, Math.min(centerStop, track.scrollWidth - window.innerWidth));
-            },
-            ease: "none",
-            duration: 1.2,
-          })
-          .to(firstFrame, {
-            scale: 1.12,
-            boxShadow: "0 0 0 1px rgba(110,193,79,0.62), 0 0 52px rgba(110,193,79,0.42), 0 34px 110px rgba(0,0,0,0.4)",
-            ease: "power1.out",
-            duration: 0.45,
-            transformOrigin: "center center",
-          });
-
-        // The centre beat: scrub the video's playhead, or pan the tall screenshot.
-        if (scrubVideo) {
-          timeline.to(scrubVideo, {
-            currentTime: () => scrubVideo.duration || 0,
-            ease: "none",
-            duration: centreUnits(),
-          });
-        } else if (tallScreen?.parentElement) {
-          timeline.to(tallScreen, {
-            y: () => {
-              if (!tallScreen.parentElement) return 0;
-              return -Math.max(0, tallScreen.offsetHeight - tallScreen.parentElement.clientHeight);
-            },
-            ease: "none",
-            duration: centreUnits(),
-          });
-        }
-
-        timeline
-          .to(firstFrame, {
-            scale: 1,
-            boxShadow: "0 34px 100px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.65)",
-            ease: "power1.inOut",
-            duration: 0.45,
-          })
-          .to(track, {
-            x: () => -Math.max(0, track.scrollWidth - window.innerWidth),
-            ease: "none",
-            duration: 8,
-          });
+      // The video starts on the visitor's first scroll and then runs at its own
+      // speed. Driving it from ScrollTrigger rather than a raw scroll listener
+      // keeps it working under this theme's smooth-scrolling. Muted playback is
+      // what lets it start without a click.
+      let videoStarted = false;
+      const startVideo = () => {
+        if (videoStarted || !frameVideo) return;
+        videoStarted = true;
+        frameVideo.play().catch(() => {});
       };
 
-      build();
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: root,
+          start: "top top",
+          end: () => `+=${horizontalDistance() + panDistance()}`,
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            if (self.progress > 0) startVideo();
+          },
+        },
+      })
+        .to(track, {
+          x: () => {
+            if (!firstFrame) return 0;
+            const centerStop = firstFrame.offsetLeft + firstFrame.offsetWidth / 2 - window.innerWidth / 2;
+            return -Math.max(0, Math.min(centerStop, track.scrollWidth - window.innerWidth));
+          },
+          ease: "none",
+          duration: 1.2,
+        })
+        .to(firstFrame, {
+          scale: 1.12,
+          boxShadow: "0 0 0 1px rgba(110,193,79,0.62), 0 0 52px rgba(110,193,79,0.42), 0 34px 110px rgba(0,0,0,0.4)",
+          ease: "power1.out",
+          duration: 0.45,
+          transformOrigin: "center center",
+        });
 
-      // Duration is NaN until metadata arrives, so the first build would size the
-      // centre beat from nothing. Rebuild once the real duration is known.
-      const rebuildWithMetadata = () => build();
-      if (scrubVideo && scrubVideo.readyState < 1) {
-        scrubVideo.addEventListener("loadedmetadata", rebuildWithMetadata, { once: true });
+      // Only the screenshot gets a pan beat; a video carries its own motion.
+      if (!frameVideo && tallScreen?.parentElement) {
+        timeline.to(tallScreen, {
+          y: () => {
+            if (!tallScreen.parentElement) return 0;
+            return -Math.max(0, tallScreen.offsetHeight - tallScreen.parentElement.clientHeight);
+          },
+          ease: "none",
+          duration: 5.4,
+        });
       }
+
+      timeline
+        .to(firstFrame, {
+          scale: 1,
+          boxShadow: "0 34px 100px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.65)",
+          ease: "power1.inOut",
+          duration: 0.45,
+        })
+        .to(track, {
+          x: () => -Math.max(0, track.scrollWidth - window.innerWidth),
+          ease: "none",
+          duration: 8,
+        });
 
       return () => {
         cancelAnimationFrame(refreshFrame);
         window.removeEventListener("load", refresh);
-        scrubVideo?.removeEventListener("loadedmetadata", rebuildWithMetadata);
       };
     }, root);
 
