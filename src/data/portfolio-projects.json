@@ -383,5 +383,16 @@
     "order": 35,
     "year": "2025",
     "projectType": "website"
+  },
+  {
+    "slug": "montgab",
+    "title": "Montgab",
+    "category": "E-Commerce",
+    "tags": ["E-Commerce", "UI/UX", "Shopify"],
+    "liveUrl": null,
+    "featured": false,
+    "order": 36,
+    "year": "2025",
+    "projectType": "ecommerce"
   }
 ]
