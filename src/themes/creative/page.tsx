@@ -16,7 +16,7 @@ import CreativeFooter from "@/components/creative/CreativeFooter";
 import CreativeHomeMotion from "@/components/creative/CreativeHomeMotion";
 
 export const metadata: Metadata = {
-  title: "DON'T FORGET — Creative Agency",
+  title: "NOX Studio — Creative Agency",
   description: "Crafting unique and compelling creative solutions that captivate and inspire.",
 };
 
@@ -62,6 +62,7 @@ async function getCreativeHomeData(locale: Locale): Promise<{
           year: project.year,
           coverImage: project.coverImage,
           gifUrl: project.gifUrl ?? null,
+          description: project.description,
         })),
       posts: posts.length ? posts : undefined,
     };

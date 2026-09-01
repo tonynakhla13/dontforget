@@ -301,10 +301,10 @@ export default function AboutHero() {
       /* 2 — eyebrow */
       tl.fromTo(eyebrowRef.current, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=1.0");
 
-      /* 3 — "DON'T" */
+      /* 3 — "NOX" */
       tl.fromTo(hedLine1Ref.current, { autoAlpha: 0, x: -80, skewX: -5 }, { autoAlpha: 1, x: 0, skewX: 0, duration: 1.1, ease: "expo.out" }, "-=0.3");
 
-      /* 4 — "forget." */
+      /* 4 — "studio." */
       tl.fromTo(hedLine2Ref.current, { autoAlpha: 0, x: 80, skewX: 5 }, { autoAlpha: 1, x: 0, skewX: 0, duration: 1.1, ease: "expo.out" }, "<0.08");
 
       /* 5 — sub + body */
@@ -434,7 +434,7 @@ export default function AboutHero() {
         <div className="absolute flex items-center gap-4" style={{ bottom: "8%", left: "var(--gutter)" }}>
           <Reticle size={28} />
           <span style={{ fontFamily: "var(--font-mono-next)", fontSize: "0.46rem", letterSpacing: "0.38em", textTransform: "uppercase", color: "rgba(58,191,138,0.55)", whiteSpace: "nowrap" }}>
-            — DON&apos;T FORGET STUDIO
+            — NOX STUDIO
           </span>
           <div style={{ width: 160, height: 1, background: "linear-gradient(90deg, rgba(58,191,138,0.35), transparent)" }} />
           <Crosshair size={11} opacity={0.40} />
@@ -451,7 +451,7 @@ export default function AboutHero() {
           className="eyebrow"
           style={{ marginBottom: "2.25rem", visibility: "hidden", letterSpacing: "0.36em" }}
         >
-          Est. 2022 — Digital Studio
+          Est. 2022 — NOX Studio
         </p>
 
         <div style={{ lineHeight: 1 }}>
@@ -460,14 +460,14 @@ export default function AboutHero() {
             className="hed"
             style={{ fontSize: "clamp(5rem,10.5vw,11.5rem)", lineHeight: 0.88, letterSpacing: "-0.01em", display: "block", visibility: "hidden" }}
           >
-            DON&apos;T
+            NOX
           </h1>
           <h1
             ref={hedLine2Ref}
             className="hed script"
             style={{ fontSize: "clamp(5rem,10.5vw,11.5rem)", lineHeight: 0.92, letterSpacing: "-0.01em", color: "var(--teal)", fontStyle: "italic", display: "block", visibility: "hidden" }}
           >
-            forget.
+            studio.
           </h1>
         </div>
 

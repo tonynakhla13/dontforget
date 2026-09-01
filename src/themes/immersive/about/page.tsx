@@ -11,14 +11,15 @@ import TeamSection from "@/components/about/TeamSection";
 import ClientsMarquee from "@/components/about/ClientsMarquee";
 import ImmersiveContact from "@/components/immersive/ImmersiveContact";
 import NoxPipeHologram from "@/components/about/NoxPipeHologram";
+import MeshWebDevBackgroundClient from "@/components/about/MeshWebDevBackgroundClient";
 import type { StatItem } from "@/components/about/StatsSection";
 import type { StoryEvent } from "@/components/about/OurStory";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "About — DON'T FORGET",
-  description: "Meet the team behind DON'T FORGET — a small studio building fast, memorable digital experiences.",
+  title: "About — NOX Studio",
+  description: "Meet the team behind NOX Studio — a small studio building fast, memorable digital experiences.",
 };
 
 export default async function ImmersiveAboutPage() {
@@ -34,6 +35,8 @@ export default async function ImmersiveAboutPage() {
       <SmoothScroll />
       {/* NOX pipe hologram — bespoke wireframe lettering for the about page */}
       <NoxPipeHologram />
+      {/* Keep the playable snake in the immersive hero; it fades as the story begins. */}
+      <MeshWebDevBackgroundClient />
       <main className="relative z-[1] overflow-x-clip">
         <div className="noise" />
         <AmbientGlow />

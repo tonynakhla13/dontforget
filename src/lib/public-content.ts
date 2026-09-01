@@ -6,7 +6,7 @@ import { PORTFOLIO_PROJECTS, PORTFOLIO_PROJECT_SLUGS, toPortfolioProject } from 
 export type PublicProject = {
   id: string; slug: string; title: string; description: string | null; client: string | null;
   category: string | null; tags: string[]; year: string | null; coverImage: string | null; gifUrl?: string | null; liveUrl: string | null;
-  featured?: boolean; order?: number;
+  featured?: boolean; order?: number; projectType?: string | null;
   services?: PublicService[]; attachments?: Record<string, string[]>;
 };
 export type PublicService = {

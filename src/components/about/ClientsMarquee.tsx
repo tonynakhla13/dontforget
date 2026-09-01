@@ -267,7 +267,7 @@ function ClientsMarqueeSection({ clients }: { clients: ClientItem[] }) {
       ref={ref}
       className="relative overflow-hidden border-t border-[var(--border)]"
       style={{
-        background: "rgba(9,9,9,0.28)",
+        background: "rgba(9,9,9,0.52)",
         paddingTop: "clamp(4rem,7vw,6rem)",
         paddingBottom: "clamp(4rem,7vw,6rem)",
       }}

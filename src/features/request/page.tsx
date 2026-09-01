@@ -4,7 +4,7 @@ import AmbientGlow from "@/components/AmbientGlow";
 import ContactHub from "@/components/ContactHub";
 
 export const metadata: Metadata = {
-  title: "Start a Project — DON'T FORGET",
+  title: "Start a Project — NOX Studio",
   description:
     "Tell us what you're building. We'll make it unforgettable.",
 };

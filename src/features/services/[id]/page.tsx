@@ -149,9 +149,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const svc = SERVICES_DETAIL[id as keyof typeof SERVICES_DETAIL];
-  if (!svc) return { title: "Service — DON'T FORGET" };
+  if (!svc) return { title: "Service — NOX Studio" };
   return {
-    title: `${svc.title} — DON'T FORGET`,
+    title: `${svc.title} — NOX Studio`,
     description: svc.body,
   };
 }
