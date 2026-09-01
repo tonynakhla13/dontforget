@@ -75,7 +75,6 @@ function toStringArray(val: unknown): string[] {
     return "";
   }).filter(Boolean);
 }
-
 function requestFormServiceId(service: PublicService) {
   const key = `${service.id} ${service.slug ?? ""} ${service.title}`.toLowerCase();
   if (key.includes("ui") || key.includes("ux") || key.includes("design")) return "uiux";

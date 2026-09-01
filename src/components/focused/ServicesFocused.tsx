@@ -181,7 +181,6 @@ function ServiceCard({ s, index }: { s: (typeof SERVICES)[0]; index: number }) {
     </>
   );
 }
-
 /* ── Page ────────────────────────────────────────────────────────────────── */
 export default function ServicesFocused() {
   const rootRef = useRef<HTMLDivElement>(null);
