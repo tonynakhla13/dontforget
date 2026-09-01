@@ -49,7 +49,7 @@ export default function CreativeWorkPage({ locale = "en" }: { locale?: string })
       <CreativeNavbar active="work" />
 
       <section className="c-work-hero">
-        <p className="c-work-hero__eyebrow">/ Portfolio — shipped 2026</p>
+        <p className="c-work-hero__eyebrow">/ Portfolio — 2026</p>
         <div className="c-work-hero__head">
           <h1 className="c-work-hero__title">
             Thirty-four<br />shipped sites.
