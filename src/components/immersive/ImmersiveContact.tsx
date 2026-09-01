@@ -391,7 +391,7 @@ function FormShapeVisualizer() {
     camera.position.z = 4.8;
 
     const shapeMat = new THREE.MeshBasicMaterial({
-      color: 0x5de7b4,
+      color: 0x46d12a,
       wireframe: true,
       transparent: true,
       opacity: 0.045,

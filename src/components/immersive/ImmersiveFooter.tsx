@@ -10,14 +10,10 @@
  */
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { pagePath, parseCanonicalPath } from "@/lib/site-routing";
 import { useEffect, useRef } from "react";
 import ImmersiveLogo from "@/components/immersive/ImmersiveLogo";
-
-/* lazy-load the heavy Three.js canvas */
-const FooterOrb = dynamic(() => import("./FooterOrb"), { ssr: false });
 
 const SOCIALS = [
   { label: "Instagram", href: "#" },
@@ -71,26 +67,14 @@ export default function ImmersiveFooter() {
       <div aria-hidden className="nf-scan"><span /></div>
       <div aria-hidden className="nf-grid" />
       <div aria-hidden className="nf-glow" />
-      <span aria-hidden className="hed nf-mark">NOX</span>
 
-      {/* ── orb backdrop (right) ── */}
-      <div aria-hidden className="nf-orb">
-        <div className="nf-orb-glow" />
-        <div className="nf-orb-float"><FooterOrb size={460} /></div>
-      </div>
+      {/* orb removed — the global lava-lamp field (fixed, behind) is the backdrop */}
 
       <div className="nf-inner">
-        {/* ── CTA ── */}
+        {/* ── CTA — the email is the hero ── */}
         <div className="nf-cta">
           <span className="nf-pill"><i />Available for selected work</span>
-          <h2 className="hed nf-h">Make it hard<br /><span className="nf-h-accent">to forget.</span></h2>
-          <div className="nf-cta-row">
-            <a href="mailto:hello@noxstudio.dev" className="nf-email-lg">hello@noxstudio.dev</a>
-            <Link href={hrefFor("contact")} className="btn-glass">
-              <span className="btn-glass-blob" aria-hidden />
-              <span className="btn-glass-face">Let&apos;s talk <span className="btn-glass-arrow">→</span></span>
-            </Link>
-          </div>
+          <a href="mailto:hello@noxstudio.dev" className="nf-email-hero">hello@noxstudio.dev</a>
         </div>
 
         {/* ── meta row: brand · nav · socials ── */}
@@ -136,7 +120,7 @@ export default function ImmersiveFooter() {
 const CSS = `
 .nf { --g: 70,174,34; --gb: 70,209,42; position:relative; z-index:10; overflow:hidden;
   border-top:1px solid rgba(var(--g),0.18);
-  background: linear-gradient(180deg, rgba(9,9,9,0) 0%, #090909 7%);
+  background: transparent;
   opacity:0; transform:translateY(40px);
   transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
 
@@ -153,16 +137,6 @@ const CSS = `
   mask-image: radial-gradient(ellipse 90% 75% at 30% 40%, #000, transparent 85%); }
 .nf-glow { position:absolute; left:-12%; top:8%; width:55vw; height:70%; pointer-events:none; z-index:0;
   background: radial-gradient(ellipse at 0% 50%, rgba(var(--g),0.08) 0%, transparent 64%); filter: blur(60px); }
-.nf-mark { position:absolute; left:50%; bottom:-6%; transform:translateX(-50%); z-index:0;
-  font-size:clamp(8rem,30vw,26rem); line-height:.74; letter-spacing:-0.06em; white-space:nowrap;
-  color:transparent; -webkit-text-stroke:1px rgba(var(--g),0.05); text-stroke:1px rgba(var(--g),0.05);
-  pointer-events:none; user-select:none; }
-
-/* orb backdrop */
-.nf-orb { position:absolute; top:50%; right:-7%; transform:translateY(-58%); z-index:1; pointer-events:none; }
-.nf-orb-glow { position:absolute; inset:8%;
-  background: radial-gradient(ellipse 75% 75% at 50% 50%, rgba(var(--g),0.13), transparent 70%); filter: blur(38px); }
-.nf-orb-float { position:relative; animation: nf-float 6.5s ease-in-out infinite; }
 
 /* layout */
 .nf-inner { position:relative; z-index:2; max-width:1320px; margin:0 auto;
@@ -175,19 +149,15 @@ const CSS = `
   color:rgba(var(--g),0.78); }
 .nf-pill i { width:7px; height:7px; border-radius:50%; background:rgb(var(--g));
   box-shadow:0 0 10px rgba(var(--g),0.8); animation: nf-blink 2.4s ease-in-out infinite; flex-shrink:0; }
-.nf-h { font-size:clamp(2.7rem,7vw,6rem); line-height:0.88; letter-spacing:-0.045em; color:var(--fg);
-  margin-bottom:clamp(1.5rem,3vw,2.4rem); }
-.nf-h-accent { color:rgb(var(--g)); text-shadow:0 0 34px rgba(var(--g),0.4); }
-.nf-cta-row { display:flex; align-items:center; gap:clamp(1.3rem,3vw,2.6rem); flex-wrap:wrap; }
-.nf-email-lg { font-family:var(--font-mono-next); font-size:clamp(0.72rem,1.1vw,0.9rem); letter-spacing:0.05em;
-  color:rgba(255,255,255,0.55); text-decoration:none; border-bottom:1px solid rgba(255,255,255,0.14);
-  padding-bottom:2px; transition:color .2s ease, border-color .2s ease; }
-.nf-email-lg:hover { color:rgb(var(--g)); border-color:rgba(var(--g),0.5); }
+.nf-email-hero { display:inline-block; max-width:100%; font-family:var(--font-mono-next);
+  font-size:clamp(1.5rem,5vw,3.4rem); letter-spacing:-0.01em; line-height:1.05; color:var(--fg);
+  text-decoration:none; border-bottom:2px solid rgba(var(--g),0.45); padding-bottom:0.12em;
+  transition:color .3s ease, border-color .3s ease, text-shadow .3s ease; overflow-wrap:anywhere; }
+.nf-email-hero:hover { color:rgb(var(--g)); border-color:rgb(var(--g)); text-shadow:0 0 30px rgba(var(--g),0.45); }
 
 /* meta row */
 .nf-meta { display:flex; flex-wrap:wrap; gap:clamp(1.8rem,4vw,3.5rem); justify-content:space-between;
-  align-items:flex-start; margin-top:clamp(2.4rem,4.5vw,3.6rem);
-  padding-top:clamp(1.6rem,2.6vw,2.2rem); border-top:1px solid rgba(255,255,255,0.07); }
+  align-items:flex-start; margin-top:clamp(2.6rem,5vw,4rem); }
 .nf-brand { display:flex; flex-direction:column; gap:0.55rem; min-width:200px; }
 .nf-logo { width:108px; }
 .nf-addr { font-family:var(--font-mono-next); font-size:0.66rem; letter-spacing:0.04em;
@@ -204,21 +174,18 @@ const CSS = `
 
 /* hairline */
 .nf-bottom { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem;
-  margin-top:clamp(1.6rem,2.8vw,2.2rem); padding-top:clamp(1rem,1.6vw,1.2rem);
-  border-top:1px solid rgba(255,255,255,0.05);
+  margin-top:clamp(2rem,3.5vw,2.8rem);
   font-family:var(--font-mono-next); text-transform:uppercase; }
 .nf-bottom span { font-size:0.48rem; letter-spacing:0.28em; color:rgba(255,255,255,0.24); }
 .nf-bottom-tag { color:rgba(255,255,255,0.18) !important; }
 
 @keyframes nf-scan { from { transform:translateX(-60%); } to { transform:translateX(60%); } }
 @keyframes nf-blink { 0%,100% { opacity:1; } 50% { opacity:0.25; } }
-@keyframes nf-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-12px); } }
 
 @media (max-width:900px) {
-  .nf-orb { top:auto; bottom:2%; right:50%; transform:translateX(50%); opacity:0.4; }
-  .nf-h { font-size:clamp(2.6rem,11vw,4rem); }
+  .nf-email-hero { font-size:clamp(1.3rem,7vw,2.2rem); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .nf-scan span, .nf-pill i, .nf-orb-float { animation:none !important; }
+  .nf-scan span, .nf-pill i { animation:none !important; }
 }
 `;
