@@ -371,11 +371,14 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
       const refreshFrame = requestAnimationFrame(refresh);
       window.addEventListener("load", refresh, { once: true });
 
-      // The video starts on the visitor's first scroll and then runs at its own
-      // speed. Driving it from ScrollTrigger rather than a raw scroll listener
-      // keeps it working under this theme's smooth-scrolling. Muted playback is
-      // what lets it start without a click.
+      // The video starts once the frame has finished scaling up, then runs at its
+      // own speed. The threshold is measured off the timeline below rather than
+      // hardcoded, so it stays correct if the step durations are retuned. Driving
+      // it from ScrollTrigger rather than a raw scroll listener keeps it working
+      // under this theme's smooth-scrolling, and muted playback is what lets it
+      // start without a click.
       let videoStarted = false;
+      let framePoppedProgress = 1;
       const startVideo = () => {
         if (videoStarted || !frameVideo) return;
         videoStarted = true;
@@ -392,7 +395,7 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
-            if (self.progress > 0) startVideo();
+            if (self.progress >= framePoppedProgress) startVideo();
           },
         },
       })
@@ -412,6 +415,9 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
           duration: 0.45,
           transformOrigin: "center center",
         });
+
+      // Everything queued so far ends with the frame at full size.
+      const framePoppedTime = timeline.duration();
 
       // Only the screenshot gets a pan beat; a video carries its own motion.
       if (!frameVideo && tallScreen?.parentElement) {
@@ -437,6 +443,8 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
           ease: "none",
           duration: 8,
         });
+
+      framePoppedProgress = timeline.duration() > 0 ? framePoppedTime / timeline.duration() : 1;
 
       return () => {
         cancelAnimationFrame(refreshFrame);
