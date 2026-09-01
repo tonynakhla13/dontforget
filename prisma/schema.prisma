@@ -72,6 +72,8 @@ model Project {
   heroImage          String?
   tallImage          String?
   useTallImage       Boolean   @default(false)
+  // Which medium fills the pinned project-page frame: "image" or "video".
+  heroMediaType      String    @default("image")
   clientGoals        Json      @default("[]")
   challenges         Json      @default("[]")
   results            Json      @default("[]")

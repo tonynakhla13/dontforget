@@ -32,6 +32,8 @@ export type ProjectData = {
   heroImage?: string | null;
   tallImage?: string | null;
   useTallImage?: boolean | null;
+  videoUrl?: string | null;
+  heroMediaType?: string | null;
   images: string[];
   tagline?: string | null;
   shortDescription?: string | null;

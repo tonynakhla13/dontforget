@@ -19,6 +19,7 @@ export default function MediaPicker({
   label,
   emptyLabel = "Select image",
   uploadFolder = "dontforget/media",
+  kind = "image",
 }: {
   assets: MediaPickerAsset[];
   value?: string;
@@ -27,6 +28,7 @@ export default function MediaPicker({
   label: string;
   emptyLabel?: string;
   uploadFolder?: string;
+  kind?: "image" | "video";
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -41,17 +43,22 @@ export default function MediaPicker({
   }, [assets, uploadedAssets]);
   const selected = libraryAssets.find((asset) => asset.id === value);
 
-  function isImageAsset(asset: MediaPickerAsset) {
-    if (asset.mimeType?.startsWith("image/")) return true;
-    return /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i.test(asset.url)
-      || /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(asset.filename ?? "")
-      || /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(asset.originalName ?? "");
+  const VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogv)(\?.*)?$/i;
+  const IMAGE_EXT = /\.(avif|gif|jpe?g|png|svg|webp)(\?.*)?$/i;
+
+  function matchesKind(asset: MediaPickerAsset) {
+    const pattern = kind === "video" ? VIDEO_EXT : IMAGE_EXT;
+    if (asset.mimeType?.startsWith(`${kind}/`)) return true;
+    if (asset.mimeType?.startsWith(kind === "video" ? "image/" : "video/")) return false;
+    return pattern.test(asset.url)
+      || pattern.test(asset.filename ?? "")
+      || pattern.test(asset.originalName ?? "");
   }
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return libraryAssets.filter((asset) => {
-      if (!isImageAsset(asset)) return false;
+      if (!matchesKind(asset)) return false;
       if (!needle) return true;
       return [asset.originalName, asset.filename, asset.alt, asset.url]
         .filter(Boolean)
@@ -110,8 +117,12 @@ export default function MediaPicker({
       >
         <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-md bg-zinc-950 ring-1 ring-white/10">
           {selected ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={selected.url} alt={selected.alt ?? ""} className="h-full w-full object-cover" />
+            kind === "video" ? (
+              <video src={selected.url} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={selected.url} alt={selected.alt ?? ""} className="h-full w-full object-cover" />
+            )
           ) : (
             <span className="text-xs text-white/25">Image</span>
           )}
@@ -137,7 +148,7 @@ export default function MediaPicker({
               <div className="flex items-center gap-2">
                 <label className="cursor-pointer rounded-lg bg-[#3ABF8A] px-3 py-2 text-sm text-white transition-colors hover:bg-[#2ea876]">
                   {uploading ? "Uploading..." : "Upload"}
-                  <input type="file" accept="image/*,image/svg+xml" multiple className="hidden" onChange={(event) => upload(event.target.files)} />
+                  <input type="file" accept={kind === "video" ? "video/mp4,video/webm,video/quicktime" : "image/*,image/svg+xml"} multiple className="hidden" onChange={(event) => upload(event.target.files)} />
                 </label>
                 <button type="button" onClick={() => setOpen(false)} className="rounded-lg bg-white/5 px-3 py-2 text-sm text-white/55 transition-colors hover:bg-white/10 hover:text-white">
                   Close
@@ -169,8 +180,12 @@ export default function MediaPicker({
                         className={`group overflow-hidden rounded-lg border bg-white/[0.03] text-left transition-colors ${active ? "border-[#3ABF8A] ring-1 ring-[#3ABF8A]/50" : "border-white/10 hover:border-[#3ABF8A]/45"}`}
                       >
                         <span className="block aspect-square overflow-hidden bg-zinc-900">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={asset.url} alt={asset.alt ?? ""} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                          {kind === "video" ? (
+                            <video src={asset.url} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" muted playsInline preload="metadata" />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={asset.url} alt={asset.alt ?? ""} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                          )}
                         </span>
                         <span className="block truncate px-3 py-2 text-xs text-white/55">
                           {asset.originalName ?? asset.filename ?? asset.url}
@@ -185,7 +200,7 @@ export default function MediaPicker({
                     <p>No image assets found.</p>
                     <label className="mt-3 inline-flex cursor-pointer rounded-lg bg-white/5 px-3 py-2 text-xs text-white/55 transition-colors hover:bg-white/10 hover:text-white">
                       Upload images
-                      <input type="file" accept="image/*,image/svg+xml" multiple className="hidden" onChange={(event) => upload(event.target.files)} />
+                      <input type="file" accept={kind === "video" ? "video/mp4,video/webm,video/quicktime" : "image/*,image/svg+xml"} multiple className="hidden" onChange={(event) => upload(event.target.files)} />
                     </label>
                   </div>
                 </div>
