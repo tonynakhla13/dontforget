@@ -9,8 +9,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import Image from "next/image";
-import FocusedLoaderContent from "@/components/focused/FocusedLoaderContent";
+import NoxLoader, {
+  NOX_LOADER_DEFAULT_SECONDS,
+  NOX_LOADER_SETTLED_RATIO,
+} from "@/components/site/NoxLoader";
 import { usePathname, useRouter } from "next/navigation";
 import { parseCanonicalPath, type Theme } from "@/lib/site-routing";
 
@@ -41,11 +43,16 @@ const THEME_LABELS: Record<Theme, string> = {
   immersive: "Immersive",
 };
 
-const THEME_PREVIEWS: Record<Theme, string> = {
-  focused: "/theme-previews/foucsed.png",
-  creative: "/theme-previews/creative.png",
-  immersive: "/theme-previews/immersive.png",
-};
+/** Walk-in length for the overlay. Shorter than the hard-load intro. */
+const LOADER_SECONDS = 2.2;
+
+/**
+ * Keep the overlay up long enough for the letters to land, otherwise a fast
+ * route change tears the loader away mid-walk.
+ */
+const LOADER_MIN_VISIBLE_MS = LOADER_SECONDS * 1000 * NOX_LOADER_SETTLED_RATIO;
+
+const LEAVE_MS = 460;
 
 const idleState: TransitionState = {
   phase: "idle",
@@ -90,6 +97,7 @@ export function ThemeTransitionProvider({ children }: { children: ReactNode }) {
   const [transition, setTransition] = useState<TransitionState>(idleState);
   const pendingTarget = useRef<string | null>(null);
   const timers = useRef<number[]>([]);
+  const startedAt = useRef(0);
 
   const clearTimers = useCallback(() => {
     timers.current.forEach(window.clearTimeout);
@@ -103,8 +111,11 @@ export function ThemeTransitionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const finishTransition = useCallback(() => {
-    setTransition((current) => current.phase === "idle" ? current : { ...current, phase: "leaving" });
-    schedule(() => setTransition(idleState), 460);
+    const elapsed = Date.now() - startedAt.current;
+    schedule(() => {
+      setTransition((current) => current.phase === "idle" ? current : { ...current, phase: "leaving" });
+      schedule(() => setTransition(idleState), LEAVE_MS);
+    }, Math.max(0, LOADER_MIN_VISIBLE_MS - elapsed));
   }, [schedule]);
 
   const navigateWithTransition = useCallback((href: string, options?: NavigateOptions) => {
@@ -123,6 +134,7 @@ export function ThemeTransitionProvider({ children }: { children: ReactNode }) {
 
     clearTimers();
     pendingTarget.current = targetUrl.pathname;
+    startedAt.current = Date.now();
     setTransition(getTransitionState(current.pathname, targetUrl.pathname));
 
     schedule(async () => {
@@ -177,7 +189,16 @@ export function ThemeTransitionProvider({ children }: { children: ReactNode }) {
 export function ThemeLoadingFallback() {
   const pathname = usePathname();
   const theme = getRouteTheme(pathname) ?? "immersive";
-  return <ThemeLoadingScreen mode="page" phase="entering" toTheme={theme} />;
+  // Streams alongside SiteIntroLoader on a hard load, so it runs the same
+  // full-length walk-in and the two stay visually in step.
+  return (
+    <ThemeLoadingScreen
+      mode="page"
+      phase="entering"
+      toTheme={theme}
+      durationSeconds={NOX_LOADER_DEFAULT_SECONDS}
+    />
+  );
 }
 
 function ThemeLoadingOverlay({ transition }: { transition: TransitionState }) {
@@ -192,12 +213,11 @@ function ThemeLoadingOverlay({ transition }: { transition: TransitionState }) {
   );
 }
 
-function ThemeLoadingScreen({ mode, phase, fromTheme, toTheme }: Omit<TransitionState, "phase"> & { phase: Exclude<TransitionPhase, "idle"> }) {
+function ThemeLoadingScreen({ mode, phase, fromTheme, toTheme, durationSeconds = LOADER_SECONDS }: Omit<TransitionState, "phase"> & { phase: Exclude<TransitionPhase, "idle">; durationSeconds?: number }) {
   const activeTheme = toTheme ?? fromTheme ?? "immersive";
   const label = mode === "theme"
     ? `${fromTheme ? THEME_LABELS[fromTheme] : "Theme"} to ${toTheme ? THEME_LABELS[toTheme] : "Theme"}`
     : `${THEME_LABELS[activeTheme]} loading`;
-  const backgroundThemes = mode === "theme" && fromTheme && toTheme ? [fromTheme, toTheme] : null;
 
   return (
     <div
@@ -208,41 +228,7 @@ function ThemeLoadingScreen({ mode, phase, fromTheme, toTheme }: Omit<Transition
       aria-live="polite"
       aria-label={label}
     >
-      {activeTheme === "focused" && mode === "page" ? (
-        <FocusedLoaderContent />
-      ) : backgroundThemes ? (
-        <div className="theme-loading-backgrounds" aria-hidden="true">
-          {backgroundThemes.map((theme, index) => (
-            <div className="theme-loading-background" key={`${index}-${theme}`}>
-              <Image
-                className="theme-loading-background__image"
-                src={THEME_PREVIEWS[theme]}
-                alt=""
-                fill
-                sizes="50vw"
-                priority
-              />
-              <span className="theme-loading-background__shade" />
-              <span className="theme-loading-background__label">
-                {index === 0 ? "From" : "To"} <strong>{THEME_LABELS[theme]}</strong>
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <>
-          <div className="theme-loading-field" aria-hidden="true">
-            <span /><span /><span />
-          </div>
-          <div className="theme-loading-copy">
-            <p>{mode === "theme" ? "Changing theme" : `${THEME_LABELS[activeTheme]} mode`}</p>
-            <h2>{mode === "theme" ? label : "Loading page"}</h2>
-          </div>
-          <div className="theme-loading-meter" aria-hidden="true">
-            <span />
-          </div>
-        </>
-      )}
+      <NoxLoader durationSeconds={durationSeconds} />
     </div>
   );
 }

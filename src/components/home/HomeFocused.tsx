@@ -429,7 +429,7 @@ export default function HomeFocused({
             fontFamily:  SANS,
             fontSize:    "clamp(0.78rem, 1vw, 1rem)",
             lineHeight:  1.6,
-            color:       `rgba(70,174,34,0.6)`,
+            color:       `rgba(255,255,255,0.85)`,
             maxWidth:    900,
             margin:      "0 auto clamp(2.5rem, 5vw, 5rem)",
             textAlign:   "center",
@@ -437,25 +437,34 @@ export default function HomeFocused({
             You should not feel lost while building your own digital project. We help make the next step clearer.
           </p>
 
-          <Link
-            href="/en/focused/contact"
-            className="tk-hero-cta"
-            style={{
-              display:        "flex",
-              alignItems:     "center",
-              justifyContent: "center",
-              height:         "clamp(48px, 5vw, 67px)",
-              background:     TK.green,
-              color:          TK.paper,
-              fontFamily:     SANS,
-              fontSize:       "clamp(0.95rem, 1.2vw, 1.2rem)",
-              textDecoration: "none",
-              transition:     "background 200ms ease",
-              margin:         "0 -1.5rem",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = TK.greenHot)}
-            onMouseLeave={e => (e.currentTarget.style.background = TK.green)}
-          >Let&apos;s Create</Link>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Link
+              href="/en/focused/contact"
+              className="tk-hero-cta"
+              style={{
+                display:        "inline-flex",
+                alignItems:     "center",
+                gap:            "0.75rem",
+                height:         "clamp(52px, 5vw, 64px)",
+                padding:        "0 clamp(1.75rem, 3vw, 2.5rem)",
+                background:     "transparent",
+                color:          TK.green,
+                border:         `1.5px solid ${TK.green}`,
+                borderRadius:   "999px",
+                fontFamily:     SANS,
+                fontWeight:     600,
+                fontSize:       "clamp(0.95rem, 1.2vw, 1.15rem)",
+                letterSpacing:  "0.02em",
+                textDecoration: "none",
+                transition:     "background 220ms ease, color 220ms ease",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = TK.green; e.currentTarget.style.color = TK.paper; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = TK.green; }}
+            >
+              Let&apos;s Create
+              <span style={{ display: "inline-flex", transition: "transform 220ms ease" }}>→</span>
+            </Link>
+          </div>
         </div>
       </section>
 

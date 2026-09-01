@@ -24,5 +24,5 @@ export default async function FocusedServiceDetailPage({ params }: Props) {
   const { slug } = await params;
   const svc = SERVICES_DATA.find((s) => s.slug === slug);
   if (!svc) notFound();
-  return <ServiceDetailFocused slug={slug} />;
+  return <ServiceDetailFocused service={{ id: svc.slug, title: svc.title, description: svc.body, icon: svc.n }} />;
 }

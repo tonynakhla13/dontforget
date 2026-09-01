@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { NoxNavbar, NoxFooter, NoxCTABar, SANS, TK } from "./NoxShared";
+import { NoxNavbar, NoxFooter, NoxCTABar, NoxPageIntro, SANS, TK } from "./NoxShared";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -107,7 +107,8 @@ export const SERVICES_DATA = [
 ];
 
 /* ── main component ────────────────────────────────────────────── */
-export default function ServiceDetailFocused({ slug }: { slug: string }) {
+export default function ServiceDetailFocused({ service, locale }: { service: { id: string; title: string; description: string | null; icon?: string | null; tagline?: string | null }; locale?: string }) {
+  const slug   = service.id;
   const svc    = SERVICES_DATA.find((s) => s.slug === slug);
   const root   = useRef<HTMLDivElement>(null);
 
@@ -131,56 +132,19 @@ export default function ServiceDetailFocused({ slug }: { slug: string }) {
   );
 
   const others = SERVICES_DATA.filter((s) => s.slug !== slug);
+  const title  = svc?.title ?? service.title;
 
   return (
     <div ref={root} style={{ fontFamily: SANS, color: W, minHeight: "100vh" }}>
       <NoxNavbar active="services" />
 
-      {/* ── HERO ───────────────────────────────────────────── */}
-      <section style={{ padding: "clamp(7rem,13vw,10rem) clamp(1.5rem,6vw,5rem) 0" }}>
+      {/* ── HERO — exact same as services listing page ─────── */}
+      <NoxPageIntro
+        eyebrow={`/ ${svc.n} — our services`}
+        title={`${svc.title},`}
+        italic={svc.tag}
 
-        <Link href="/en/focused/services" style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          color: G, opacity: 0.6, textDecoration: "none",
-          fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase",
-          marginBottom: "clamp(2.5rem,5vw,4rem)", transition: "opacity .2s",
-        }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
-        >
-          ← All services
-        </Link>
-
-        {/* number — green accent */}
-        <p className="sdf-num" style={{ fontSize: "clamp(0.8rem,1.2vw,1rem)", letterSpacing: "0.14em", color: G, opacity: 0.6, margin: "0 0 clamp(0.5rem,1vw,0.8rem)" }}>
-          {svc.n}
-        </p>
-
-        {/* BIG title — white */}
-        <h1 className="sdf-title" style={{
-          fontSize: "clamp(3.5rem,10vw,9rem)", fontWeight: 800,
-          lineHeight: 0.88, letterSpacing: "-0.02em",
-          textTransform: "uppercase", margin: "0 0 clamp(1.2rem,2.5vw,2rem)",
-          color: W,
-        }}>
-          {svc.title}
-        </h1>
-
-        {/* tag + stats row */}
-        <div className="sdf-tag" style={{ display: "flex", alignItems: "center", gap: "clamp(1.5rem,4vw,3rem)", flexWrap: "wrap", borderTop: `1px solid ${LN}`, paddingTop: "clamp(1rem,2vw,1.5rem)" }}>
-          <span style={{ fontSize: "clamp(0.75rem,1vw,0.88rem)", letterSpacing: "0.14em", textTransform: "uppercase", color: W, opacity: 0.45 }}>
-            {svc.tag}
-          </span>
-          <div style={{ marginLeft: "auto", display: "flex", gap: "clamp(1.5rem,3vw,2.5rem)" }}>
-            {["Timeline", "Deliverables", "Tools"].map((label, i) => (
-              <div key={label} style={{ textAlign: "right" }}>
-                <p style={{ fontSize: "clamp(0.85rem,1.1vw,1rem)", fontWeight: 700, margin: "0 0 0.15rem", color: W }}>{svc.delivers.length > i ? [svc.delivers.length + "+", "6+", svc.tech.length + "+"][i] : "—"}</p>
-                <p style={{ fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: W, opacity: 0.35, margin: 0 }}>{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      />
 
       {/* ── BODY ───────────────────────────────────────────── */}
       <section className="sdf-body" style={{ padding: "clamp(3rem,6vw,5rem) clamp(1.5rem,6vw,5rem) clamp(5rem,10vw,8rem)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(2rem,5vw,4rem)", alignItems: "start" }}>
