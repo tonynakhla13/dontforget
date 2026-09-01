@@ -74,8 +74,8 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
   const homeHref = canonicalBase ?? (mode ? `/${mode}` : "/");
   const ctaHref = canonicalBase ? `${canonicalBase}/contact` : mode ? `/${mode}/contact` : isInnerPage ? "/#contact" : "#contact";
   const isImmersive = mode === "immersive";
-  const logoSrc = isImmersive ? "/immersive/nokx-studio-logo.svg" : "/dont%20forget%20logo.png";
-  const logoAlt = isImmersive ? "NOKX Studio" : "DON'T FORGET";
+  const logoSrc = "/immersive/nokx-studio-logo.svg";
+  const logoAlt = "NOX Studio";
   const openImmersiveContact = () => {
     window.dispatchEvent(new Event("immersive-contact:open"));
   };
@@ -161,13 +161,13 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         style={{ background: "var(--bg)", visibility: "hidden" }}
       >
         <div className="wrap flex items-center justify-between" style={{ height: NAV_H }}>
-          <Link href={homeHref} onClick={() => setMenuOpen(false)} aria-label="DON'T FORGET home" className={isImmersive ? "immersive-logo-link" : undefined}>
+          <Link href={homeHref} onClick={() => setMenuOpen(false)} aria-label="NOX Studio home" className={isImmersive ? "immersive-logo-link" : undefined}>
             {isImmersive ? (
               <ImmersiveLogo />
             ) : (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 134, width: "auto" }} />
+                <img src="/immersive/nokx-studio-logo.svg" alt="NOX Studio" style={{ height: 134, width: "auto" }} />
               </>
             )}
           </Link>
@@ -199,7 +199,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
 
         <div className="wrap flex items-center justify-between gap-4 border-t border-[var(--border)] py-6">
           <span className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[var(--body)]">
-            © {new Date().getFullYear()} Don&apos;t Forget
+            © {new Date().getFullYear()} NOX Studio
           </span>
           {isImmersive && locale ? (
             <div className="immersive-menu-locale md:hidden">
@@ -227,15 +227,15 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
         }}
       >
         <div className="wrap flex w-full items-center justify-between">
-          <Link href={homeHref} aria-label="DON'T FORGET home" className={isImmersive ? "immersive-logo-link" : undefined}>
+          <Link href={homeHref} aria-label="NOX Studio home" className={isImmersive ? "immersive-logo-link" : undefined}>
             {isImmersive ? (
               <ImmersiveLogo compact={compact} />
             ) : (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/dont%20forget%20logo.png"
-                  alt="DON'T FORGET"
+                  src="/immersive/nokx-studio-logo.svg"
+                  alt="NOX Studio"
                   style={{ height: 134, width: "auto" }}
                 />
               </>

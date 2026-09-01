@@ -20,7 +20,7 @@ export default function ThemePicker({ locale, copy }: Props) {
 
   return (
     <main className="theme-picker">
-      <p className="picker-brand">DON&apos;T FORGET</p>
+      <p className="picker-brand">NOX</p>
       <h1>{copy.title}</h1>
       <p>{copy.intro}</p>
       <div className="picker-grid">

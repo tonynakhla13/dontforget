@@ -14,7 +14,7 @@ import AboutBackground from "@/components/about/AboutBackground";
 import KnotBackground  from "@/components/about/KnotBackground";
 
 export const metadata: Metadata = {
-  title: "About — DON'T FORGET",
+  title: "About — NOX Studio",
   description:
     "We're a small studio that builds fast, memorable digital experiences. Learn who we are, what drives us, and meet the team.",
 };

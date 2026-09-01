@@ -5,7 +5,7 @@ import AmbientGlow from "@/components/AmbientGlow";
 import ImmersiveContact from "@/components/immersive/ImmersiveContact";
 
 export const metadata: Metadata = {
-  title: "Contact — DON'T FORGET",
+  title: "Contact — NOX Studio",
   description: "Have a project in mind? Tell us what you need.",
 };
 

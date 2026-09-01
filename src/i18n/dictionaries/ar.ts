@@ -1,10 +1,10 @@
 const ar = {
-  brand: "DON'T FORGET",
+  brand: "NOX",
   nav: { home: "الرئيسية", about: "من نحن", work: "أعمالنا", services: "الخدمات", blog: "المدونة", contact: "تواصل", request: "ابدأ مشروعاً" },
   controls: { theme: "تغيير النمط", language: "تغيير اللغة", current: "الحالي" },
   onboarding: {
     title: "اختر تجربتك",
-    intro: "اختر الطريقة التي تفضلها لاستكشاف Don't Forget.",
+    intro: "اختر الطريقة التي تفضلها لاستكشاف NOX.",
     note: "يمكنك تغيير النمط في أي وقت من أداة التبديل.",
     themes: {
       focused: ["مركّز", "بسيط وواضح ومن دون تشتيت."],
@@ -32,7 +32,7 @@ const ar = {
   labels: { viewProject: "عرض المشروع", viewService: "استكشف الخدمة", readMore: "اقرأ المزيد", client: "العميل", year: "السنة", category: "الفئة", back: "عودة", related: "استكشف المزيد" },
   form: { name: "الاسم", email: "البريد الإلكتروني", projectType: "نوع المشروع", message: "تفاصيل المشروع", submit: "إرسال الطلب", success: "تم إرسال طلبك.", error: "حدث خطأ. يرجى المحاولة مرة أخرى." },
   footer: { title: "لنبن شيئاً يستحق التذكر.", rights: "جميع الحقوق محفوظة." },
-  meta: { title: "DON'T FORGET - وكالة رقمية", description: "مواقع ومنتجات وعلامات تجارية صممت لتبقى في الذاكرة." },
+  meta: { title: "NOX - وكالة رقمية", description: "مواقع ومنتجات وعلامات تجارية صممت لتبقى في الذاكرة." },
 } as const;
 
 export default ar;

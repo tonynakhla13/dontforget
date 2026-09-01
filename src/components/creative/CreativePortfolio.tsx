@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { CSSProperties, WheelEvent } from "react";
 import { useRef, useState, useEffect, useCallback, type RefObject } from "react";
 import { PORTFOLIO_FEATURED_PROJECTS } from "@/data/portfolio-projects";
+import { pagePath, parseCanonicalPath, projectPath } from "@/lib/site-routing";
 
 export type CreativeHomeProject = {
   id: string;
@@ -13,6 +15,7 @@ export type CreativeHomeProject = {
   year: string | null;
   coverImage: string | null;
   gifUrl?: string | null;
+  description?: string | null;
 };
 
 const ITEMS: CreativeHomeProject[] = PORTFOLIO_FEATURED_PROJECTS.map((project) => ({
@@ -34,20 +37,6 @@ function repeatProjects(projects: CreativeHomeProject[], minimumCount = 10) {
   return Array.from({ length: repeats }, () => projects).flat();
 }
 
-const FALLBACK_GIFS: Record<string, string> = {
-  "elia-clinic": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdnFjZDY1ZWN2OGNqM2c1MWgzY2tnNmtxNmJ4OW5yZnY2eXJraG9veiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oKIPEqDGUULpEU0aQ/giphy.gif",
-  montgab: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGRzOG44OGt4OHNmOGw5MmxoaHZqYXR4Z3pvdjM3YmI1ajRzY3NpbCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT9IgzoKnwFNmISR8I/giphy.gif",
-  "180-degrees": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWRiM2RreDNrYjM4dHR6eTNhaDRyeGYybnBmZjkwamJ5MmZvdnF6eSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26tn33aiTi1jkl6H6/giphy.gif",
-  launchpad: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWJ6emhhZTk4Z2NhZWNvcDBjZGNmcG80eGFlN21zZnY0aWUyem0xNyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oKIPwoeGErMmaI43S/giphy.gif",
-};
-
-const PROJECT_DESCRIPTIONS: Record<string, string> = {
-  "elia-clinic": "A calm healthcare identity and booking experience built around trust, clarity, and fast patient decisions.",
-  montgab: "A retail storefront direction with strong merchandising, sharp product discovery, and a premium shopping rhythm.",
-  "180-degrees": "A brand system and digital presence shaped for a creative team that needs bold work to feel organized.",
-  launchpad: "A SaaS dashboard concept focused on performance data, onboarding clarity, and high-signal product moments.",
-};
-
 function formatProjectDate(project: CreativeHomeProject) {
   if (project.year) return project.year.replace(/\s+/, "\n");
   if (project.category?.includes("\n")) return project.category;
@@ -61,21 +50,37 @@ function formatProjectTitle(title: string) {
   return `${parts.slice(0, midpoint).join(" ")}\n${parts.slice(midpoint).join(" ")}`;
 }
 
-function projectPreviewStyle(project: CreativeHomeProject): CSSProperties | undefined {
-  const preview = project.gifUrl && project.gifUrl !== project.coverImage
-    ? project.gifUrl
-    : FALLBACK_GIFS[project.slug] ?? project.coverImage;
-  if (!preview) return undefined;
-  return { backgroundImage: `url("${preview}")`, backgroundSize: "cover", backgroundPosition: "center" };
+/* Same resolution order as the work ledger: dashboard media first, then a
+   file dropped at /creative/work/<slug>.jpg. Falsy leaves the checker showing. */
+function projectImage(project: CreativeHomeProject) {
+  return project.coverImage ?? `/creative/work/${project.slug}.jpg`;
 }
 
-function projectCoverStyle(project: CreativeHomeProject): CSSProperties | undefined {
-  if (!project.coverImage) return undefined;
-  return { backgroundImage: `url("${project.coverImage}")`, backgroundSize: "cover", backgroundPosition: "center" };
+/* The checker pattern is layered underneath so an image that 404s falls back
+   to the placeholder rather than a flat panel. */
+const CHECKER_LAYER =
+  "linear-gradient(45deg, rgba(35,31,32,.10) 25%, transparent 25%, transparent 75%, rgba(35,31,32,.10) 75%)";
+
+function backgroundStyle(url: string): CSSProperties {
+  return {
+    backgroundImage: `url("${url}"), ${CHECKER_LAYER}, ${CHECKER_LAYER}`,
+    backgroundSize: "cover, 24px 24px, 24px 24px",
+    backgroundPosition: "center, 0 0, 12px 12px",
+  };
+}
+
+function projectPreviewStyle(project: CreativeHomeProject): CSSProperties {
+  const motion = project.gifUrl && project.gifUrl !== project.coverImage ? project.gifUrl : null;
+  return backgroundStyle(motion ?? projectImage(project));
+}
+
+function projectCoverStyle(project: CreativeHomeProject): CSSProperties {
+  return backgroundStyle(projectImage(project));
 }
 
 function getProjectDescription(project: CreativeHomeProject) {
-  return PROJECT_DESCRIPTIONS[project.slug] ?? "A selected project shaped around strategy, design craft, and a clear digital experience.";
+  return project.description?.trim()
+    || "A selected project shaped around strategy, design craft, and a clear digital experience.";
 }
 
 function ThinkingBadge({ sectionRef }: { sectionRef: RefObject<HTMLElement | null> }) {
@@ -128,6 +133,13 @@ function ThinkingBadge({ sectionRef }: { sectionRef: RefObject<HTMLElement | nul
 }
 
 export default function CreativePortfolio({ projects = ITEMS }: { projects?: CreativeHomeProject[] }) {
+  /* Links have to carry the current locale + theme — bare /work/<slug> is a 404. */
+  const pathname = usePathname();
+  const route = parseCanonicalPath(pathname);
+  const workHref = route ? pagePath(route.locale, route.theme, "work") : "/en/creative/work";
+  const hrefFor = (slug: string) =>
+    route ? projectPath(route.locale, route.theme, slug) : `/en/creative/work/${encodeURIComponent(slug)}`;
+
   const sourceItems = projects.length ? projects : ITEMS;
   const items = repeatProjects(sourceItems);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -216,7 +228,7 @@ export default function CreativePortfolio({ projects = ITEMS }: { projects?: Cre
         <div className="c-portfolio__inner">
           <div className="c-portfolio__head">
             <div className="c-portfolio__cta-wrap">
-              <Link href="/creative/work" className="c-btn">
+              <Link href={workHref} className="c-btn">
                 View all work
                 <span className="c-blink" aria-hidden="true" />
               </Link>
@@ -240,7 +252,7 @@ export default function CreativePortfolio({ projects = ITEMS }: { projects?: Cre
                 {items.map((project, index) => (
                   <Link
                     key={`${project.id}-${index}`}
-                    href={`/work/${project.slug}`}
+                    href={hrefFor(project.slug)}
                     className="c-pf"
                     onMouseEnter={() => {
                       setHovered(index);

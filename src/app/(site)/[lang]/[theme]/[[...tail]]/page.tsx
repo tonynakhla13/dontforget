@@ -155,9 +155,12 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
       if (!project) return null;
       return <CreativeThemeLayout><ProjectContentCreative project={project} /></CreativeThemeLayout>;
     }
+    if (page === "work" && !tail[1]) {
+      const projects = await getProjects(locale);
+      return <CreativeThemeLayout><CreativeWork locale={locale} projects={projects} /></CreativeThemeLayout>;
+    }
     const view = page === "home" ? <CreativeHome locale={locale} /> :
       page === "about" && !tail[1] ? <CreativeAbout /> :
-      page === "work" && !tail[1] ? <CreativeWork locale={locale} /> :
       page === "services" && !tail[1] ? <CreativeServices locale={locale} /> :
       page === "blog" && !tail[1] ? <CreativeBlog locale={locale} /> :
       page === "contact" && !tail[1] ? <CreativeContact /> : null;

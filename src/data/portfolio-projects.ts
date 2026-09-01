@@ -32,5 +32,6 @@ export function toPortfolioProject(project: PortfolioProject) {
     liveUrl: project.liveUrl,
     featured: project.featured,
     order: project.order,
+    projectType: project.projectType,
   };
 }

@@ -308,7 +308,10 @@ export default function TeamSection() {
 
   return (
     <section className="team-holo relative border-t border-[var(--border)] section-py overflow-hidden"
-      style={{ background: "rgba(8,8,8,0.82)", backdropFilter: "blur(6px)" }}>
+      style={{
+        background: "linear-gradient(180deg, rgba(9,9,9,0.52) 0px, rgba(8,8,8,0.82) 180px, rgba(8,8,8,0.82) 100%)",
+        backdropFilter: "blur(6px)",
+      }}>
       <style>{CSS}</style>
 
       {/* ambient field */}

@@ -7,8 +7,8 @@ import BlogParticleLayer from "@/components/blog/BlogParticleLayer";
 import DarkBlogList from "@/components/blog/DarkBlogList";
 
 export const metadata: Metadata = {
-  title: "Blog — DON'T FORGET",
-  description: "Insights on branding, web performance, design systems, and conversion from the DON'T FORGET studio.",
+  title: "Blog — NOX Studio",
+  description: "Insights on branding, web performance, design systems, and conversion from the NOX Studio.",
 };
 
 export const dynamic = "force-dynamic";

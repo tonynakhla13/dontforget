@@ -372,5 +372,27 @@
     "order": 34,
     "year": "2026",
     "projectType": "website"
+  },
+  {
+    "slug": "elia-clinic",
+    "title": "Elia Clinic",
+    "category": "Healthcare",
+    "tags": ["Web Design", "Motion", "CMS"],
+    "liveUrl": null,
+    "featured": false,
+    "order": 35,
+    "year": "2025",
+    "projectType": "website"
+  },
+  {
+    "slug": "montgab",
+    "title": "Montgab",
+    "category": "E-Commerce",
+    "tags": ["E-Commerce", "UI/UX", "Shopify"],
+    "liveUrl": null,
+    "featured": false,
+    "order": 36,
+    "year": "2025",
+    "projectType": "ecommerce"
   }
 ]
