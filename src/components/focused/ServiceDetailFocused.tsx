@@ -5,7 +5,7 @@ import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { NoxNavbar, NoxFooter, TK, SANS, DISPLAY } from "./NoxShared";
-import { ImmersiveContactPopup } from "@/components/immersive/ImmersiveContact";
+import { openContactFormPopup } from "@/components/site/ContactFormPopup";
 import type { PublicService } from "@/lib/public-content";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -598,14 +598,12 @@ export default function ServiceDetailFocused({ service, locale }: { service: Pub
   ].filter((s): s is { n: number; label: string } => !!s);
 
   function openDeliverableRequest(deliverable: Deliverable) {
-    window.dispatchEvent(new CustomEvent("immersive-contact:open", {
-      detail: {
-        serviceId: requestServiceId,
-        serviceTitle: service.title,
-        deliverable: deliverable.title,
-        deliverables: deliverables.map(item => item.title),
-      },
-    }));
+    openContactFormPopup({
+      serviceId: requestServiceId,
+      serviceTitle: service.title,
+      deliverable: deliverable.title,
+      deliverables: deliverables.map(item => item.title),
+    });
   }
 
   useEffect(() => {
@@ -1211,7 +1209,6 @@ export default function ServiceDetailFocused({ service, locale }: { service: Pub
       </section>
 
       <NoxFooter />
-      <ImmersiveContactPopup />
 
       <style>{`
         .sd-prose p { margin: 0 0 1em; }

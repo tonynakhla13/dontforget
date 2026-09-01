@@ -11,12 +11,26 @@ const FocusedGuidedBriefModal = dynamic(
 
 const CONTACT_EVENT = "contact-form:open";
 type ContactTheme = "creative" | "focused";
+export type ContactFormSelection = {
+  serviceId?: string;
+  serviceTitle?: string;
+  deliverable?: string;
+  deliverables?: string[];
+};
 
-export function openContactFormPopup() {
-  window.dispatchEvent(new Event(CONTACT_EVENT));
+export function openContactFormPopup(selection?: ContactFormSelection) {
+  window.dispatchEvent(new CustomEvent(CONTACT_EVENT, { detail: selection }));
 }
 
-function ContactFormDialog({ onClose, theme }: { onClose: () => void; theme: ContactTheme }) {
+function ContactFormDialog({
+  onClose,
+  theme,
+  initialSelection,
+}: {
+  onClose: () => void;
+  theme: ContactTheme;
+  initialSelection?: ContactFormSelection;
+}) {
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -113,7 +127,7 @@ function ContactFormDialog({ onClose, theme }: { onClose: () => void; theme: Con
               <path d="M18 6 6 18M6 6l12 12" />
             </svg>
           </button>
-          <CreativeContactHome cardOnly />
+          <CreativeContactHome cardOnly initialSelection={initialSelection} />
         </div>
       </div>
     );
@@ -222,7 +236,7 @@ function ContactFormDialog({ onClose, theme }: { onClose: () => void; theme: Con
           </button>
         </div>
         <div style={{ flex: "1 1 auto", minHeight: 0, overflow: "auto", overscrollBehavior: "contain" }}>
-          {isCreative ? <CreativeContactHome cardOnly /> : null}
+          {isCreative ? <CreativeContactHome cardOnly initialSelection={initialSelection} /> : null}
         </div>
       </div>
     </div>
@@ -231,9 +245,14 @@ function ContactFormDialog({ onClose, theme }: { onClose: () => void; theme: Con
 
 export default function ContactFormPopup({ theme }: { theme: ContactTheme }) {
   const [open, setOpen] = useState(false);
+  const [selection, setSelection] = useState<ContactFormSelection | undefined>();
 
   useEffect(() => {
-    const openPopup = () => setOpen(true);
+    const openPopup = (event: Event) => {
+      const detail = event instanceof CustomEvent ? event.detail as ContactFormSelection | undefined : undefined;
+      setSelection(detail);
+      setOpen(true);
+    };
     window.addEventListener(CONTACT_EVENT, openPopup);
     return () => window.removeEventListener(CONTACT_EVENT, openPopup);
   }, []);
@@ -241,8 +260,8 @@ export default function ContactFormPopup({ theme }: { theme: ContactTheme }) {
   if (!open) return null;
 
   if (theme === "focused") {
-    return <FocusedGuidedBriefModal onClose={() => setOpen(false)} />;
+    return <FocusedGuidedBriefModal onClose={() => setOpen(false)} initialSelection={selection} />;
   }
 
-  return <ContactFormDialog theme={theme} onClose={() => setOpen(false)} />;
+  return <ContactFormDialog theme={theme} onClose={() => setOpen(false)} initialSelection={selection} />;
 }

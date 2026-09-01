@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { PublicService } from "@/lib/public-content";
 import CreativeNavbar from "@/components/creative/CreativeNavbar";
 import CreativeFooter from "@/components/creative/CreativeFooter";
-import { ImmersiveContactPopup } from "@/components/immersive/ImmersiveContact";
+import { openContactFormPopup } from "@/components/site/ContactFormPopup";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -247,14 +247,12 @@ export default function ServiceDetailCreative({ service, locale }: { service: Pu
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   function openDeliverableRequest(deliverable: Deliverable) {
-    window.dispatchEvent(new CustomEvent("immersive-contact:open", {
-      detail: {
-        serviceId: requestServiceId,
-        serviceTitle: service.title,
-        deliverable: deliverable.title,
-        deliverables: deliverables.map(item => item.title),
-      },
-    }));
+    openContactFormPopup({
+      serviceId: requestServiceId,
+      serviceTitle: service.title,
+      deliverable: deliverable.title,
+      deliverables: deliverables.map(item => item.title),
+    });
   }
 
   useEffect(() => {
@@ -484,7 +482,7 @@ export default function ServiceDetailCreative({ service, locale }: { service: Pu
                 {/* body */}
                 <h3 className="c-svc-dbox__title">{d.title}</h3>
                 {d.description && (
-                  <p className="c-svc-dbox__desc" dangerouslySetInnerHTML={{ __html: d.description }} />
+                  <div className="c-svc-dbox__desc" dangerouslySetInnerHTML={{ __html: d.description }} />
                 )}
                 {/* CTA — slides in on hover */}
                 <div className="c-svc-dbox__cta-wrap">
@@ -632,7 +630,6 @@ export default function ServiceDetailCreative({ service, locale }: { service: Pu
       </section>
 
       <CreativeFooter />
-      <ImmersiveContactPopup />
     </div>
   );
 }

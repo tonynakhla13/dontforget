@@ -21,8 +21,32 @@ export const metadata: Metadata = {
   description: "Meet the team behind DON'T FORGET — a small studio building fast, memorable digital experiences.",
 };
 
+type AboutPageData = {
+  stats: unknown;
+  story: unknown;
+  mission: string | null;
+  vision: string | null;
+};
+
+type OptionalAboutPageClient = {
+  aboutPage?: {
+    findUnique: (args: { where: { id: number } }) => Promise<AboutPageData | null>;
+  };
+};
+
+async function getAboutPageData() {
+  const aboutPage = (prisma as unknown as OptionalAboutPageClient).aboutPage;
+  if (!aboutPage) return null;
+
+  try {
+    return await aboutPage.findUnique({ where: { id: 1 } });
+  } catch {
+    return null;
+  }
+}
+
 export default async function ImmersiveAboutPage() {
-  const aboutData = await prisma.aboutPage.findUnique({ where: { id: 1 } });
+  const aboutData = await getAboutPageData();
 
   const stats  = (aboutData?.stats  as StatItem[]  | null) ?? [];
   const story  = (aboutData?.story  as StoryEvent[] | null) ?? [];

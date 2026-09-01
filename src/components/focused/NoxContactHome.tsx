@@ -26,6 +26,12 @@ type ContactMethod = "whatsapp" | "phone" | "email";
 type CD = { name: string; method: ContactMethod; value: string };
 type VoiceClip = { id: string; blob: Blob; url: string; duration: number };
 type GuidedData = { serviceIds: string[]; subServices: string[]; timeline: string; budget: string };
+type GuidedRequestSelection = {
+  serviceId?: string;
+  serviceTitle?: string;
+  deliverable?: string;
+  deliverables?: string[];
+};
 
 const METHOD_LABELS: Record<ContactMethod, string> = { whatsapp: "WhatsApp", phone: "Phone", email: "Email" };
 
@@ -432,21 +438,46 @@ function GuidedCard({ onClick }: { onClick: () => void }) {
 }
 
 /* ─── 3-step guided brief modal ─────────────────────────────────────── */
-export function FocusedGuidedBriefModal({ onClose }: { onClose: () => void }) {
+function serviceOptionsForSelection(initialSelection?: GuidedRequestSelection) {
+  return SERVICES.map(service => {
+    if (service.id !== initialSelection?.serviceId) return service;
+    const deliverables = initialSelection.deliverables?.filter(Boolean);
+    if (!deliverables?.length) return service;
+    return {
+      ...service,
+      title: initialSelection.serviceTitle || service.title,
+      examples: Array.from(new Set(deliverables)),
+    };
+  });
+}
+
+export function FocusedGuidedBriefModal({
+  onClose,
+  initialSelection,
+}: {
+  onClose: () => void;
+  initialSelection?: GuidedRequestSelection;
+}) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef   = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
-  const [step, setStep]   = useState(1);
+  const [step, setStep]   = useState(initialSelection?.serviceId ? 2 : 1);
   const [done, setDone]   = useState(false);
   const [sub, setSub]     = useState(false);
   const [err, setErr]     = useState(false);
-  const [gd, setGd]       = useState<GuidedData>({ serviceIds: [], subServices: [], timeline: "", budget: "" });
+  const serviceOptions = serviceOptionsForSelection(initialSelection);
+  const [gd, setGd]       = useState<GuidedData>({
+    serviceIds: initialSelection?.serviceId ? [initialSelection.serviceId] : [],
+    subServices: initialSelection?.deliverable ? [initialSelection.deliverable] : [],
+    timeline: "",
+    budget: "",
+  });
   const [cd, setCd]       = useState<CD>({ name: "", method: "email", value: "" });
   const [message, setMessage] = useState("");
   const [voice, setVoice] = useState<Blob[]>([]);
   const [assetFiles, setAssetFiles] = useState<File[]>([]);
 
-  const selected = SERVICES.filter(s => gd.serviceIds.includes(s.id));
+  const selected = serviceOptions.filter(s => gd.serviceIds.includes(s.id));
   const examples = Array.from(new Set(selected.flatMap(s => s.examples)));
 
   useEffect(() => {
@@ -538,6 +569,8 @@ export function FocusedGuidedBriefModal({ onClose }: { onClose: () => void }) {
         background: "rgba(0,0,0,0.92)",
         backdropFilter: "blur(14px)",
         overscrollBehavior: "contain",
+        opacity: 0,
+        visibility: "hidden",
       }}>
       <div ref={panelRef}
         style={{
@@ -548,6 +581,9 @@ export function FocusedGuidedBriefModal({ onClose }: { onClose: () => void }) {
           overflow:      "hidden",
           background:    TK.ink,
           border:        `1px solid ${TK.line}`,
+          opacity:       0,
+          visibility:    "hidden",
+          transform:     "translateY(28px) scale(0.98)",
         }}>
 
         {/* Header */}
@@ -604,7 +640,7 @@ export function FocusedGuidedBriefModal({ onClose }: { onClose: () => void }) {
               <h3 style={{ fontFamily: SANS, fontWeight: 700, fontSize: "clamp(1.4rem, 2.5vw, 2rem)", color: TK.paper, lineHeight: 1, margin: "0 0 0.5rem" }}>What are you building?</h3>
               <p style={{ fontFamily: SANS, fontSize: "clamp(0.82rem, 1vw, 1rem)", color: TK.green, opacity: 0.7, margin: "0 0 clamp(1.5rem, 2.5vw, 2rem)" }}>Pick every service that belongs in the project.</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.65rem" }}>
-                {SERVICES.map(svc => {
+                {serviceOptions.map(svc => {
                   const active = gd.serviceIds.includes(svc.id);
                   return (
                     <button key={svc.id} type="button"
