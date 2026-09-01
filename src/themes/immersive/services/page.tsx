@@ -13,64 +13,34 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { gsap } from "@/lib/gsap";
 import { pagePath, parseCanonicalPath } from "@/lib/site-routing";
+import { PORTFOLIO_FEATURED_PROJECTS } from "@/data/portfolio-projects";
 
 type WorkHeroProject = ComponentProps<typeof WorkHeroCards>["projects"][number];
 type ProjectApiItem = WorkHeroProject & {
-  attachments?: Array<{
-    role?: string | null;
-    media?: { url?: string | null } | null;
-  }>;
+  attachments?:
+    | Record<string, string[]>
+    | Array<{
+        role?: string | null;
+        media?: { url?: string | null } | null;
+      }>;
 };
 
-const DEMO_PROJECTS: WorkHeroProject[] = [
-  {
-    id: "elia-clinic",
-    slug: "elia-clinic",
-    title: "Elia Clinic",
-    category: "Healthcare",
-    year: "2025",
-    description: "Calm, conversion-led medical site with modular content and refined motion.",
-    tags: ["Next.js", "GSAP", "Prisma"],
-    liveUrl: null,
-    coverImage: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=85&auto=format&fit=crop",
-  },
-  {
-    id: "montgab",
-    slug: "montgab",
-    title: "Montgab",
-    category: "E-Commerce",
-    year: "2025",
-    description: "Tactile storefront balancing product storytelling, speed, and editorial whitespace.",
-    tags: ["Shopify", "Headless", "Tailwind"],
-    liveUrl: null,
-    coverImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&q=85&auto=format&fit=crop",
-  },
-  {
-    id: "180-degrees",
-    slug: "180-degrees",
-    title: "180 Degrees",
-    category: "Agency / Brand",
-    year: "2026",
-    description: "A flexible studio identity translated into web, motion, and campaign surfaces.",
-    tags: ["Brand", "Motion", "Next.js"],
-    liveUrl: null,
-    coverImage: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1400&q=85&auto=format&fit=crop",
-  },
-  {
-    id: "launchpad",
-    slug: "launchpad",
-    title: "Launchpad",
-    category: "SaaS Platform",
-    year: "2026",
-    description: "Developer-focused dashboard built for speed, clarity, and team collaboration.",
-    tags: ["SaaS", "React", "TypeScript"],
-    liveUrl: null,
-    coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=85&auto=format&fit=crop",
-  },
-];
+const DEMO_PROJECTS: WorkHeroProject[] = PORTFOLIO_FEATURED_PROJECTS.map((project) => ({
+  id: project.slug,
+  slug: project.slug,
+  title: project.title,
+  category: project.category,
+  year: project.year,
+  description: null,
+  tags: [...project.tags],
+  liveUrl: project.liveUrl,
+  coverImage: null,
+}));
 
 function normalizeProject(project: ProjectApiItem): WorkHeroProject {
-  const coverAttachment = project.attachments?.find((item) => item.role === "project_cover")?.media?.url;
+  const coverAttachment = Array.isArray(project.attachments)
+    ? project.attachments.find((item) => item.role === "project_cover")?.media?.url
+    : project.attachments?.project_cover?.[0];
   return {
     id: project.id,
     slug: project.slug ?? project.id,

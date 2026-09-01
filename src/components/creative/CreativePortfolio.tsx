@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties, WheelEvent } from "react";
 import { useRef, useState, useEffect, useCallback, type RefObject } from "react";
+import { PORTFOLIO_FEATURED_PROJECTS } from "@/data/portfolio-projects";
 
 export type CreativeHomeProject = {
   id: string;
@@ -14,44 +15,15 @@ export type CreativeHomeProject = {
   gifUrl?: string | null;
 };
 
-const ITEMS: CreativeHomeProject[] = [
-  {
-    id: "elia-clinic",
-    slug: "elia-clinic",
-    title: "Elia Clinic",
-    category: "Healthcare",
-    year: "2025",
-    coverImage: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&q=80&auto=format&fit=crop",
-    gifUrl: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "montgab",
-    slug: "montgab",
-    title: "Montgab",
-    category: "E-Commerce",
-    year: "2025",
-    coverImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80&auto=format&fit=crop",
-    gifUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "180-degrees",
-    slug: "180-degrees",
-    title: "180 Degrees",
-    category: "Agency / Brand",
-    year: "2026",
-    coverImage: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&q=80&auto=format&fit=crop",
-    gifUrl: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&q=80&auto=format&fit=crop",
-  },
-  {
-    id: "launchpad",
-    slug: "launchpad",
-    title: "Launchpad",
-    category: "SaaS Platform",
-    year: "2026",
-    coverImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop",
-    gifUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80&auto=format&fit=crop",
-  },
-];
+const ITEMS: CreativeHomeProject[] = PORTFOLIO_FEATURED_PROJECTS.map((project) => ({
+  id: project.slug,
+  slug: project.slug,
+  title: project.title,
+  category: project.category,
+  year: project.year,
+  coverImage: null,
+  gifUrl: null,
+}));
 
 const RIBBON_WORDS = ["Creative", "Services", "Studio", "Design", "Strategy", "Websites", "Systems", "SEO", "Creative", "Services", "Studio", "Design", "Strategy", "Websites", "Systems", "SEO"];
 const PROJECT_ROW_HEIGHT = 146;

@@ -158,7 +158,7 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
     }
     const view = page === "home" ? <CreativeHome locale={locale} /> :
       page === "about" && !tail[1] ? <CreativeAbout /> :
-      page === "work" && !tail[1] ? <CreativeWork /> :
+      page === "work" && !tail[1] ? <CreativeWork locale={locale} /> :
       page === "services" && !tail[1] ? <CreativeServices locale={locale} /> :
       page === "blog" && !tail[1] ? <CreativeBlog locale={locale} /> :
       page === "contact" && !tail[1] ? <CreativeContact /> : null;
@@ -178,7 +178,7 @@ async function renderImmersiveView(locale: Locale, page: string, tail: string[])
     return <ImmersiveHome projects={projects} services={services} />;
   }
   if (page === "about" && !tail[1]) return <ImmersiveAbout />;
-  if (page === "work" && !tail[1]) return <ImmersiveWork />;
+  if (page === "work" && !tail[1]) return <ImmersiveWork locale={locale} />;
   if (page === "services" && !tail[1]) return <ImmersiveServices />;
   if (page === "blog" && !tail[1]) return <ImmersiveBlog locale={locale} />;
   if (page === "blog" && tail[1]) {
