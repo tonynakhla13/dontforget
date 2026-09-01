@@ -66,6 +66,6 @@ export const homeContent = {
 
   footer: {
     copy: "© 2026 Don't Forget",
-    email: "hello@dontforget.studio",
+    email: "HELLO@NOXDEVS.COM",
   },
 };

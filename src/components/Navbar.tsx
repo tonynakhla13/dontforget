@@ -207,7 +207,7 @@ export default function Navbar({ inner = false }: { inner?: boolean }) {
             </div>
           ) : null}
           <span className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[var(--body)]">
-            hello@dontforget.studio
+            HELLO@NOXDEVS.COM
           </span>
         </div>
       </div>

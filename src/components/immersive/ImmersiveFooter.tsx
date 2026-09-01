@@ -74,7 +74,7 @@ export default function ImmersiveFooter() {
         {/* ── CTA — the email is the hero ── */}
         <div className="nf-cta">
           <span className="nf-pill"><i />Available for selected work</span>
-          <a href="mailto:hello@noxstudio.dev" className="nf-email-hero">hello@noxstudio.dev</a>
+          <a href="mailto:HELLO@NOXDEVS.COM" className="nf-email-hero">HELLO@NOXDEVS.COM</a>
         </div>
 
         {/* ── meta row: brand · nav · socials ── */}

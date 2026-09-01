@@ -50,7 +50,7 @@ export default function Contact() {
 
           <div className="mt-12 border-t border-[var(--border)]">
             {[
-              { k: "Email",        v: "hello@dontforget.studio" },
+              { k: "Email",        v: "HELLO@NOXDEVS.COM" },
               { k: "Response",     v: "Within 24 hours" },
               { k: "Availability", v: "2 spots open" },
             ].map((row) => (

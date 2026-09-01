@@ -121,7 +121,7 @@ export default function ContactFocused({ contactInfo }: { contactInfo?: ContactI
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const email = contactInfo?.email ?? "hello@noxstudio.dev";
+  const email = contactInfo?.email ?? "HELLO@NOXDEVS.COM";
   const base = contactInfo?.address ?? "Yabroud, Syria / working worldwide";
   const selectedServices = useMemo(
     () => SERVICES.filter((service) => brief.serviceIds.includes(service.id)),
@@ -218,7 +218,7 @@ export default function ContactFocused({ contactInfo }: { contactInfo?: ContactI
           email:
             brief.contactMethod === "email" && brief.contactValue.includes("@")
               ? brief.contactValue.trim()
-              : `${brief.contactMethod}@noxstudio.local`,
+              : `${brief.contactMethod}@noxdevs.local`,
           contactMethod: brief.contactMethod,
           contactValue: brief.contactValue.trim(),
           projectType: serviceTitles.join(", "),

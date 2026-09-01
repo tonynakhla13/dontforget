@@ -7,7 +7,7 @@ import CreativeFooter from "@/components/creative/CreativeFooter";
 import CreativeContactHome from "@/components/creative/CreativeContactHome";
 
 const CONTACT_META = [
-  { label: "Project desk", value: "hello@noxstudio.dev", href: "mailto:hello@noxstudio.dev" },
+  { label: "Project desk", value: "HELLO@NOXDEVS.COM", href: "mailto:HELLO@NOXDEVS.COM" },
   { label: "Studio base", value: "Yabroud, Syria / working worldwide" },
   { label: "Response window", value: "Within one business day" },
   { label: "Best fit", value: "Websites, apps, commerce, SEO, CRM, and brand systems" },

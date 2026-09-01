@@ -497,7 +497,7 @@ export function FocusedGuidedBriefModal({ onClose }: { onClose: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: cd.name.trim(),
-          email: cd.method === "email" ? cd.value : `${cd.method}@dontforget.local`,
+          email: cd.method === "email" ? cd.value : `${cd.method}@noxdevs.local`,
           projectType: `${selected.map(s => s.title).join(", ")} — ${gd.subServices.join(", ")}`,
           message: `Timeline: ${gd.timeline} | Budget: ${gd.budget}${noteLine}${voiceLine}${fileLine}`,
           contactMethod: cd.method,

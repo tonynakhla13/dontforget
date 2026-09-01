@@ -920,7 +920,7 @@ function ContactDetailsModal({
               background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
               fontSize: "0.82rem", color: "#f87171",
             }}>
-              Something went wrong. Try again or email hello@dontforget.studio.
+              Something went wrong. Try again or email HELLO@NOXDEVS.COM.
             </div>
           </div>
         )}
@@ -1291,7 +1291,7 @@ export default function ImmersiveContact({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: details.name,
-          email: details.method === "email" ? details.value : `${details.method}@dontforget.local`,
+          email: details.method === "email" ? details.value : `${details.method}@noxdevs.local`,
           projectType: "Open inquiry",
           contactMethod: details.method,
           contactValue: details.value,
@@ -1733,7 +1733,7 @@ function DirectContactSection() {
           </div>
           <div className="mt-8 grid gap-3">
             {[
-              ["Email", "hello@dontforget.studio", "M18 8 12 13 6 8M5 6h14v12H5z"],
+              ["Email", "HELLO@NOXDEVS.COM", "M18 8 12 13 6 8M5 6h14v12H5z"],
               ["Phone", "+1 555 123 4567", "M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2 3.6 1.1v3.2c0 .8-.7 1.5-1.5 1.5C9.5 21 3 14.5 3 6.5 3 5.7 3.7 5 4.5 5h3.2l1.1 3.6-2.2 2.2z"],
               ["Reply window", "Within 24 hours", "M12 6v6l4 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"],
             ].map(([label, value, path]) => (
