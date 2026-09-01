@@ -1,11 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #080808;
-  --surface: #111111;
-  --paper: #f0ece3;
-  --teal: #3abf8a;
-  --text-muted: #9a9a9a;
+  --ink:         #050505;
+  --surface:     #1A1A1A;
+  --cream:       #F8F3EA;
+  --card-light:  #F8F6F0;
+  --layer:       #E8E5DF;
+  --teal:        #3ABF8A;
+  --text-dark:   #C0C0C0;
+  --text-light:  #3A3A3A;
+
   --page-gutter: clamp(1.5rem, 5vw, 5rem);
   --section-gap: clamp(7rem, 14vw, 14rem);
   --card-radius: 14px;
@@ -31,7 +35,7 @@ html {
 body {
   min-height: 100vh;
   background: var(--ink);
-  color: var(--paper);
+  color: var(--text-dark);
   font-family: var(--font-body-next), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -62,6 +66,16 @@ button, input, textarea, select { font: inherit; }
   padding-bottom: var(--section-gap);
 }
 
+.section-dark {
+  background: var(--ink);
+  color: var(--text-dark);
+}
+
+.section-light {
+  background: var(--cream);
+  color: var(--text-light);
+}
+
 .noise-layer {
   pointer-events: none;
   position: fixed;
@@ -73,33 +87,52 @@ button, input, textarea, select { font: inherit; }
 
 /* ── Typography ── */
 
+/* Bebas Neue — all display headings */
+.headline {
+  font-family: var(--font-display-next), sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+/* Caveat — script accent */
+.script {
+  font-family: var(--font-script-next), cursive;
+  font-style: italic;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Legacy alias — keep existing components working */
+.display-text {
+  font-family: var(--font-display-next), sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
 /* Orbitron — brand name only */
 .brand-text {
   font-family: var(--font-display-next), monospace;
-  font-weight: 700;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-}
-
-/* Inter ExtraBold — all display headings */
-.display-text {
-  font-family: var(--font-body-next), sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 0.9;
 }
 
 .eyebrow {
   font-family: var(--font-mono-next), monospace;
   font-size: 0.68rem;
-  letter-spacing: 0.38em;
+  letter-spacing: 0.36em;
   text-transform: uppercase;
   color: var(--teal);
 }
 
 .divider {
   border: none;
-  border-top: 1px solid rgba(240,236,227,0.08);
+  border-top: 1px solid rgba(248,243,234,0.08);
 }
 
 /* ── Buttons ── */
@@ -132,11 +165,21 @@ button, input, textarea, select { font: inherit; }
 
 .btn-ghost {
   background: transparent;
-  color: var(--paper);
-  border: 1px solid rgba(240,236,227,0.18);
+  color: var(--text-dark);
+  border: 1px solid rgba(192,192,192,0.22);
 }
 .btn-ghost:hover {
   border-color: rgba(58,191,138,0.45);
+  color: var(--teal);
+}
+
+.btn-ghost-dark {
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid rgba(58,58,58,0.35);
+}
+.btn-ghost-dark:hover {
+  border-color: var(--teal);
   color: var(--teal);
 }
 
@@ -144,8 +187,14 @@ button, input, textarea, select { font: inherit; }
 
 .card {
   border-radius: var(--card-radius);
-  border: 1px solid rgba(240,236,227,0.08);
+  border: 1px solid rgba(192,192,192,0.08);
   background: var(--surface);
+}
+
+.card-light {
+  border-radius: var(--card-radius);
+  border: 1px solid var(--layer);
+  background: var(--card-light);
 }
 
 /* ── Marquee ── */
