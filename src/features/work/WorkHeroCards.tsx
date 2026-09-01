@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPE } from "react";
+import { parseCanonicalPath, projectPath } from "@/lib/site-routing";
 import type { WorkProject } from "./page";
 
 const G = "70,174,34"; // NOX green
@@ -20,7 +22,15 @@ const DRAG_PX = SPACING * 0.82; // pixels dragged per slot advanced
 
 function slugOf(p: WorkProject) { return p.slug ?? p.id; }
 
+function hrefOf(project: WorkProject, pathname: string) {
+  const slug = slugOf(project);
+  const route = parseCanonicalPath(pathname);
+  return route ? projectPath(route.locale, route.theme, slug) : `/work/${encodeURIComponent(slug)}`;
+}
+
 export default function WorkHeroCards({ projects }: { projects: WorkProject[] }) {
+  const pathname = usePathname();
+
   /* build a ring long enough to feel infinite — keeps EVERY project */
   const ring = useMemo(() => {
     const base = projects;
@@ -78,7 +88,7 @@ export default function WorkHeroCards({ projects }: { projects: WorkProject[] })
         /* hover lerp (suppressed while dragging) — snappy ease toward target */
         const ht  = (!dragging && hoverRef.current === i) ? 1 : 0;
         const cur = hoverAmt.current[i] ?? 0;
-        const hv  = cur + (ht - cur) * Math.min(1, dt * 20);
+        const hv  = cur + (ht - cur) * Math.min(1, dt * 34);
         hoverAmt.current[i] = hv;
 
         let rel = i - pos;
@@ -88,12 +98,12 @@ export default function WorkHeroCards({ projects }: { projects: WorkProject[] })
         const visible = a <= WINDOW || hv > 0.01;
 
         const x  = rel * SPACING;
-        const z  = -a * DEPTH + hv * 120;                                  // lift forward on hover
-        const ry = Math.max(-MAXA, Math.min(MAXA, -rel * ANGLE)) * (1 - hv * 0.85); // face viewer on hover
-        const scale = Math.max(0.52, 1 - a * 0.075) * (1 + hv * 0.18);     // grow on hover
-        const opacity = visible ? Math.max(0, Math.min(1, (1 - a * 0.235) + hv * 0.4)) : 0;
-        const bright  = Math.max(0.42, 1 - a * 0.17) + hv * 0.25;
-        const sat     = Math.max(0.55, 1 - a * 0.16) + hv * 0.2;
+        const z  = -a * DEPTH + hv * 72;                                  // gentler lift on hover
+        const ry = Math.max(-MAXA, Math.min(MAXA, -rel * ANGLE)) * (1 - hv * 0.48); // keep carousel depth readable
+        const scale = Math.max(0.52, 1 - a * 0.075) * (1 - hv * 0.06);     // shrink slightly on hover
+        const opacity = visible ? Math.max(0, Math.min(1, (1 - a * 0.235) + hv * 0.25)) : 0;
+        const bright  = Math.max(0.42, 1 - a * 0.17) + hv * 0.14;
+        const sat     = Math.max(0.55, 1 - a * 0.16) + hv * 0.12;
         const isFront = a < 0.6;
 
         el.style.transform = `translate(-50%,-50%) translate3d(${x}px,0px,${z}px) rotateY(${ry}deg) scale(${scale})`;
@@ -102,7 +112,7 @@ export default function WorkHeroCards({ projects }: { projects: WorkProject[] })
         el.style.filter = `brightness(${bright}) saturate(${sat}) contrast(1.06)`;
         el.style.pointerEvents = visible ? "auto" : "none";
         el.style.boxShadow = (isFront || hv > 0.3)
-          ? `0 44px 100px rgba(0,0,0,0.78), 0 0 0 1.5px rgba(${G},${(0.45 + hv * 0.4).toFixed(2)}), 0 0 ${64 + hv * 40}px rgba(${G},${(0.18 + hv * 0.22).toFixed(2)})`
+          ? `0 38px 92px rgba(0,0,0,0.72), 0 0 0 1.5px rgba(${G},${(0.42 + hv * 0.26).toFixed(2)}), 0 0 ${52 + hv * 26}px rgba(${G},${(0.14 + hv * 0.16).toFixed(2)})`
           : `0 ${22 + a * 8}px ${56 + a * 16}px rgba(0,0,0,0.6)`;
         el.dataset.front = isFront ? "1" : "0";
       }
@@ -167,27 +177,42 @@ export default function WorkHeroCards({ projects }: { projects: WorkProject[] })
     >
       <style>{`
         .nox-stage[data-drag="1"] { cursor: grabbing !important; }
-        /* full-detail block — collapsed until hovered.
-           grid-template-rows 0fr→1fr animates real height smoothly (no max-height jank). */
-        .nox-stage .nox-detail {
-          display: grid;
-          grid-template-rows: 0fr;
-          opacity: 0;
-          transform: translateY(6px);
+        /* bottom drawer — reveal details by sliding the panel, not resizing layout */
+        .nox-stage .nox-copy {
+          transform: translateY(6.35rem);
           transition:
-            grid-template-rows .34s cubic-bezier(.22,1,.36,1),
-            opacity .22s ease,
-            transform .34s cubic-bezier(.22,1,.36,1);
+            transform .34s cubic-bezier(.16,1,.3,1),
+            opacity .2s ease;
+          will-change: transform;
         }
-        .nox-stage .nox-detail-inner { overflow: hidden; min-height: 0; }
-        .nox-stage:not([data-drag="1"]) .nox-wcard:hover .nox-detail {
-          grid-template-rows: 1fr;
-          opacity: 1;
+        .nox-stage .nox-detail {
+          opacity: 0;
+          pointer-events: none;
+          transform: translateY(12px);
+          transition:
+            opacity .22s ease,
+            transform .3s cubic-bezier(.16,1,.3,1);
+        }
+        .nox-stage .nox-detail-inner { min-height: 0; }
+        .nox-stage:not([data-drag="1"]) .nox-wcard:hover .nox-copy,
+        .nox-stage:not([data-drag="1"]) .nox-wcard:focus-within .nox-copy {
           transform: translateY(0);
         }
+        .nox-stage:not([data-drag="1"]) .nox-wcard:hover .nox-detail,
+        .nox-stage:not([data-drag="1"]) .nox-wcard:focus-within .nox-detail {
+          opacity: 1;
+          transform: translateY(0);
+          pointer-events: auto;
+        }
         /* strengthen the read of the bottom panel on hover */
-        .nox-stage .nox-scrim { opacity: 0; transition: opacity .28s ease; }
-        .nox-stage:not([data-drag="1"]) .nox-wcard:hover .nox-scrim { opacity: 1; }
+        .nox-stage .nox-scrim { opacity: 0; transition: opacity .24s ease; }
+        .nox-stage:not([data-drag="1"]) .nox-wcard:hover .nox-scrim,
+        .nox-stage:not([data-drag="1"]) .nox-wcard:focus-within .nox-scrim { opacity: 1; }
+        @media (hover: none) {
+          .nox-stage .nox-copy { transform: translateY(0); }
+          .nox-stage .nox-detail { opacity: 1; transform: none; pointer-events: auto; }
+          .nox-stage .nox-scrim { opacity: 1; }
+        }
       `}</style>
 
       {/* floor glow that anchors the gallery in the dark */}
@@ -222,7 +247,7 @@ export default function WorkHeroCards({ projects }: { projects: WorkProject[] })
               }}
             >
               <Link
-                href={`/work/${slugOf(p)}`}
+                href={hrefOf(p, pathname)}
                 aria-label={`Explore ${p.title}`}
                 draggable={false}
                 onClick={(e) => { if (draggedRef.current) { e.preventDefault(); draggedRef.current = false; } }}
@@ -276,7 +301,7 @@ export default function WorkHeroCards({ projects }: { projects: WorkProject[] })
                 }} />
 
                 {/* bottom panel — title/year always; full detail on hover */}
-                <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "1.05rem 1.15rem" }}>
+                <div className="nox-copy" style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "1.05rem 1.15rem" }}>
                   <div style={{
                     height: 1, marginBottom: "0.6rem",
                     background: `linear-gradient(90deg, rgba(${G},0.6), transparent)`,

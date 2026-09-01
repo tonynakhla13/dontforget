@@ -2,14 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { projectData } from "@/lib/content-admin";
+import { getProjects as getPublicProjects } from "@/lib/public-content";
 
 export async function GET() {
-  const projects = await prisma.project.findMany({
-    where: { status: "PUBLISHED" },
-    orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-    include: { attachments: { include: { media: true }, orderBy: { order: "asc" } }, services: { include: { service: true }, orderBy: { order: "asc" } } },
-  });
-  return NextResponse.json(projects);
+  return NextResponse.json(await getPublicProjects("en"));
 }
 
 export async function POST(request: NextRequest) {

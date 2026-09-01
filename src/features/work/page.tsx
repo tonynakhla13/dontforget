@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
-import { prisma }          from "@/lib/prisma";
+import { getProjects as getPublicProjects } from "@/lib/public-content";
+import { PORTFOLIO_PROJECTS, toPortfolioProject } from "@/data/portfolio-projects";
 import Loader              from "@/components/Loader";
 import SmoothScroll        from "@/components/SmoothScroll";
 import KnotOnly            from "@/components/KnotOnly";
@@ -16,71 +17,11 @@ export const metadata: Metadata = {
 };
 
 // ── Fallback demo data ────────────────────────────────────────────────
-const DEMO_PROJECTS = [
-  {
-    id: "elia-clinic",
-    slug: "elia-clinic",
-    title: "Elia Clinic",
-    category: "Healthcare",
-    year: "2025",
-    description: "Calm, conversion-led medical site with modular content and refined motion.",
-    tags: ["Next.js", "GSAP", "Prisma"],
-    liveUrl: null as string | null,
-    coverImage:
-      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=85&auto=format&fit=crop",
-  },
-  {
-    id: "montgab",
-    slug: "montgab",
-    title: "Montgab",
-    category: "E-Commerce",
-    year: "2025",
-    description:
-      "Tactile storefront balancing product storytelling, speed, and editorial whitespace.",
-    tags: ["Shopify", "Headless", "Tailwind"],
-    liveUrl: null as string | null,
-    coverImage:
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&q=85&auto=format&fit=crop",
-  },
-  {
-    id: "180-degrees",
-    slug: "180-degrees",
-    title: "180 Degrees",
-    category: "Agency / Brand",
-    year: "2026",
-    description:
-      "A flexible studio identity translated into web, motion, and campaign surfaces.",
-    tags: ["Brand", "Motion", "Next.js"],
-    liveUrl: null as string | null,
-    coverImage:
-      "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1400&q=85&auto=format&fit=crop",
-  },
-  {
-    id: "launchpad",
-    slug: "launchpad",
-    title: "Launchpad",
-    category: "SaaS Platform",
-    year: "2026",
-    description:
-      "Developer-focused dashboard built for speed, clarity, and team collaboration.",
-    tags: ["SaaS", "React", "TypeScript"],
-    liveUrl: null as string | null,
-    coverImage:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=85&auto=format&fit=crop",
-  },
-];
+const DEMO_PROJECTS = PORTFOLIO_PROJECTS.map(toPortfolioProject);
 
 async function getProjects() {
   try {
-    const projects = await prisma.project.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-      include: { attachments: { include: { media: true }, orderBy: { order: "asc" } } },
-    });
-    return projects.length ? projects.map((project) => ({
-      ...project,
-      coverImage: project.attachments.find((item) => item.role === "project_cover")?.media.url ?? project.coverImage,
-    })) : DEMO_PROJECTS;
+    return await getPublicProjects("en");
   } catch {
     return DEMO_PROJECTS;
   }

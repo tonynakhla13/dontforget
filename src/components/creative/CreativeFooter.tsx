@@ -34,8 +34,8 @@ export default function CreativeFooter() {
 
       {/* giant email link */}
       <div className="c-footer__email-wrap">
-        <a href="mailto:hello@noxstudio.dev" className="c-footer__email">
-          hello@noxstudio.dev
+        <a href="mailto:HELLO@NOXDEVS.COM" className="c-footer__email">
+          HELLO@NOXDEVS.COM
           <span className="c-footer__email-arrow" aria-hidden="true"> ↗</span>
         </a>
       </div>

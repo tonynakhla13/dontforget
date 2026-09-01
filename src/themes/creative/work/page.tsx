@@ -3,109 +3,156 @@
 import { useState } from "react";
 import Link from "next/link";
 import CreativeNavbar from "@/components/creative/CreativeNavbar";
-import CreativePageHero from "@/components/creative/CreativePageHero";
 import CreativeFooter from "@/components/creative/CreativeFooter";
+import { PORTFOLIO_PROJECTS, type PortfolioProject } from "@/data/portfolio-projects";
 
-const FILTERS = ["All work", "Brand", "Web", "Motion", "Packaging", "Campaign"];
+type Filter = { key: string; label: string; match: (type: string) => boolean };
 
-const CASES = [
-  { cat: "brand",     size: "wide",  bg: "#dfead0",                                                title: "Urban Threads — A loud little clothing label",    label: "Brand Identity",  date: "FEB 2024" },
-  { cat: "packaging", size: "tall",  bg: "linear-gradient(135deg, #b8b8b8, #6e6e6e)",               title: "Lume Skincare",                                   label: "Packaging",       date: "AUG 2024" },
-  { cat: "campaign",  size: "third", bg: "linear-gradient(135deg, #46D12A, #d2ff8b)",                title: "TechCon 2024",                                    label: "Campaign",        date: "APR 2024" },
-  { cat: "web",       size: "third", bg: "linear-gradient(45deg, rgba(35,31,32,.10) 25%, transparent 25%, transparent 75%, rgba(35,31,32,.10) 75%), linear-gradient(45deg, rgba(35,31,32,.10) 25%, transparent 25%, transparent 75%, rgba(35,31,32,.10) 75%), rgb(233,233,233)", title: "Northwind Co.", label: "Website", date: "JUN 2024" },
-  { cat: "motion",    size: "third", bg: "linear-gradient(135deg, #2a2a2a, #5a5a5a)",               title: "Field Notes Title Sequence",                      label: "Motion",          date: "SEP 2024" },
-  { cat: "brand",     size: "half",  bg: "linear-gradient(135deg, #f4cdab, #efb487)",               title: "Tessa Coffee — A new third wave",                 label: "Brand Identity",  date: "NOV 2024" },
-  { cat: "web",       size: "half",  bg: "linear-gradient(45deg, rgba(35,31,32,.10) 25%, transparent 25%, transparent 75%, rgba(35,31,32,.10) 75%), linear-gradient(45deg, rgba(35,31,32,.10) 25%, transparent 25%, transparent 75%, rgba(35,31,32,.10) 75%), rgb(233,233,233)", title: "Otherspace — A travel publication", label: "Web", date: "JAN 2025" },
-  { cat: "packaging", size: "third", bg: "linear-gradient(135deg, #e7d6ff, #b1a0e0)",               title: "Mara Botanicals",                                 label: "Packaging",       date: "MAR 2025" },
-  { cat: "brand",     size: "third", bg: "linear-gradient(135deg, #ffd2d2, #ff9b9b)",               title: "Heat Studio Gym",                                 label: "Identity",        date: "APR 2025" },
-  { cat: "motion",    size: "third", bg: "linear-gradient(135deg, #c3e0ff, #6da8e8)",               title: "Helio Energy — Launch film",                      label: "Motion",          date: "APR 2025" },
-  { cat: "campaign",  size: "wide",  bg: "linear-gradient(135deg, rgb(35,31,32), #4a4a4a)",         title: "Don't Sleep — A spring-summer drop for Atelier 22", label: "Campaign",     date: "MAY 2025" },
-  { cat: "web",       size: "tall",  bg: "linear-gradient(45deg, rgba(35,31,32,.10) 25%, transparent 25%, transparent 75%, rgba(35,31,32,.10) 75%), linear-gradient(45deg, rgba(35,31,32,.10) 25%, transparent 25%, transparent 75%, rgba(35,31,32,.10) 75%), rgb(233,233,233)", title: "Hum — A meditation product", label: "Web App", date: "JUN 2025" },
-  { cat: "packaging", size: "half",  bg: "linear-gradient(135deg, #f7e3a0, #e6c358)",               title: "Honeyfield Reserve",                              label: "Packaging",       date: "JUL 2025" },
-  { cat: "brand",     size: "half",  bg: "linear-gradient(135deg, #2a2a2a, #5a5a5a)",               title: "Constant Capital — A challenger bank",            label: "Identity + Web",  date: "AUG 2025" },
+const FILTERS: Filter[] = [
+  { key: "all", label: "All", match: () => true },
+  { key: "website", label: "Websites", match: (t) => t === "website" },
+  { key: "ecommerce", label: "E-commerce", match: (t) => t === "ecommerce" },
+  { key: "web_app", label: "Platforms", match: (t) => t === "web_app" },
 ];
 
-const MARQUEE_ITEMS = ["42 Awards", "14 Cannes Pencils", "3 D&AD Yellow", "1 Wallpaper* feature"];
+const TYPE_LABEL: Record<string, string> = {
+  website: "Website",
+  ecommerce: "E-commerce",
+  web_app: "Platform",
+};
 
-export default function CreativeWorkPage() {
-  const [active, setActive] = useState("All work");
+const PROJECTS = [...PORTFOLIO_PROJECTS].sort((a, b) => a.order - b.order);
+const LIVE_COUNT = PROJECTS.filter((p) => p.liveUrl).length;
+const FEATURED_COUNT = PROJECTS.filter((p) => p.featured).length;
+const FILTER_COUNTS: Record<string, number> = Object.fromEntries(
+  FILTERS.map((f) => [f.key, PROJECTS.filter((p) => f.match(p.projectType)).length]),
+);
 
-  const filtered = active === "All work"
-    ? CASES
-    : CASES.filter((c) => c.cat === active.toLowerCase());
+function stripProtocol(url: string) {
+  return url.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+}
+
+function stackLabel(project: PortfolioProject) {
+  if (project.tags.length) return project.tags.join(" · ");
+  return TYPE_LABEL[project.projectType] ?? "Website";
+}
+
+export default function CreativeWorkPage({ locale = "en" }: { locale?: string }) {
+  const safeLocale = locale === "ar" ? "ar" : "en";
+  const [active, setActive] = useState("all");
+
+  const activeFilter = FILTERS.find((f) => f.key === active) ?? FILTERS[0];
+  const rows = PROJECTS.filter((p) => activeFilter.match(p.projectType));
 
   return (
     <>
       <CreativeNavbar active="work" />
 
-      <CreativePageHero
-        crumb="Home / Work"
-        title={<>Selected<br /><em>work</em><br />2018&nbsp;—&nbsp;2025.</>}
-        sub="Fourteen of three-hundred-and-counting. A mix of identity systems, marketing sites, packaging and the occasional film. Click anything to dig in."
-      />
-
-      {/* Marquee */}
-      <div className="c-marquee" aria-hidden="true">
-        <div className="c-marquee__track">
-          {[0, 1].map((rep) => (
-            <span key={rep}>
-              {MARQUEE_ITEMS.map((w) => (
-                <span key={w}>
-                  {w}
-                  <span className="c-marquee__aster" />
-                </span>
-              ))}
+      <section className="c-work-hero">
+        <p className="c-work-hero__eyebrow">/ Portfolio — 2026</p>
+        <div className="c-work-hero__head">
+          <h1 className="c-work-hero__title">
+            Thirty-four<br />shipped sites.
+          </h1>
+          <aside
+            className="c-work-hero__panel"
+            aria-label={`${LIVE_COUNT} of ${PROJECTS.length} projects are live right now`}
+          >
+            <span className="c-work-hero__panel-n">
+              <span className="c-dot c-dot--lg" aria-hidden="true" />
+              {LIVE_COUNT}
             </span>
-          ))}
+            <span className="c-work-hero__panel-l">live right now</span>
+          </aside>
         </div>
-      </div>
+        <p className="c-work-hero__sub">
+          Everything below is a real website we designed, built, and shipped. Open a
+          project for the case study, or follow the arrow straight to the live site.
+        </p>
+        <ul className="c-work-hero__tally">
+          <li>{String(PROJECTS.length).padStart(2, "0")}<span>projects</span></li>
+          <li>{String(LIVE_COUNT).padStart(2, "0")}<span>live</span></li>
+          <li>{String(FEATURED_COUNT).padStart(2, "0")}<span>featured</span></li>
+        </ul>
+      </section>
 
-      {/* Filter + Grid */}
-      <section className="c-work-grid">
-        <div className="c-filter-row">
+      <div className="c-work-filter">
+        <div className="c-work-filter__group">
           {FILTERS.map((f) => (
             <button
-              key={f}
-              className={`c-filter${active === f ? " active" : ""}`}
-              onClick={() => setActive(f)}
+              key={f.key}
+              type="button"
+              aria-pressed={active === f.key}
+              className={`c-work-filter__btn${active === f.key ? " is-active" : ""}`}
+              onClick={() => setActive(f.key)}
             >
-              {f}
+              {f.label}
+              <sup>{FILTER_COUNTS[f.key]}</sup>
             </button>
           ))}
         </div>
+        <span className="c-work-filter__count">
+          showing {rows.length} / {PROJECTS.length}
+        </span>
+      </div>
 
-        <div className="c-cases">
-          {filtered.map((c, i) => (
-            <article key={i} className={`c-case c-case--${c.size}`}>
-              <div className="c-case__img" style={{ background: c.bg }} />
-              <div className="c-case__meta">
-                <div>
-                  <div className="c-case__c">{c.label}</div>
-                  <div className="c-case__t">{c.title}</div>
+      <section className="c-ledger">
+        {rows.length === 0 ? (
+          <p className="c-ledger__empty">Nothing in this category yet.</p>
+        ) : (
+          <ul className="c-ledger__list">
+            {rows.map((project) => (
+              <li
+                key={project.slug}
+                className={`c-ledger__row${project.featured ? " c-ledger__row--featured" : ""}`}
+              >
+                <Link
+                  href={`/${safeLocale}/creative/work/${encodeURIComponent(project.slug)}`}
+                  className="c-ledger__hit"
+                  aria-label={`${project.title} — read the case study`}
+                />
+                <div className="c-ledger__main">
+                  <span className="c-ledger__num">{String(project.order).padStart(2, "0")}</span>
+                  <span className="c-ledger__name">{project.title}</span>
+                  <span className="c-ledger__cat">{project.category}</span>
                 </div>
-                <span className="c-case__c">{c.date}</span>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 80 }}>
-          <Link href="/creative/contact" className="c-btn c-btn--ink">
-            Discuss your project →
-          </Link>
-        </div>
+                <div className="c-ledger__aside">
+                  {project.liveUrl ? (
+                    <a
+                      href={project.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="c-ledger__live"
+                    >
+                      <span className="c-dot" aria-hidden="true" />
+                      {stripProtocol(project.liveUrl)}
+                      <span className="c-ledger__arrow" aria-hidden="true">↗</span>
+                    </a>
+                  ) : (
+                    <span className="c-ledger__live c-ledger__live--off">
+                      <span className="c-dot c-dot--off" aria-hidden="true" />
+                      case study only
+                    </span>
+                  )}
+                  <span className="c-ledger__stack">{stackLabel(project)}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
-      {/* CTA lime strip */}
-      <section className="c-portfolio" style={{ padding: "80px 70px" }}>
-        <div className="c-portfolio__card" style={{ height: "auto", padding: 60, display: "flex", gap: 50, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-          <div className="c-portfolio__shape" aria-hidden="true" />
-          <h2 style={{ fontFamily: "var(--c-f-display)", fontSize: "clamp(40px, 6vw, 96px)", letterSpacing: "-.02em", color: "var(--c-ink)", position: "relative", zIndex: 3 }}>
-            Got a brief?<br />We&rsquo;d love to read it.
-          </h2>
-          <Link href="/creative/contact" className="c-btn" style={{ position: "relative", zIndex: 3 }}>
-            Send it over <span className="c-blink" />
+      <section className="c-work-cta">
+        <span className="c-work-cta__star" aria-hidden="true" />
+        <h2 className="c-work-cta__title">Your site belongs on this list.</h2>
+        <div className="c-work-cta__aside">
+          <Link href={`/${safeLocale}/creative/contact`} className="c-btn">
+            Start a project →
           </Link>
+          <span className="c-work-cta__status">
+            <span className="c-dot" aria-hidden="true" />
+            Booking builds for 2026
+          </span>
         </div>
       </section>
 

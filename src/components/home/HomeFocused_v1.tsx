@@ -1279,13 +1279,13 @@ export default function HomeFocused() {
               maxWidth:   500,
             }}>Have a question, a project? We&apos;d love to discuss</h2>
             <div>
-              <a href="mailto:hello@dontforget.studio" style={{
+              <a href="mailto:HELLO@NOXDEVS.COM" style={{
                 display:    "block",
                 fontFamily: MONO,
                 fontSize:   "clamp(0.9rem, 1.5vw, 1.6rem)",
                 color:      C.white,
                 lineHeight: 1.4,
-              }}>hello@dontforget.studio</a>
+              }}>HELLO@NOXDEVS.COM</a>
               <a href="tel:+13125550173" style={{
                 display:    "block",
                 fontFamily: MONO,

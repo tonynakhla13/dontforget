@@ -98,7 +98,7 @@ export default function CreativeContactHome({ cardOnly = false }: { cardOnly?: b
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name,
-          email: data.contactMethod === "email" ? data.contactValue : `${data.contactMethod}@dontforget.local`,
+          email: data.contactMethod === "email" ? data.contactValue : `${data.contactMethod}@noxdevs.local`,
           projectType,
           message,
           contactMethod: data.contactMethod,

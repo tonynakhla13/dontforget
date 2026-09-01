@@ -110,7 +110,12 @@ export default function FocusedLayout({ children }: { children: React.ReactNode 
           background:   rgba(38,120,3,0.12) !important;
         }
 
-        /* grid canvas: tone down on light */
+        /* grid canvas: keep the texture present without competing with content */
+        .nox-grid-canvas {
+          opacity: 0.35;
+        }
+
+        /* preserve lighter contrast on the light canvas */
         [data-nox-theme="light"] .nox-grid-canvas {
           opacity: 0.45;
         }

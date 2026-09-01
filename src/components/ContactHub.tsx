@@ -395,7 +395,7 @@ export default function ContactHub() {
             )}
             {err && (
               <span style={{ fontSize: "0.75rem", color: "#f87171" }}>
-                Error — email hello@dontforget.studio
+                Error — email HELLO@NOXDEVS.COM
               </span>
             )}
           </div>

@@ -452,10 +452,12 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
                 {heroServices.slice(0, 6).map((item) => <Tag key={item} label={item} />)}
               </div>
             </div>
-            <a data-reveal href={projectUrl} target="_blank" rel="noopener noreferrer" className="btn-glass mt-8 w-fit">
-              <span className="btn-glass-blob" aria-hidden="true" />
-              <span className="btn-glass-face">View project</span>
-            </a>
+            {projectUrl ? (
+              <a data-reveal href={projectUrl} target="_blank" rel="noopener noreferrer" className="btn-glass mt-8 w-fit">
+                <span className="btn-glass-blob" aria-hidden="true" />
+                <span className="btn-glass-face">View project</span>
+              </a>
+            ) : null}
           </article>
 
           {firstScreen ? <WebsiteFrame src={firstScreen} title={project.title} index={0} tall={!!project.useTallImage || firstScreen === project.tallImage || project.slug === "elia-clinic"} /> : null}

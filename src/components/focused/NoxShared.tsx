@@ -1171,7 +1171,7 @@ export function NoxFooter() {
         </p>
 
         {/* Contact email */}
-        <a href="mailto:hello@noxstudio.dev" style={{
+        <a href="mailto:HELLO@NOXDEVS.COM" style={{
           fontFamily:     SANS,
           fontSize:       "clamp(0.76rem,0.9vw,0.9rem)",
           color:          FGA,
@@ -1181,7 +1181,7 @@ export function NoxFooter() {
         }}
         onMouseEnter={e => (e.currentTarget.style.color = FG)}
         onMouseLeave={e => (e.currentTarget.style.color = FGA)}
-        >hello@noxstudio.dev</a>
+        >HELLO@NOXDEVS.COM</a>
       </div>
 
       {/* ── Giant NOX wordmark watermark (public asset) ──

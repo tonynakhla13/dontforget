@@ -167,7 +167,7 @@ function HoloCardEl({ card, active }: { card: CardData; active: boolean }) {
             {card.type === "founder" ? (
               <p className="th-loc">◦ {card.location}</p>
             ) : (
-              <a href="mailto:hello@dontforget.studio" className="th-apply" onClick={(e) => e.stopPropagation()}>
+              <a href="mailto:HELLO@NOXDEVS.COM" className="th-apply" onClick={(e) => e.stopPropagation()}>
                 Apply for this seat →
               </a>
             )}
@@ -405,7 +405,7 @@ export default function TeamSection() {
               <p className="hed th-cta-title">Think you belong here?</p>
               <p className="th-cta-sub">We&apos;re always open to people who are unreasonably good at what they do.</p>
             </div>
-            <a href="mailto:hello@dontforget.studio" className="th-cta-btn">Get in touch →</a>
+            <a href="mailto:HELLO@NOXDEVS.COM" className="th-cta-btn">Get in touch →</a>
           </div>
         </div>
       </div>

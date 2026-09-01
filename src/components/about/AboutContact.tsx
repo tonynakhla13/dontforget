@@ -79,7 +79,7 @@ export default function AboutContact() {
             transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
           >
             {[
-              { k: "Email",        v: "hello@dontforget.studio" },
+              { k: "Email",        v: "HELLO@NOXDEVS.COM" },
               { k: "Response",     v: "Within 24 hours" },
               { k: "Availability", v: "2 spots open" },
             ].map((row) => (

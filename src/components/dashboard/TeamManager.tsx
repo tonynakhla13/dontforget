@@ -26,12 +26,14 @@ export default function TeamManager({ initial }: { initial: TeamMember[] }) {
   const [members, setMembers] = useState(initial);
   const [editing, setEditing] = useState<TeamMember | null>(null);
   const [form, setForm] = useState<MemberForm>(emptyMember);
+  const [showForm, setShowForm] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   function openNew() {
     setEditing(null);
     setForm(emptyMember);
+    setShowForm(true);
   }
 
   function openEdit(member: TeamMember) {
@@ -39,6 +41,13 @@ export default function TeamManager({ initial }: { initial: TeamMember[] }) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, createdAt, updatedAt, ...rest } = member;
     setForm(rest);
+    setShowForm(true);
+  }
+
+  function closeForm() {
+    setEditing(null);
+    setForm(emptyMember);
+    setShowForm(false);
   }
 
   async function uploadPhoto(file: File) {
@@ -68,8 +77,7 @@ export default function TeamManager({ initial }: { initial: TeamMember[] }) {
       });
     }
     setSaving(false);
-    setEditing(null);
-    setForm(emptyMember);
+    closeForm();
     router.refresh();
     const res = await fetch("/api/team");
     setMembers(await res.json());
@@ -98,7 +106,7 @@ export default function TeamManager({ initial }: { initial: TeamMember[] }) {
       </div>
 
       {/* Form panel */}
-      {(editing !== null || form.name !== "") && (
+      {showForm && (
         <div className="bg-zinc-900 border border-white/5 rounded-xl p-6 space-y-4">
           <h2 className="text-sm font-medium text-white/60 uppercase tracking-widest">
             {editing ? "Edit Member" : "New Member"}
@@ -215,10 +223,7 @@ export default function TeamManager({ initial }: { initial: TeamMember[] }) {
               {saving ? "Saving…" : "Save"}
             </button>
             <button
-              onClick={() => {
-                setEditing(null);
-                setForm(emptyMember);
-              }}
+              onClick={closeForm}
               className="bg-white/5 hover:bg-white/10 text-white/60 text-sm px-6 py-2.5 rounded-lg transition-colors"
             >
               Cancel

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import type { Locale } from "@/i18n/config";
+import { getProjects as getPublicProjects } from "@/lib/public-content";
 import CreativeHero from "@/components/creative/CreativeHero";
 import CreativeAboutUs from "@/components/creative/CreativeAboutUs";
 import CreativeServices, { type CreativeHomeService } from "@/components/creative/CreativeServices";
@@ -20,7 +22,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-async function getCreativeHomeData(): Promise<{
+async function getCreativeHomeData(locale: Locale): Promise<{
   services: CreativeHomeService[] | undefined;
   projects: CreativeHomeProject[] | undefined;
   posts: HomeBlogPost[] | undefined;
@@ -33,20 +35,7 @@ async function getCreativeHomeData(): Promise<{
         take: 6,
         select: { title: true, description: true },
       }),
-      prisma.project.findMany({
-        where: { status: "PUBLISHED" },
-        orderBy: [{ featured: "desc" }, { order: "asc" }, { createdAt: "desc" }],
-        take: 4,
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          category: true,
-          year: true,
-          coverImage: true,
-          gifUrl: true,
-        },
-      }),
+      getPublicProjects(locale),
       prisma.post.findMany({
         where: { status: "PUBLISHED" },
         orderBy: [{ order: "asc" }, { publishedAt: "desc" }],
@@ -62,7 +51,18 @@ async function getCreativeHomeData(): Promise<{
             description: service.description ?? "Creative strategy, design, and production shaped around your goals.",
           }))
         : undefined,
-      projects: projects.length ? projects : undefined,
+      projects: projects
+        .filter((project) => project.featured)
+        .slice(0, 5)
+        .map((project) => ({
+          id: project.id,
+          slug: project.slug,
+          title: project.title,
+          category: project.category,
+          year: project.year,
+          coverImage: project.coverImage,
+          gifUrl: project.gifUrl ?? null,
+        })),
       posts: posts.length ? posts : undefined,
     };
   } catch {
@@ -71,7 +71,8 @@ async function getCreativeHomeData(): Promise<{
 }
 
 export default async function CreativePage({ locale = "en" }: { locale?: string }) {
-  const { services, projects, posts } = await getCreativeHomeData();
+  const safeLocale: Locale = locale === "ar" ? "ar" : "en";
+  const { services, projects, posts } = await getCreativeHomeData(safeLocale);
 
   return (
     <>

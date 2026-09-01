@@ -6,12 +6,54 @@ import AmbientGlow from "@/components/AmbientGlow";
 import ServicesOverview from "@/components/services/ServicesOverview";
 import ServicesPipeHologram from "@/components/services/ServicesPipeHologram";
 import ServicesDFParticles from "@/components/services/ServicesDFParticles";
-import Work from "@/components/Work";
 import ImmersiveContact from "@/components/immersive/ImmersiveContact";
+import WorkHeroCards from "@/features/work/WorkHeroCards";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { gsap } from "@/lib/gsap";
-import type { Project } from "@prisma/client";
+import { pagePath, parseCanonicalPath } from "@/lib/site-routing";
+import { PORTFOLIO_FEATURED_PROJECTS } from "@/data/portfolio-projects";
+
+type WorkHeroProject = ComponentProps<typeof WorkHeroCards>["projects"][number];
+type ProjectApiItem = WorkHeroProject & {
+  attachments?:
+    | Record<string, string[]>
+    | Array<{
+        role?: string | null;
+        media?: { url?: string | null } | null;
+      }>;
+};
+
+const DEMO_PROJECTS: WorkHeroProject[] = PORTFOLIO_FEATURED_PROJECTS.map((project) => ({
+  id: project.slug,
+  slug: project.slug,
+  title: project.title,
+  category: project.category,
+  year: project.year,
+  description: null,
+  tags: [...project.tags],
+  liveUrl: project.liveUrl,
+  coverImage: null,
+}));
+
+function normalizeProject(project: ProjectApiItem): WorkHeroProject {
+  const coverAttachment = Array.isArray(project.attachments)
+    ? project.attachments.find((item) => item.role === "project_cover")?.media?.url
+    : project.attachments?.project_cover?.[0];
+  return {
+    id: project.id,
+    slug: project.slug ?? project.id,
+    title: project.title,
+    category: project.category ?? null,
+    year: project.year ?? null,
+    description: project.description ?? null,
+    tags: Array.isArray(project.tags) ? project.tags : [],
+    liveUrl: project.liveUrl ?? null,
+    coverImage: coverAttachment ?? project.coverImage ?? null,
+    gifUrl: project.gifUrl ?? null,
+  };
+}
 
 function ServicesBackground() {
   return (
@@ -24,6 +66,10 @@ function ServicesBackground() {
 }
 
 function ServicesHero() {
+  const pathname = usePathname();
+  const route = parseCanonicalPath(pathname);
+  const contactHref = route ? pagePath(route.locale, route.theme, "contact") : "/en/immersive/contact";
+  const workHref = route ? pagePath(route.locale, route.theme, "work") : "/en/immersive/work";
   const headRef = useRef<HTMLHeadingElement>(null);
   const bodyRef = useRef<HTMLParagraphElement>(null);
   const ctaRef  = useRef<HTMLDivElement>(null);
@@ -54,11 +100,11 @@ function ServicesHero() {
             Brand systems, digital products, immersive web, and motion identities — built to be impossible to forget.
           </p>
           <div ref={ctaRef} className="mt-9 flex flex-wrap gap-4" style={{ visibility: "hidden" }}>
-            <Link href="/immersive/contact" className="btn-glass">
+            <Link href={contactHref} className="btn-glass">
               <span className="btn-glass-blob" aria-hidden="true" />
               <span className="btn-glass-face">Start a project</span>
             </Link>
-            <Link href="/immersive/work" className="btn-glass-ghost">
+            <Link href={workHref} className="btn-glass-ghost">
               <span className="btn-glass-blob" aria-hidden="true" />
               <span className="btn-glass-face">View work →</span>
             </Link>
@@ -69,16 +115,59 @@ function ServicesHero() {
   );
 }
 
+function SelectedWorkSection({ projects }: { projects: WorkHeroProject[] }) {
+  const pathname = usePathname();
+  const route = parseCanonicalPath(pathname);
+  const workHref = route ? pagePath(route.locale, route.theme, "work") : "/en/immersive/work";
+
+  return (
+    <section
+      id="selected-work"
+      className="relative overflow-x-clip overflow-y-visible border-y border-[rgba(var(--teal-rgb),0.14)] py-20 md:py-24"
+      style={{ background: "transparent" }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_62%_54%_at_50%_58%,rgba(var(--teal-rgb),0.055),transparent_72%)]" />
+      <div className="relative z-10 flex flex-col items-center px-6 text-center">
+        <div className="mb-4 inline-flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--teal)] shadow-[0_0_8px_rgba(var(--teal-rgb),0.8)]" />
+          <span className="font-mono text-[0.46rem] uppercase tracking-[0.44em] text-[rgba(var(--teal-rgb),0.8)]">
+            Selected work
+          </span>
+        </div>
+        <h2 className="hed text-[clamp(2.7rem,6.4vw,5.6rem)] leading-[0.9] text-[#F8F5EE]">
+          Selected <span className="text-[var(--teal)]">Works.</span>
+        </h2>
+        <p className="mt-4 max-w-[460px] text-[clamp(0.85rem,1.1vw,0.98rem)] leading-[1.7] text-[rgba(248,245,238,0.7)]">
+          Public builds with the same sharpness we bring into every service.
+        </p>
+      </div>
+
+      <div className="relative z-10 mt-4 w-full">
+        <WorkHeroCards projects={projects} />
+      </div>
+
+      <div className="relative z-10 mt-6 flex justify-center">
+        <Link
+          href={workHref}
+          className="font-mono text-[0.64rem] uppercase tracking-[0.34em] text-[var(--teal)] transition hover:tracking-[0.4em]"
+        >
+          View all projects -&gt;
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export default function ImmersiveServicesPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<WorkHeroProject[]>(DEMO_PROJECTS);
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const response = await fetch("/api/projects?published=true");
         if (response.ok) {
-          const data = await response.json();
-          setProjects(data);
+          const data = await response.json() as ProjectApiItem[];
+          setProjects(data.length ? data.map(normalizeProject) : DEMO_PROJECTS);
         }
       } catch (error) {
         console.error("Failed to fetch projects:", error);
@@ -99,7 +188,7 @@ export default function ImmersiveServicesPage() {
         <Navbar inner />
         <ServicesHero />
         <ServicesOverview />
-        <Work projects={projects} />
+        <SelectedWorkSection projects={projects} />
         <ImmersiveContact embedded />
       </main>
     </>

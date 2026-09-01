@@ -109,7 +109,7 @@ export default function ContactEditor({
             type="email"
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            placeholder="hello@dontforget.agency"
+            placeholder="HELLO@NOXDEVS.COM"
           />
         </div>
         <div>
