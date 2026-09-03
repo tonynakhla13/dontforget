@@ -18,47 +18,12 @@
 
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { TEAM_CARDS, type TeamCardData } from "@/components/about/teamCards";
 
 /* ─────────────────────────────────────────────────────────────────────────
    DATA
 ───────────────────────────────────────────────────────────────────────── */
-type FounderCard = {
-  type: "founder"; num: string; name: string; role: string; bio: string;
-  image: string; location: string; tags: string[];
-  stats: { value: string; label: string }[];
-};
-type OpenCard = {
-  type: "open"; num: string; role: string; note: string; tags: string[];
-};
-type CardData = FounderCard | OpenCard;
-
-const CARDS: CardData[] = [
-  {
-    type: "founder", num: "01",
-    name: "Tony Nakhla", role: "Founder · Lead Developer",
-    bio: "Builds the systems, sets the bar, and makes sure nothing ships unless it's genuinely good.",
-    // ⚠ Placeholder headshot — swap with Tony's real photo (any portrait URL or /public path).
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=900&q=80",
-    location: "Remote · GMT+2",
-    tags: ["Next.js", "React", "Node.js", "Systems", "Mobile"],
-    stats: [{ value: "14+", label: "projects shipped" }, { value: "3yr", label: "building" }],
-  },
-  {
-    type: "open", num: "02", role: "Senior UI/UX Designer",
-    note: "We're looking for someone obsessive about craft, detail, and the 1px decisions nobody else notices.",
-    tags: ["Figma", "Motion Design", "Brand Systems"],
-  },
-  {
-    type: "open", num: "03", role: "Mobile Developer",
-    note: "iOS + Android, React Native. You care about feel, not just functionality.",
-    tags: ["iOS", "Android", "React Native"],
-  },
-  {
-    type: "open", num: "04", role: "SEO & Growth Strategist",
-    note: "Data-driven, creative enough to see what the data misses. AI-search fluency a plus.",
-    tags: ["SEO", "AI Search", "Analytics"],
-  },
-];
+const CARDS = TEAM_CARDS;
 
 const GAP = 18;
 const CARD_COUNT = CARDS.length;
@@ -99,7 +64,7 @@ function HoloSilhouette() {
 /* ─────────────────────────────────────────────────────────────────────────
    CARD
 ───────────────────────────────────────────────────────────────────────── */
-function HoloCardEl({ card, active }: { card: CardData; active: boolean }) {
+function HoloCardEl({ card, active }: { card: TeamCardData; active: boolean }) {
   const [imgFailed, setImgFailed] = useState(false);
   const isFounder = card.type === "founder";
   const name = card.type === "founder" ? card.name : card.role;
@@ -193,6 +158,8 @@ export default function TeamSection() {
   const dragStart     = useRef<{ x: number; trackX: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
   const reduceRef     = useRef(false);
+  const pausedRef     = useRef(false);
+  const hoveredRef    = useRef(false);
   const active        = logicalIndex(position);
 
   /* coverflow layout: centre the active card + fan the rest back in 3D */
@@ -266,6 +233,16 @@ export default function TeamSection() {
     return () => window.removeEventListener("resize", onResize);
   }, [positionTrack]);
 
+  useEffect(() => {
+    if (reduceRef.current) return;
+    const id = window.setInterval(() => {
+      if (!pausedRef.current && !dragStart.current) {
+        goToPosition(positionRef.current + 1);
+      }
+    }, 3200);
+    return () => window.clearInterval(id);
+  }, [goToPosition]);
+
   /* keyboard */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -295,6 +272,7 @@ export default function TeamSection() {
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const currentX = (gsap.getProperty(trackRef.current, "x") as number) || 0;
     suppressClick.current = false;
+    pausedRef.current = true;
     dragStart.current = { x: e.clientX, trackX: currentX, moved: false };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -324,8 +302,9 @@ export default function TeamSection() {
     if (Math.abs(dx) > 55) goToPosition(positionRef.current + (dx < 0 ? 1 : -1));
     else positionTrack(positionRef.current);
     dragStart.current = null;
+    pausedRef.current = hoveredRef.current;
   };
-  const onPointerLeave = () => { dragStart.current = null; resetTilts(); };
+  const onPointerLeave = () => { dragStart.current = null; resetTilts(); pausedRef.current = hoveredRef.current; };
 
   return (
     <section className="team-holo relative border-t border-[var(--border)] section-py overflow-hidden"
@@ -370,6 +349,8 @@ export default function TeamSection() {
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
           onPointerLeave={onPointerLeave}
+          onMouseEnter={() => { hoveredRef.current = true; pausedRef.current = true; }}
+          onMouseLeave={() => { hoveredRef.current = false; pausedRef.current = false; }}
         >
           <div ref={trackRef} className="th-track">
             {LOOPED_CARDS.map(({ card, position: cardPosition }) => (

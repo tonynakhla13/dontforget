@@ -16,6 +16,12 @@ const TIMELINES = ["ASAP", "1–3 months", "3–6 months", "Flexible"];
 const BUDGETS   = ["< $5k", "$5–15k", "$15–50k", "$50k+"];
 
 type ContactMethod = "email" | "phone" | "whatsapp";
+type GuidedRequestSelection = {
+  serviceId?: string;
+  serviceTitle?: string;
+  deliverable?: string;
+  deliverables?: string[];
+};
 
 interface FormData {
   serviceIds:    string[];
@@ -30,10 +36,37 @@ interface FormData {
 
 type GuidedVoiceClip = { id: string; blob: Blob; duration: number };
 
-export default function CreativeContactHome({ cardOnly = false }: { cardOnly?: boolean } = {}) {
-  const [step, setStep] = useState(1);
+function serviceOptionsForSelection(initialSelection?: GuidedRequestSelection) {
+  return SERVICES.map(service => {
+    if (service.id !== initialSelection?.serviceId) return service;
+    const deliverables = initialSelection.deliverables?.filter(Boolean);
+    if (!deliverables?.length) return service;
+    return {
+      ...service,
+      title: initialSelection.serviceTitle || service.title,
+      examples: Array.from(new Set(deliverables)),
+    };
+  });
+}
+
+export default function CreativeContactHome({
+  cardOnly = false,
+  initialSelection,
+}: {
+  cardOnly?: boolean;
+  initialSelection?: GuidedRequestSelection;
+} = {}) {
+  const [step, setStep] = useState(initialSelection?.serviceId ? 2 : 1);
+  const serviceOptions = serviceOptionsForSelection(initialSelection);
   const [data, setData] = useState<FormData>({
-    serviceIds: [], subServices: [], timeline: "", budget: "", name: "", contactMethod: "email", contactValue: "", note: "",
+    serviceIds: initialSelection?.serviceId ? [initialSelection.serviceId] : [],
+    subServices: initialSelection?.deliverable ? [initialSelection.deliverable] : [],
+    timeline: "",
+    budget: "",
+    name: "",
+    contactMethod: "email",
+    contactValue: "",
+    note: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
@@ -42,7 +75,7 @@ export default function CreativeContactHome({ cardOnly = false }: { cardOnly?: b
   const [assetFiles, setAssetFiles] = useState<File[]>([]);
 
   const contentRef = useRef<HTMLDivElement>(null);
-  const selectedServices = SERVICES.filter(s => data.serviceIds.includes(s.id));
+  const selectedServices = serviceOptions.filter(s => data.serviceIds.includes(s.id));
 
   useEffect(() => {
     const el = contentRef.current;
@@ -167,7 +200,7 @@ export default function CreativeContactHome({ cardOnly = false }: { cardOnly?: b
                 <p>A real person will reply within 24 hours.</p>
               </div>
             ) : step === 1 ? (
-              <CStep1 data={data} setData={setData} />
+              <CStep1 data={data} setData={setData} services={serviceOptions} />
             ) : step === 2 ? (
               <CStep2 data={data} setData={setData} services={selectedServices} onToggleSub={toggleSub} onToggleAll={toggleAll} />
             ) : (
@@ -203,13 +236,21 @@ export default function CreativeContactHome({ cardOnly = false }: { cardOnly?: b
 }
 
 /* ── Step 1: Service selection ── */
-function CStep1({ data, setData }: { data: FormData; setData: React.Dispatch<React.SetStateAction<FormData>> }) {
+function CStep1({
+  data,
+  setData,
+  services,
+}: {
+  data: FormData;
+  setData: React.Dispatch<React.SetStateAction<FormData>>;
+  services: typeof SERVICES;
+}) {
   return (
     <div className="cc-step">
       <h3 className="cc-step__title">What are you <span className="cc-accent">building</span>?</h3>
       <p className="cc-step__sub">Pick every service that belongs in the project.</p>
       <div className="cc-services-grid">
-        {SERVICES.map(svc => {
+        {services.map(svc => {
           const on = data.serviceIds.includes(svc.id);
           return (
             <button key={svc.id} type="button"

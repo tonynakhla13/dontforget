@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { getClients, type PublicClient } from "@/lib/public-content";
 import CreativeNavbar from "@/components/creative/CreativeNavbar";
 import CreativePageHero from "@/components/creative/CreativePageHero";
 import CreativeCTA2 from "@/components/creative/CreativeCTA2";
 import CreativeFooter from "@/components/creative/CreativeFooter";
+import CreativeTeamCarousel from "@/components/creative/CreativeTeamCarousel";
 
 export const metadata: Metadata = {
   title: "About Us - NOX Studio",
@@ -15,31 +15,18 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-type CreativeTeamMember = {
-  name: string;
-  role: string;
-  photo?: string | null;
-  linkedinUrl?: string | null;
-  twitterUrl?: string | null;
-};
-
-const TEAM_FALLBACK: CreativeTeamMember[] = [
-  { name: "Tony Nakhla", role: "Founder & Lead Developer" },
-  { name: "Sarah Chen", role: "Creative Director" },
-  { name: "Marcus Webb", role: "UI/UX Designer" },
-  { name: "Leila Hassan", role: "Brand Strategist" },
-];
-
 const STATS = [
   { n: "14+", d: "Projects\nShipped" },
-  { n: "6", d: "Countries\nReached" },
-  { n: "24h", d: "Avg Response\nTime" },
-  { n: "0", d: "Boring Websites\nMade" },
+  { n: "6", d: "Countries\nServed" },
+  { n: "3yr", d: "Since\n'22" },
+  { n: "100%", d: "On-time\nDelivery" },
 ];
 
 const STORY = [
-  "We started Nox with a simple belief: good design should not disappear into the background. It should clarify, sharpen, and move people to act.",
-  "Our work sits between strategy and execution. We help brands find their voice, shape their digital presence, and launch websites that feel as considered as the businesses behind them.",
+  "2022 / Founded - Born out of frustration with forgettable work. We set out to build a studio with an unreasonably high bar - and actually keep it.",
+  "2023 / First wins - First client tripled their conversion rate in month one. First mobile app featured by Apple week one. The bar was set early.",
+  "2024 / 10 projects live - Ten live projects across three countries. E-commerce, custom CRMs, full-stack platforms. No templates. No shortcuts. Ever.",
+  "2025 / 6 countries - Shipping across six countries, 14+ clients, AI-powered search. Still small on purpose - every project gets the A-team.",
 ];
 
 const PROCESS = [
@@ -49,25 +36,6 @@ const PROCESS = [
   { n: "04", t: "Build", d: "We design and develop the system with precision, speed, and polish." },
   { n: "05", t: "Launch", d: "We refine, test, ship, and make sure everything is ready to perform." },
 ];
-
-async function getTeam(): Promise<CreativeTeamMember[]> {
-  try {
-    const members = await prisma.teamMember.findMany({
-      where: { active: true },
-      orderBy: { order: "asc" },
-      select: {
-        name: true,
-        role: true,
-        photo: true,
-        linkedinUrl: true,
-        twitterUrl: true,
-      },
-    });
-    return members.length ? members : TEAM_FALLBACK;
-  } catch {
-    return TEAM_FALLBACK;
-  }
-}
 
 function ClientsStrip({ clients }: { clients: PublicClient[] }) {
   if (!clients.length) return null;
@@ -96,7 +64,7 @@ function ClientsStrip({ clients }: { clients: PublicClient[] }) {
 }
 
 export default async function CreativeAboutPage() {
-  const [team, clients] = await Promise.all([getTeam(), getClients()]);
+  const clients = await getClients();
 
   return (
     <>
@@ -104,8 +72,8 @@ export default async function CreativeAboutPage() {
 
       <CreativePageHero
         crumb="Home / About"
-        title={<>We build<br />brands that get<br /><em>remembered</em>.</>}
-        sub="Nox is a digital studio crafting bold websites, sharp identities, and conversion-focused experiences for brands that want to move differently."
+        title={<>We build<br />things<br /><em>unforgettable.</em></>}
+        sub="Got something worth remembering?"
       >
         <Link href="/creative/work" className="c-btn">See our work <span className="c-blink" /></Link>
         <Link href="/creative/contact" className="c-btn c-btn--ink">Start a project</Link>
@@ -146,34 +114,19 @@ export default async function CreativeAboutPage() {
           </div>
           <p>A focused studio model built around senior thinking, lean execution, and carefully chosen collaborators.</p>
         </div>
-        <div className="c-team__grid">
-          {team.map(({ name, role, photo }) => (
-            <div key={name} className="c-member">
-              <div className="c-member__img">
-                {photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={photo} alt={name} />
-                ) : null}
-              </div>
-              <div className="c-member__body">
-                <div className="c-member__name">{name}</div>
-                <div className="c-member__role">{role}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <CreativeTeamCarousel />
       </section>
 
       <section className="c-mission">
         <div className="c-mission__panel c-mission__panel--lime">
           <p className="c-section-kicker">/ mission</p>
-          <h2>Make every digital touchpoint feel intentional.</h2>
-          <p>We help ambitious brands turn ideas into clear identities, sharp websites, and memorable experiences that people understand instantly.</p>
+          <h2>Build things people remember.</h2>
+          <p>We exist to create digital experiences that leave a mark - websites, apps, and systems that are fast, beautiful, and built to last. Not just functional. Genuinely unforgettable.</p>
         </div>
         <div className="c-mission__panel">
           <p className="c-section-kicker">/ vision</p>
-          <h3>Digital work should feel less disposable.</h3>
-          <p>We want to build a studio known for work that lasts - visually, strategically, and commercially.</p>
+          <h3>World-class craft for every brand.</h3>
+          <p>A world where every business, regardless of size, has access to the kind of digital craftsmanship that used to belong only to the biggest companies in the world.</p>
         </div>
       </section>
 

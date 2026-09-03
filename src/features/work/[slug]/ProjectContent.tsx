@@ -260,17 +260,31 @@ function WebsiteFrame({
   index,
   variant = "dark",
   tall = false,
+  videoSrc = null,
 }: {
   src: string;
   title: string;
   index: number;
   variant?: "dark" | "light";
   tall?: boolean;
+  videoSrc?: string | null;
 }) {
   return (
-    <figure data-first-frame={tall ? "true" : undefined} className={`relative h-[68vh] w-[min(88vw,1080px)] shrink-0 overflow-hidden bg-gradient-to-br from-[#faf9f2] via-[#cfd4cb] to-[#6b7268] shadow-[0_34px_100px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.65)] ${tall ? "rounded-[1.55rem] p-1.5" : "rounded-[2.35rem] p-3"}`}>
+    <figure data-first-frame={tall || Boolean(videoSrc) ? "true" : undefined} className={`relative h-[68vh] w-[min(88vw,1080px)] shrink-0 overflow-hidden bg-gradient-to-br from-[#faf9f2] via-[#cfd4cb] to-[#6b7268] shadow-[0_34px_100px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.65)] ${tall ? "rounded-[1.55rem] p-1.5" : "rounded-[2.35rem] p-3"}`}>
       <div className={`relative h-full overflow-hidden ${tall ? "rounded-[1.15rem]" : "rounded-[1.75rem]"} ${variant === "light" ? "bg-[#eef1ed]" : "bg-[#070a0f]"}`}>
-        {tall ? (
+        {videoSrc ? (
+          <video
+            data-frame-video
+            src={videoSrc}
+            className="absolute inset-0 h-full w-full object-cover object-top saturate-[0.9]"
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-label={`${title} website walkthrough`}
+            onLoadedMetadata={() => requestAnimationFrame(() => ScrollTrigger.refresh())}
+          />
+        ) : tall ? (
           <img
             data-tall-screen
             src={src}
@@ -316,6 +330,8 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
         ? project.tags
         : [project.category ?? "Web design"];
   const firstScreen = project.tallImage ?? (project.slug === "elia-clinic" ? FIRST_SCREEN_IMAGE : gallery[0]);
+  const firstScreenVideo =
+    project.heroMediaType === "video" && project.videoUrl?.trim() ? project.videoUrl.trim() : null;
   const followupGallery = gallery.filter((src) => src !== firstScreen);
   const media = Array.from(new Set([firstScreen, ...followupGallery].filter((item): item is string => Boolean(item))));
   const projectUrl = project.liveUrl ?? project.caseStudyUrl ?? project.githubUrl ?? "";
@@ -335,27 +351,45 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
 
       const firstFrame = root.querySelector<HTMLElement>("[data-first-frame='true']");
       const tallScreen = root.querySelector<HTMLElement>("[data-tall-screen]");
+      const frameVideo = root.querySelector<HTMLVideoElement>("[data-frame-video]");
+
+      const horizontalDistance = () => Math.max(1, track.scrollWidth - window.innerWidth);
+      const panDistance = () => {
+        if (frameVideo) return 0;
+        if (tallScreen?.parentElement) {
+          return Math.max(0, tallScreen.offsetHeight - tallScreen.parentElement.clientHeight);
+        }
+        return 0;
+      };
+
       const refresh = () => ScrollTrigger.refresh();
       const refreshFrame = requestAnimationFrame(refresh);
       window.addEventListener("load", refresh, { once: true });
 
-      gsap.timeline({
+      let videoStarted = false;
+      let framePoppedProgress = 1;
+      const startVideo = () => {
+        if (videoStarted || !frameVideo) return;
+        videoStarted = true;
+        frameVideo.play().catch(() => {});
+      };
+
+      const timeline = gsap.timeline({
         scrollTrigger: {
           trigger: root,
           start: "top top",
-          end: () => {
-            const horizontal = Math.max(0, track.scrollWidth - window.innerWidth);
-            const vertical = tallScreen?.parentElement
-              ? Math.max(0, tallScreen.offsetHeight - tallScreen.parentElement.clientHeight)
-              : 0;
-            return `+=${horizontal + vertical}`;
-          },
+          end: () => `+=${horizontalDistance() + panDistance()}`,
           scrub: 1,
           pin: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            if (self.progress >= framePoppedProgress) startVideo();
+          },
         },
-      })
+      });
+
+      timeline
         .to(track, {
           x: () => {
             if (!firstFrame) return 0;
@@ -371,15 +405,22 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
           ease: "power1.out",
           duration: 0.45,
           transformOrigin: "center center",
-        })
-        .to(tallScreen, {
+        });
+
+      const framePoppedTime = timeline.duration();
+
+      if (!frameVideo && tallScreen?.parentElement) {
+        timeline.to(tallScreen, {
           y: () => {
-            if (!tallScreen?.parentElement) return 0;
+            if (!tallScreen.parentElement) return 0;
             return -Math.max(0, tallScreen.offsetHeight - tallScreen.parentElement.clientHeight);
           },
           ease: "none",
           duration: 5.4,
-        })
+        });
+      }
+
+      timeline
         .to(firstFrame, {
           scale: 1,
           boxShadow: "0 34px 100px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.65)",
@@ -391,6 +432,8 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
           ease: "none",
           duration: 8,
         });
+
+      framePoppedProgress = timeline.duration() > 0 ? framePoppedTime / timeline.duration() : 1;
 
       return () => {
         cancelAnimationFrame(refreshFrame);
@@ -460,7 +503,7 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
             ) : null}
           </article>
 
-          {firstScreen ? <WebsiteFrame src={firstScreen} title={project.title} index={0} tall={!!project.useTallImage || firstScreen === project.tallImage || project.slug === "elia-clinic"} /> : null}
+          {firstScreen || firstScreenVideo ? <WebsiteFrame src={firstScreen ?? ""} videoSrc={firstScreenVideo} title={project.title} index={0} tall={!!project.useTallImage || firstScreen === project.tallImage || project.slug === "elia-clinic"} /> : null}
 
           {clientGoals.length ? <SectionTitlePanel eyebrow="Brief" title="Client Goals" /> : null}
 
