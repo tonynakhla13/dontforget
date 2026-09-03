@@ -429,7 +429,7 @@ export function NoxNavbar({ active }: { active?: string }) {
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <HeaderLocaleControl theme="focused" className="nox-locale" />
 
-          <button type="button" onClick={openContactFormPopup} className="nox-cta">
+          <button type="button" onClick={() => openContactFormPopup()} className="nox-cta">
             Let&apos;s talk
           </button>
         </div>

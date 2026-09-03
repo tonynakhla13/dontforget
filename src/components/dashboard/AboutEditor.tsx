@@ -186,7 +186,7 @@ export default function AboutEditor({ initial }: { initial: Partial<AboutData> |
       {/* ── Mission ── */}
       <section className={sectionClass}>
         <h2 className="text-sm font-medium text-white/60 uppercase tracking-widest">Mission</h2>
-        <p className="text-xs text-white/30">Displayed in the "What drives us" section — Mission card.</p>
+        <p className="text-xs text-white/30">Displayed in the &quot;What drives us&quot; section — Mission card.</p>
         <textarea
           rows={4}
           className={inputClass}
@@ -199,7 +199,7 @@ export default function AboutEditor({ initial }: { initial: Partial<AboutData> |
       {/* ── Vision ── */}
       <section className={sectionClass}>
         <h2 className="text-sm font-medium text-white/60 uppercase tracking-widest">Vision</h2>
-        <p className="text-xs text-white/30">Displayed in the "What drives us" section — Vision card.</p>
+        <p className="text-xs text-white/30">Displayed in the &quot;What drives us&quot; section — Vision card.</p>
         <textarea
           rows={4}
           className={inputClass}

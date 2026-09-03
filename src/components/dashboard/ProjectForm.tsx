@@ -94,6 +94,7 @@ interface ProjectData {
   heroImage?: string;
   tallImage?: string;
   useTallImage?: boolean;
+  heroMediaType?: "image" | "video";
   clientGoals?: string[];
   challenges?: ProjectChallenge[];
   results?: ProjectResult[];
@@ -186,6 +187,7 @@ export default function ProjectForm({
     heroImage: "",
     tallImage: "",
     useTallImage: false,
+    heroMediaType: "image",
     clientGoals: [""],
     challenges: [emptyChallenge()],
     results: [emptyResult()],
@@ -509,12 +511,50 @@ export default function ProjectForm({
           <div className="grid gap-4 md:grid-cols-2">
             {mediaSelect("project_cover", "Cover image", 0, "coverImage")}
             {mediaSelect("project_hero", "Hero image", 0, "heroImage")}
-            {mediaSelect("project_tall_screenshot", "Tall website screenshot", 0, "tallImage")}
-            <div className="flex items-center rounded-lg border border-white/10 bg-white/5 p-4">
-              <label className="flex cursor-pointer items-center gap-3 text-sm text-white/65">
-                <input type="checkbox" checked={!!form.useTallImage} onChange={(e) => set("useTallImage", e.target.checked)} className="h-4 w-4 accent-[#2ea876]" />
-                Use tall screenshot on the project page
-              </label>
+            {form.heroMediaType === "video" ? (
+              <MediaPicker
+                assets={mediaAssets}
+                kind="video"
+                value={attachmentValue("project_scroll_video")}
+                onChange={(mediaId) => {
+                  const asset = mediaAssets.find((item) => item.id === mediaId);
+                  setAttachment("project_scroll_video", mediaId);
+                  set("videoUrl", mediaId ? asset?.url ?? "" : "");
+                }}
+                onSelectAsset={(asset) => set("videoUrl", asset.url)}
+                label="Scroll video"
+                emptyLabel="Select video"
+                uploadFolder="dontforget/projects"
+              />
+            ) : (
+              mediaSelect("project_tall_screenshot", "Tall website screenshot", 0, "tallImage")
+            )}
+            <div className="space-y-3 rounded-lg border border-white/10 bg-white/5 p-4">
+              <span className={lbl}>Project page frame</span>
+              <div className="flex flex-wrap gap-4">
+                {(["image", "video"] as const).map((option) => (
+                  <label key={option} className="flex cursor-pointer items-center gap-2 text-sm text-white/65">
+                    <input
+                      type="radio"
+                      name="heroMediaType"
+                      value={option}
+                      checked={(form.heroMediaType ?? "image") === option}
+                      onChange={() => set("heroMediaType", option)}
+                      className="h-4 w-4 accent-[#2ea876]"
+                    />
+                    {option === "image" ? "Tall screenshot" : "Scroll video"}
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-white/35">
+                Screenshots pan with the scroll. Videos start after the frame opens and play at their own pace.
+              </p>
+              {form.heroMediaType !== "video" && (
+                <label className="flex cursor-pointer items-center gap-3 border-t border-white/10 pt-3 text-sm text-white/65">
+                  <input type="checkbox" checked={!!form.useTallImage} onChange={(e) => set("useTallImage", e.target.checked)} className="h-4 w-4 accent-[#2ea876]" />
+                  Use tall screenshot on the project page
+                </label>
+              )}
             </div>
           </div>
           <div>

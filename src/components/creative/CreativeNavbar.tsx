@@ -23,7 +23,7 @@ export default function CreativeNavbar({ transparent, active }: CreativeNavbarPr
       <div className="c-nav__group">
         <a href="/creative/about" className={`c-nav__link${active === "about" ? " active" : ""}`}>About</a>
         <a href="/creative/blog" className={`c-nav__link${active === "blog" ? " active" : ""}`}>Blog</a>
-        <button type="button" className="c-nav__talk" onClick={openContactFormPopup}>Let&apos;s talk</button>
+        <button type="button" className="c-nav__talk" onClick={() => openContactFormPopup()}>Let&apos;s talk</button>
         <HeaderLocaleControl theme="creative" className="c-nav__locale" />
       </div>
       <ContactFormPopup theme="creative" />

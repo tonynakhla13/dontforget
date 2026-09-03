@@ -15,6 +15,7 @@ const projectFields = [
   "shortDescription", "fullDescription", "location", "clientLogo", "techStack", "challengePoints",
   "obstacles", "challengeTagline", "challengeResponses", "solutionOptions", "clientChoice",
   "resultSlides", "testimonialText", "gallery", "extraMile", "heroImage", "tallImage", "useTallImage",
+  "heroMediaType",
   "clientGoals", "challenges", "results", "testimonialAuthor", "testimonialRole", "testimonialCompany",
   "extraMilePlanned",
 ] as const;
