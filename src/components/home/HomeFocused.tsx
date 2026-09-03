@@ -9,18 +9,18 @@ import NoxContactHome from "@/components/focused/NoxContactHome";
 /* ── data ─────────────────────────────────────────────────────────── */
 // lp = left%, tp = top% — positions across the full section width
 const TAGS = [
-  { text: "clarity",  cls: "wg", lp:  22, tp:  4, rot: -4, desc: "We turn the \"wait, what are we building?\" stage into a clear plan. Very helpful stage, honestly." },
-  { text: "care",     cls: "wg", lp:  66, tp:  7, rot:  4, desc: "Small team means real attention. Your project is not passed around like office paperwork." },
-  { text: "honesty",  cls: "gw", lp:   2, tp: 20, rot: -3, desc: "If you do not need something, we will say it before it becomes an invoice." },
-  { text: "options",  cls: "gw", lp:  44, tp: 22, rot:  2, desc: "We do not force one path. We show you what can work, what can wait, and what makes sense." },
-  { text: "useful",   cls: "wg", lp:  79, tp: 18, rot: -2, desc: "Looking good is nice. Helping people do what they came to do is better. We aim for both." },
-  { text: "calm",     cls: "gw", lp:  11, tp: 40, rot: -5, desc: "Digital projects can feel heavy. We help make the process lighter, clearer, and less dramatic." },
-  { text: "trust",    cls: "gw", lp:  61, tp: 43, rot: -7, desc: "We build things that help people understand you, believe you, and take the next step." },
-  { text: "flow",     cls: "wg", lp:   5, tp: 56, rot: -6, desc: "Good UX should feel obvious. If users need a map, something went wrong." },
-  { text: "support",  cls: "wg", lp:  37, tp: 60, rot:  6, desc: "You should not feel alone in your own project. We stay close, explain clearly, and keep things moving." },
-  { text: "simple",   cls: "gw", lp:  72, tp: 55, rot:  3, desc: "Simple is not lazy. Simple is usually the hard part done properly." },
-  { text: "speed",    cls: "gw", lp:  18, tp: 72, rot: -3, desc: "Fast does not mean rushed. It means focused, organized, and not allergic to decisions." },
-  { text: "build",    cls: "wg", lp:  52, tp: 74, rot:  2, desc: "Ideas are lovely. Working products are lovelier. We help move from one to the other." },
+  { text: "GEO-Ready",       cls: "wg", lp:  22, tp:  4, rot: -4, desc: "Optimizing content and site architecture for direct citations in AI search engines like ChatGPT, Gemini, and Perplexity." },
+  { text: "AEO-Engineered",  cls: "wg", lp:  66, tp:  7, rot:  4, desc: "Structuring entities, schema markup, and answers to dominate AI Overviews and voice search queries." },
+  { text: "Custom-CMS",      cls: "gw", lp:   2, tp: 20, rot: -3, desc: "Developing lightweight, highly customizable CMS structures tailored specifically to your enterprise operations." },
+  { text: "Custom-Apps",     cls: "gw", lp:  44, tp: 22, rot:  2, desc: "Building scalable Android and iOS mobile applications integrated with seamless search indexability." },
+  { text: "Headless-Ecom",   cls: "wg", lp:  79, tp: 18, rot: -2, desc: "Architecting high-converting, lightning-fast e-commerce platforms engineered for maximum search visibility." },
+  { text: "Conversion-UX",   cls: "gw", lp:  11, tp: 40, rot: -5, desc: "Crafting intuitive UI/UX designs focused on flawless user flows, accessibility, and boosted retention rates." },
+  { text: "Clean-Code",      cls: "gw", lp:  61, tp: 43, rot: -7, desc: "Writing semantic, modular HTML5/CSS/JS without bloated DOM nodes to guarantee instant page indexing." },
+  { text: "Core-Vitals",     cls: "wg", lp:   5, tp: 56, rot: -6, desc: "Optimizing LCP, CLS, and INP metrics to ensure top-tier loading performance and Google rank boosts." },
+  { text: "AI-Integrated",   cls: "wg", lp:  37, tp: 60, rot:  6, desc: "Integrating specialized AI bots and smart features contextualized to your specific business workflow." },
+  { text: "Scalable-Arch",   cls: "gw", lp:  72, tp: 55, rot:  3, desc: "Engineering server and web infrastructures designed to handle traffic spikes without performance drops." },
+  { text: "Schema-Rich",     cls: "gw", lp:  18, tp: 72, rot: -3, desc: "Embedding advanced JSON-LD structured data to grant search engines rich snippets and instant context." },
+  { text: "Technical-SEO",   cls: "wg", lp:  52, tp: 74, rot:  2, desc: "Configuring advanced crawling directives, dynamic sitemaps, and HTTP security headers out of the box." },
 ];
 
 const PROJECTS = [
@@ -408,13 +408,14 @@ export default function HomeFocused({
         {/* NOX animated logo — full-width hero wordmark */}
         {/* all text content sits above the overlay */}
         <div style={{ position: "relative", zIndex: 2 }}>
-          <div className="tk-logo-hero" style={{ margin: "0 auto clamp(2rem, 4vw, 4rem)", maxWidth: 980 }}>
+          <h1 className="tk-logo-hero" aria-label="NOX" style={{ margin: "0 auto clamp(2rem, 4vw, 4rem)", maxWidth: 980 }}>
             <NoxLogo height={200} />
             <style>{`.tk-logo-hero svg { width: 100% !important; height: auto !important; }`}</style>
-          </div>
+          </h1>
 
-          <p className="tk-hero-sub" style={{
+          <h2 className="tk-hero-sub" style={{
             fontFamily:  SANS,
+            fontWeight:  400,
             fontSize:    "clamp(0.88rem, 1.4vw, 1.4rem)",
             lineHeight:  1.65,
             color:       TK.green,
@@ -422,11 +423,12 @@ export default function HomeFocused({
             margin:      "0 auto clamp(1.2rem, 2vw, 1.8rem)",
             textAlign:   "center",
           }}>
-            For people with an idea, a business, or a half-built digital mess — we build websites, apps, SEO-ready pages, stores, and systems that help you get found, understood, and trusted.
-          </p>
+            NOX DEVs — Crafting High-Performance Websites, E-Commerce &amp; Apps Built with Custom SEO
+          </h2>
 
-          <p style={{
+          <h3 style={{
             fontFamily:  SANS,
+            fontWeight:  400,
             fontSize:    "clamp(0.78rem, 1vw, 1rem)",
             lineHeight:  1.6,
             color:       `rgba(70,174,34,0.6)`,
@@ -434,8 +436,8 @@ export default function HomeFocused({
             margin:      "0 auto clamp(2.5rem, 5vw, 5rem)",
             textAlign:   "center",
           }}>
-            You should not feel lost while building your own digital project. We help make the next step clearer.
-          </p>
+            E-Commerce Development - Custom App Development - Enterprise CMS Development Services - UI/UX Design for Digital Products - Search Engine Optimization Services - GEO &amp; AEO Optimization Services
+          </h3>
 
           <Link
             href="/en/focused/contact"
@@ -479,7 +481,7 @@ export default function HomeFocused({
           textAlign:     "center",
           margin:        "0 0 clamp(0.6rem, 1vw, 1rem)",
           flexShrink:    0,
-        }}>/ what sets us apart</p>
+        }}>Our MindSet</p>
         <h2 className="tk-wsua-heading" style={{
           fontFamily:    SANS,
           fontWeight:    700,
@@ -490,7 +492,7 @@ export default function HomeFocused({
           textAlign:     "center",
           margin:        "0 0 clamp(0.5rem, 1vw, 0.8rem)",
           flexShrink:    0,
-        }}>Why the process feels easier</h2>
+        }}>Why Our Solutions Deliver Superior Results</h2>
 
         <p className="tk-wsua-sub" style={{
           fontFamily: SANS,
@@ -502,7 +504,7 @@ export default function HomeFocused({
           margin:     "0 auto clamp(0.8rem, 1.5vw, 1.2rem)",
           flexShrink: 0,
         }}>
-          Good work matters. So does how it feels to get there.
+          Our Mission Is Different!
         </p>
 
         {/* tag cloud — flex:1 fills remaining vh, overflow hidden clips fallers */}
@@ -534,8 +536,8 @@ export default function HomeFocused({
                 minWidth:        "max-content",
               }}
             >
-              <span style={{ display: "block", whiteSpace: "nowrap" }}>{tag.text}</span>
-              <span
+              <h3 style={{ display: "block", whiteSpace: "nowrap", margin: 0, fontFamily: "inherit", fontWeight: "inherit", fontSize: "inherit", lineHeight: "inherit", color: "inherit" }}>{tag.text}</h3>
+              <p
                 data-desc
                 style={{
                   display:    "block",
@@ -545,12 +547,12 @@ export default function HomeFocused({
                   fontSize:   "clamp(0.55rem, 0.75vw, 0.72rem)",
                   fontWeight: 400,
                   lineHeight: 1.45,
-                  marginTop:  "clamp(3px, 0.5vw, 6px)",
+                  margin:     "clamp(3px, 0.5vw, 6px) 0 0",
                   whiteSpace: "normal",
                   maxWidth:   "16em",
                   transform:  "translateY(4px)",
                 }}
-              >{tag.desc}</span>
+              >{tag.desc}</p>
             </span>
           ))}
         </div>
