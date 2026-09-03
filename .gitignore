@@ -42,3 +42,21 @@ next-env.d.ts
 
 /src/generated/prisma
 /.claude/
+
+# Hostinger deployment output
+/.hostinger-package/
+/hostinger-deploy.zip
+
+# Local design/archive files (production assets belong in public/)
+/creative/
+/tmp/
+/public/creative/*.eps
+/public/creative/*.psd
+/public/creative/*.zip
+/public/creative/*.pptx
+/public/creative/*.pdf
+/public/creative/*.html
+/public/creative/*runtime-logs.txt
+
+# Local development logs
+*.log
