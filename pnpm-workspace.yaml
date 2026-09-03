@@ -1,0 +1,7 @@
+# Only dependencies that require trusted native/generated build steps may run
+# install scripts. All other dependency build scripts remain blocked by pnpm.
+allowBuilds:
+  "@prisma/engines": true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
