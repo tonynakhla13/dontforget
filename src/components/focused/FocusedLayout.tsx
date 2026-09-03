@@ -148,7 +148,7 @@ function FocusedFooter() {
           <h3 style={{ fontFamily: TEKO, fontWeight: 700, fontSize: "clamp(1.5rem, 2.5vw, 2.5rem)", color: C.white, marginBottom: 10 }}>
             We&apos;re here for you
           </h3>
-          {["Chicago Studio — Don't Forget", "Chicago, IL 60601", "", "Mon – Fri: 9:30 – 18:00", "Sat: 9:30 – 13:00", "Sun: Closed"].map((row, i) =>
+          {["NOX Studio — Chicago", "Chicago, IL 60601", "", "Mon – Fri: 9:30 – 18:00", "Sat: 9:30 – 13:00", "Sun: Closed"].map((row, i) =>
             row === "" ? <div key={i} style={{ height: 8 }} /> :
             <div key={i} style={{ fontFamily: MONO, fontSize: "clamp(0.7rem, 0.9vw, 0.95rem)", lineHeight: 1.5, color: C.white }}>{row}</div>
           )}

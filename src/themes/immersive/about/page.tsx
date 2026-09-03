@@ -17,8 +17,8 @@ import type { StoryEvent } from "@/components/about/OurStory";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "About — DON'T FORGET",
-  description: "Meet the team behind DON'T FORGET — a small studio building fast, memorable digital experiences.",
+  title: "About — NOX Studio",
+  description: "Meet the team behind NOX Studio — a small studio building fast, memorable digital experiences.",
 };
 
 type AboutPageData = {

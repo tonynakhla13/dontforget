@@ -8,7 +8,7 @@ import WorkListContent from "@/features/work/WorkListContent";
 import type { WorkProject } from "@/features/work/page";
 
 export const metadata: Metadata = {
-  title: "Work — DON'T FORGET",
+  title: "Work — NOX Studio",
   description: "Selected projects — websites, apps, e-commerce, and digital experiences built to be remembered.",
 };
 

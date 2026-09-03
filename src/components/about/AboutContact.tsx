@@ -160,7 +160,7 @@ export default function AboutContact() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <a href="/" className="flex shrink-0 items-center">
-          <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 28, width: "auto" }} />
+          <img src="/dont%20forget%20logo.png" alt="NOX Studio" style={{ height: 28, width: "auto" }} />
         </a>
         <div className="flex gap-8 font-mono text-[0.58rem] uppercase tracking-[0.28em] text-[var(--body)]">
           <span>Web Development Agency</span>

@@ -242,9 +242,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProject(slug);
-  if (!project) return { title: "Project - DON'T FORGET" };
+  if (!project) return { title: "Project - NOX Studio" };
   return {
-    title: `${project.title} - DON'T FORGET`,
+    title: `${project.title} - NOX Studio`,
     description: project.shortDescription ?? project.description ?? undefined,
   };
 }

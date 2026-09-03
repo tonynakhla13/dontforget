@@ -1,7 +1,7 @@
 export const homeContent = {
   hero: {
     eyebrow: "DESIGN STUDIO",
-    headline: "Dontforget",
+    headline: "NOX Studio",
     subheadline:
       "Digital experiences that leave a lasting impression. Bold design, minimal approach, maximum impact.",
     cta: {
@@ -65,7 +65,7 @@ export const homeContent = {
   },
 
   footer: {
-    copy: "© 2026 Don't Forget",
+    copy: "© 2026 NOX Studio",
     email: "hello@dontforget.studio",
   },
 };

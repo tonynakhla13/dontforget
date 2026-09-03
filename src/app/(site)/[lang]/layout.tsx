@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Script from "next/script";
 import { direction, isLocale } from "@/i18n/config";
+import { SITE_URL } from "@/lib/site-routing";
 import { fontVariables } from "../../fonts";
 import AnimatedFavicon from "@/components/site/AnimatedFavicon";
 import { ThemeTransitionProvider } from "@/components/site/ThemeLoadingExperience";
@@ -9,7 +10,7 @@ import "../../globals.css";
 import "./site.css";
 import "@/themes/creative/creative.css";
 
-export const metadata: Metadata = { title: "DON'T FORGET" };
+export const metadata: Metadata = { title: "NOX Studio", metadataBase: new URL(SITE_URL) };
 
 export default async function LocalizedLayout({
   children,

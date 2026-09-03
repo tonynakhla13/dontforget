@@ -1462,7 +1462,7 @@ export default function HomeFocused() {
               marginBottom: 10,
             }}>We&apos;re here for you</h3>
             {[
-              "NYC Studio — Don't Forget",
+              "NOX Studio — New York",
               "New York, NY 10001",
               "",
               "Mon – Fri: 9:30 – 18:00",

@@ -133,7 +133,7 @@ export default function ServicesOverview() {
                     ))}
                   </div>
                   <span className="font-mono text-[0.52rem] uppercase tracking-[0.24em] text-[var(--body)] lg:[writing-mode:vertical-rl]">
-                    Don&apos;t Forget
+                    NOX Studio
                   </span>
                 </div>
 

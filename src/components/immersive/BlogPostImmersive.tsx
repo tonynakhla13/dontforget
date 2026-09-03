@@ -140,8 +140,8 @@ export default function BlogPostImmersive({ post, locale = "en" }: { post: FullP
     description: post.excerpt ?? post.content.substring(0, 155),
     ...(post.coverImage  && { image: post.coverImage }),
     ...(post.publishedAt && { datePublished: new Date(post.publishedAt).toISOString() }),
-    author:    { "@type": "Organization", name: "DON'T FORGET" },
-    publisher: { "@type": "Organization", name: "DON'T FORGET",
+    author:    { "@type": "Organization", name: "NOX Studio" },
+    publisher: { "@type": "Organization", name: "NOX Studio",
       logo: { "@type": "ImageObject", url: "/immersive/nokx-studio-logo.svg" } },
     keywords: post.tags.join(", "),
   };
@@ -256,7 +256,7 @@ export default function BlogPostImmersive({ post, locale = "en" }: { post: FullP
             {[
               `${mins} min read`,
               ...(date ? [date] : []),
-              "DON'T FORGET",
+              "NOX Studio",
             ].map((item, i, arr) => (
               <span key={i} className="flex items-center gap-[clamp(1rem,2vw,2rem)]">
                 <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em]" style={{ color: "var(--body)" }}>

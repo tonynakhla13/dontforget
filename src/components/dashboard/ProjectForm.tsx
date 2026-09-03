@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import MediaPicker from "./MediaPicker";
+import { slugify } from "@/lib/content-admin";
 
 interface TechItem {
   id: string;
@@ -107,15 +108,6 @@ interface ProjectData {
 }
 
 const PROJECT_TYPES = ["website", "web_app", "mobile_app", "dashboard", "branding", "ecommerce", "other"];
-
-function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 function cleanStrings(values: string[] | undefined) {
   return (values ?? []).map((item) => item.trim()).filter(Boolean);
@@ -293,6 +285,11 @@ export default function ProjectForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const slug = (form.slug || slugify(form.title ?? "")).trim();
+    if (!slug) {
+      setError("Couldn't generate a URL slug from this title (e.g. an Arabic-only title). Please enter a slug manually.");
+      return;
+    }
     setSaving(true);
     setSaveStatus("saving");
     setError("");
@@ -320,6 +317,7 @@ export default function ProjectForm({
 
     const payload = {
       ...form,
+      slug,
       projectType: form.projectType || "website",
       tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
       tagsAr: tagsArInput.split(",").map((t) => t.trim()).filter(Boolean),

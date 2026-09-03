@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { slugify } from "@/lib/content-admin";
 
 interface PostData {
   id?: string;
@@ -18,10 +19,6 @@ interface PostData {
   tagsAr?: string[];
   status?: "DRAFT" | "PUBLISHED";
   order?: number;
-}
-
-function slugify(str: string) {
-  return str.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim();
 }
 
 const inputCls = "w-full bg-zinc-800 border border-white/8 rounded-lg px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#3ABF8A]/50 focus:bg-zinc-800/80 transition-colors";
@@ -47,11 +44,17 @@ export default function PostForm({ initial }: { initial?: PostData }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const slug = (form.slug || slugify(form.title ?? "")).trim();
+    if (!slug) {
+      setError("Couldn't generate a URL slug from this title (e.g. an Arabic-only title). Please enter a slug manually.");
+      return;
+    }
     setSaving(true);
     setError("");
 
     const payload = {
       ...form,
+      slug,
       tags: tagsInput.split(",").map(t => t.trim()).filter(Boolean),
       tagsAr: tagsArInput.split(",").map(t => t.trim()).filter(Boolean),
     };

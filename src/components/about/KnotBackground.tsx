@@ -4,7 +4,7 @@
  * KnotBackground
  *
  * Three canvas layers share one fixed <canvas>:
- *  1. Text mesh  — "DON'T FORGET" sampled from offscreen canvas → 3-D wireframe
+ *  1. Text mesh  — "NOX STUDIO" sampled from offscreen canvas → 3-D wireframe
  *  2. Knot A     — trefoil  (2,3), travels right→left→right as you scroll
  *  3. Knot B     — cinquefoil (2,5), fades in midway and counter-travels
  *
@@ -54,7 +54,7 @@ export default function KnotBackground() {
     }
 
     /* ────────────────────────────────────────────
-       1. TEXT MESH — "DON'T FORGET"
+       1. TEXT MESH — "NOX STUDIO"
     ──────────────────────────────────────────── */
     const OFF_W=1400, OFF_H=340;
     const offscreen = document.createElement("canvas");
@@ -68,8 +68,8 @@ export default function KnotBackground() {
 
     // Try to match the site's heading font; fall back to system bold
     oc.font = `900 138px "Arial Black", "Arial Bold", Gadget, sans-serif`;
-    oc.fillText("DON'T",  OFF_W/2, OFF_H*0.28);
-    oc.fillText("FORGET", OFF_W/2, OFF_H*0.75);
+    oc.fillText("NOX",    OFF_W/2, OFF_H*0.28);
+    oc.fillText("STUDIO", OFF_W/2, OFF_H*0.75);
 
     const imgData = oc.getImageData(0,0,OFF_W,OFF_H).data;
 

@@ -30,7 +30,7 @@ export default function DashboardSidebar() {
       {/* Brand */}
       <div className="px-5 py-5 border-b border-white/[0.06]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/dont%20forget%20logo.png" alt="DON'T FORGET" style={{ height: 28, width: "auto" }} />
+        <img src="/dont%20forget%20logo.png" alt="NOX Studio" style={{ height: 28, width: "auto" }} />
         <span className="block text-white/25 text-[0.6rem] font-mono uppercase tracking-widest mt-2.5">
           Dashboard
         </span>

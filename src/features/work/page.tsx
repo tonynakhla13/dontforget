@@ -10,9 +10,9 @@ import AmbientGlow         from "@/components/AmbientGlow";
 import WorkListContent     from "./WorkListContent";
 
 export const metadata: Metadata = {
-  title: "Work — DON'T FORGET",
+  title: "Work — NOX Studio",
   description:
-    "Selected projects from DON'T FORGET — websites, apps, e-commerce, and digital experiences built to be remembered.",
+    "Selected projects from NOX Studio — websites, apps, e-commerce, and digital experiences built to be remembered.",
 };
 
 // ── Fallback demo data ────────────────────────────────────────────────
