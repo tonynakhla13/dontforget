@@ -1037,25 +1037,108 @@ export function NoxMusts() {
   );
 }
 
+/* ── Footer social icons ───────────────────────────────────────────── */
+function LinkedInIcon() {
+  return (
+    <svg width={17} height={17} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"/>
+    </svg>
+  );
+}
+function FacebookIcon() {
+  return (
+    <svg width={17} height={17} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M22.68 0H1.32C.59 0 0 .59 0 1.32v21.36C0 23.41.59 24 1.32 24h11.5v-9.29H9.69V11.1h3.13V8.41c0-3.1 1.89-4.79 4.66-4.79 1.32 0 2.46.1 2.8.14v3.24h-1.92c-1.5 0-1.8.72-1.8 1.76v2.31h3.59l-.47 3.62h-3.12V24h6.12c.73 0 1.32-.59 1.32-1.32V1.32C24 .59 23.41 0 22.68 0Z"/>
+    </svg>
+  );
+}
+function InstagramIcon() {
+  return (
+    <svg width={17} height={17} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.42.56.21.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.22.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.22-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.26.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.22-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.22-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.22.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.22-.41C8.42 2.21 8.8 2.2 12 2.2Zm0-2.2C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.3-1.46.72-2.13 1.38C1.35 2.68.93 3.35.63 4.14.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.3.79.72 1.46 1.38 2.13.66.66 1.34 1.08 2.13 1.38.76.3 1.64.5 2.91.56C8.33 24 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56.79-.3 1.46-.72 2.13-1.38.66-.66 1.08-1.34 1.38-2.13.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91-.3-.79-.72-1.46-1.38-2.13C21.32 1.35 20.65.93 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0Zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm6.41-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88Z"/>
+    </svg>
+  );
+}
+function GitHubIcon() {
+  return (
+    <svg width={17} height={17} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 .3C5.37.3 0 5.67 0 12.3c0 5.3 3.44 9.8 8.21 11.38.6.11.82-.26.82-.58 0-.28-.01-1.04-.02-2.04-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.3-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.48 5.92.43.36.81 1.1.81 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.7.83.58C20.56 22.09 24 17.6 24 12.3 24 5.67 18.63.3 12 .3Z"/>
+    </svg>
+  );
+}
+
 /* ── Footer ─────────────────────────────────────────────────────────── */
+const FOOTER_PAGES: [string, string][] = [
+  ["home",     ""],
+  ["about us", "about"],
+  ["services", "services"],
+  ["our work", "work"],
+  ["blog",     "blog"],
+  ["contact",  "contact"],
+];
+
+const FOOTER_NATIONS = [
+  { name: "Saudi Arabia",         code: "sa" },
+  { name: "United Arab Emirates", code: "ae" },
+  { name: "Egypt",                code: "eg" },
+  { name: "Turkey",               code: "tr" },
+  { name: "Syria",                code: "sy" },
+  { name: "Lebanon",              code: "lb" },
+  { name: "Austria",              code: "at" },
+  { name: "Germany",              code: "de" },
+];
+
+const FOOTER_EMAILS = [
+  "tony@noxstudio.dev",
+  "almotassem@noxstudio.dev",
+  "rami@noxstudio.dev",
+  "jossef@noxstudio.dev",
+];
+
+const FOOTER_SOCIALS: [string, string, React.ReactNode][] = [
+  ["LinkedIn",  "#", <LinkedInIcon key="li" />],
+  ["Facebook",  "#", <FacebookIcon key="fb" />],
+  ["Instagram", "#", <InstagramIcon key="ig" />],
+  ["GitHub",    "#", <GitHubIcon key="gh" />],
+];
+
 export function NoxFooter() {
   const [email, setEmail] = useState("");
   const FG  = "#0b2007";                   // dark green text on green bg
   const FGA = "rgba(11,32,7,0.65)";        // dimmed variant
   const PAD = "clamp(1.5rem, 4vw, 3.5rem)";
+  const COL_BORDER = "1px solid rgba(11,32,7,0.22)";
+
+  const eyebrow: React.CSSProperties = {
+    fontFamily:    SANS,
+    fontSize:      "clamp(0.6rem,0.72vw,0.72rem)",
+    letterSpacing: "0.22em",
+    textTransform: "uppercase",
+    color:         FG,
+    opacity:       0.55,
+    margin:        "0 0 clamp(0.8rem,1.4vw,1.2rem)",
+  };
+  const linkStyle: React.CSSProperties = {
+    fontFamily:     SANS,
+    fontSize:       "clamp(0.78rem,0.9vw,0.92rem)",
+    color:          FGA,
+    textDecoration: "none",
+    transition:     "color 150ms",
+  };
+  const onLinkEnter = (e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = FG);
+  const onLinkLeave = (e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = FGA);
 
   return (
     <footer style={{ background: "var(--nox-green,#46ae22)", overflow: "hidden", color: FG }}>
 
-      {/* ── Top row: headline · nav · social ── */}
+      {/* ── Top row: headline + newsletter ── */}
       <div style={{
         display:             "grid",
-        gridTemplateColumns: "1fr auto auto",
-        alignItems:          "flex-start",
+        gridTemplateColumns: "1fr 1fr",
+        alignItems:          "center",
         gap:                 "clamp(2rem, 5vw, 6rem)",
-        padding:             `clamp(1rem,1.8vw,1.8rem) ${PAD} clamp(0.35rem,0.5vw,0.5rem)`,
+        padding:             `clamp(1.5rem,2.5vw,2.5rem) ${PAD} clamp(1.2rem,2vw,1.8rem)`,
       }}>
-        {/* Headline */}
         <h2 style={{
           fontFamily:    SANS,
           fontWeight:    700,
@@ -1069,52 +1152,6 @@ export function NoxFooter() {
           Got an idea? Let&apos;s make it easier.
         </h2>
 
-        {/* Page nav */}
-        <nav style={{ display: "flex", flexDirection: "column", gap: "clamp(0.35rem,0.6vw,0.7rem)", paddingTop: "0.25rem" }}>
-          {[["about us", "about"], ["services", "services"], ["cases", "work"]].map(([label, slug]) => (
-            <a key={label} href={`/en/focused/${slug}`} style={{
-              fontFamily:     SANS,
-              fontSize:       "clamp(0.78rem,0.9vw,0.92rem)",
-              color:          FGA,
-              textDecoration: "none",
-              transition:     "color 150ms",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = FG)}
-            onMouseLeave={e => (e.currentTarget.style.color = FGA)}
-            >{label}</a>
-          ))}
-        </nav>
-
-        {/* Social */}
-        <nav style={{ display: "flex", flexDirection: "column", gap: "clamp(0.35rem,0.6vw,0.7rem)", paddingTop: "0.25rem" }}>
-          {[["Instagram", "#"], ["Twitter", "#"]].map(([label, href]) => (
-            <a key={label} href={href} style={{
-              fontFamily:     SANS,
-              fontSize:       "clamp(0.78rem,0.9vw,0.92rem)",
-              color:          FGA,
-              textDecoration: "none",
-              transition:     "color 150ms",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = FG)}
-            onMouseLeave={e => (e.currentTarget.style.color = FGA)}
-            >{label} →</a>
-          ))}
-        </nav>
-      </div>
-
-      {/* ── Divider ── */}
-      <div style={{ height: 1, background: "rgba(11,32,7,0.28)", margin: `0 ${PAD}` }} />
-
-      {/* ── Bottom info row: newsletter · crosshair · location · email ── */}
-      <div style={{
-        display:             "grid",
-        gridTemplateColumns: "1fr auto 1fr auto",
-        alignItems:          "center",
-        gap:                 "clamp(1rem,2.5vw,3rem)",
-        padding:             `clamp(0.35rem,0.5vw,0.5rem) ${PAD}`,
-      }}>
-
-        {/* Newsletter signup */}
         <div>
           <p style={{ fontFamily: SANS, fontSize: "clamp(0.68rem,0.82vw,0.82rem)", color: FGA, margin: "0 0 0.5rem" }}>
             Simple notes on websites, systems, UX, SEO, and the small digital mistakes everyone keeps pretending are normal.
@@ -1147,41 +1184,130 @@ export function NoxFooter() {
             </span>
           </div>
         </div>
+      </div>
 
-        {/* Crosshair icon */}
-        <svg width={42} height={42} viewBox="0 0 42 42" fill="none" stroke={FG} strokeWidth={1.1} aria-hidden="true">
-          <circle cx={21} cy={21} r={11}/>
-          <line x1={21} y1={0}  x2={21} y2={9}/>
-          <line x1={21} y1={33} x2={21} y2={42}/>
-          <line x1={0}  y1={21} x2={9}  y2={21}/>
-          <line x1={33} y1={21} x2={42} y2={21}/>
-          <circle cx={21} cy={21} r={2.2} fill={FG} stroke="none"/>
-        </svg>
+      {/* ── Divider ── */}
+      <div style={{ height: 1, background: "rgba(11,32,7,0.28)", margin: `0 ${PAD}` }} />
 
-        {/* Location */}
-        <p style={{
-          fontFamily: SANS,
-          fontSize:   "clamp(0.72rem,0.86vw,0.88rem)",
-          lineHeight: 1.55,
-          color:      FGA,
-          margin:     0,
-        }}>
-          Based in Yabroud, Syria.<br />Working worldwide.<br />
-          <span style={{ opacity: 0.55, fontSize: "0.85em" }}>Formerly Don&apos;t Forget. Same team, easier name.</span>
-        </p>
+      {/* ── 3-column footer table: about+social · pages · reach us ── */}
+      <div style={{
+        display:             "grid",
+        gridTemplateColumns: "1fr 1fr 1fr",
+        alignItems:          "flex-start",
+        padding:             `clamp(1.8rem,3vw,3rem) ${PAD}`,
+        gap:                 "clamp(1.5rem, 4vw, 3rem)",
+      }}>
 
-        {/* Contact email */}
-        <a href="mailto:hello@noxstudio.dev" style={{
-          fontFamily:     SANS,
-          fontSize:       "clamp(0.76rem,0.9vw,0.9rem)",
-          color:          FGA,
-          textDecoration: "none",
-          whiteSpace:     "nowrap",
-          transition:     "color 150ms",
-        }}
-        onMouseEnter={e => (e.currentTarget.style.color = FG)}
-        onMouseLeave={e => (e.currentTarget.style.color = FGA)}
-        >hello@noxstudio.dev</a>
+        {/* Column 1: about the studio + social icons */}
+        <div style={{ borderRight: COL_BORDER, paddingRight: "clamp(1rem,2vw,2rem)" }}>
+          <p style={eyebrow}>/ about</p>
+          <p style={{
+            fontFamily: SANS,
+            fontSize:   "clamp(0.78rem,0.92vw,0.94rem)",
+            lineHeight: 1.6,
+            color:      FGA,
+            margin:     "0 0 clamp(1.2rem,2vw,1.6rem)",
+            maxWidth:   "34ch",
+          }}>
+            NOX Studio designs and builds websites, brand systems, and digital products for founders and growing teams. We fix what&apos;s slow, unclear, or invisible to search — and ship work that actually performs.
+          </p>
+          <div style={{ display: "flex", gap: "clamp(0.7rem,1.2vw,1rem)" }}>
+            {FOOTER_SOCIALS.map(([label, href, icon]) => (
+              <a key={label} href={href} aria-label={label} style={{
+                display:        "flex",
+                alignItems:     "center",
+                justifyContent: "center",
+                width:          34,
+                height:         34,
+                border:         `1px solid rgba(11,32,7,0.32)`,
+                color:          FG,
+                transition:     "background 150ms, color 150ms",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = FG; e.currentTarget.style.color = "var(--nox-green,#46ae22)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = FG; }}
+              >{icon}</a>
+            ))}
+          </div>
+        </div>
+
+        {/* Column 2: page links */}
+        <div style={{ borderRight: COL_BORDER, paddingRight: "clamp(1rem,2vw,2rem)" }}>
+          <p style={eyebrow}>/ pages</p>
+          <nav style={{ display: "flex", flexDirection: "column", gap: "clamp(0.5rem,0.9vw,0.85rem)" }}>
+            {FOOTER_PAGES.map(([label, slug]) => (
+              <a key={label} href={`/en/focused/${slug}`} style={linkStyle}
+                onMouseEnter={onLinkEnter} onMouseLeave={onLinkLeave}
+              >{label}</a>
+            ))}
+          </nav>
+        </div>
+
+        {/* Column 3: crosshair · location · nationalities · direct emails */}
+        <div>
+          <p style={eyebrow}>/ reach us</p>
+
+          <svg width={36} height={36} viewBox="0 0 42 42" fill="none" stroke={FG} strokeWidth={1.1} aria-hidden="true" style={{ marginBottom: "clamp(0.8rem,1.4vw,1.2rem)" }}>
+            <circle cx={21} cy={21} r={11}/>
+            <line x1={21} y1={0}  x2={21} y2={9}/>
+            <line x1={21} y1={33} x2={21} y2={42}/>
+            <line x1={0}  y1={21} x2={9}  y2={21}/>
+            <line x1={33} y1={21} x2={42} y2={21}/>
+            <circle cx={21} cy={21} r={2.2} fill={FG} stroke="none"/>
+          </svg>
+
+          <p style={{
+            fontFamily: SANS,
+            fontSize:   "clamp(0.78rem,0.9vw,0.92rem)",
+            fontWeight: 700,
+            lineHeight: 1.5,
+            color:      FG,
+            margin:     "0 0 0.15rem",
+          }}>
+            Based In Damascus-Syria.
+          </p>
+          <p style={{
+            fontFamily: SANS,
+            fontSize:   "clamp(0.72rem,0.86vw,0.88rem)",
+            lineHeight: 1.55,
+            color:      FGA,
+            margin:     "0 0 clamp(0.9rem,1.6vw,1.3rem)",
+          }}>
+            Working worldwide.
+          </p>
+
+          <p style={{ ...eyebrow, fontSize: "clamp(0.58rem,0.68vw,0.68rem)", margin: "0 0 0.6rem" }}>
+            Nationality of the projects we worked on
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem 0.55rem", marginBottom: "clamp(1.2rem,2vw,1.6rem)" }}>
+            {FOOTER_NATIONS.map(n => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={n.code}
+                src={`https://flagcdn.com/${n.code}.svg`}
+                alt={n.name}
+                title={n.name}
+                width={24}
+                height={17}
+                style={{
+                  width:        24,
+                  height:       17,
+                  objectFit:    "cover",
+                  border:       "1px solid rgba(11,32,7,0.3)",
+                  display:      "block",
+                  flexShrink:   0,
+                }}
+              />
+            ))}
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+            {FOOTER_EMAILS.map(addr => (
+              <a key={addr} href={`mailto:${addr}`} style={{ ...linkStyle, whiteSpace: "nowrap" }}
+                onMouseEnter={onLinkEnter} onMouseLeave={onLinkLeave}
+              >{addr}</a>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── Giant NOX wordmark watermark (public asset) ──
