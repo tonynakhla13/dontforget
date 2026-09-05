@@ -60,12 +60,12 @@ const PROJECTS = [
 ];
 
 const SERVICES = [
-  { n: "01", slug: "web-development",  icon: "webdev",  title: "Web Development",  body: "Websites and platforms that are clear, fast, responsive, and easy for people to understand. A website should not need a tour guide." },
-  { n: "02", slug: "ui-ux-design",     icon: "uiux",   title: "UI / UX Design",    body: "Interfaces that help users move with confidence instead of clicking around in quiet panic. If people need to ask where to click, the interface is being dramatic." },
-  { n: "03", slug: "ecommerce",        icon: "ecom",   title: "E-Commerce",        body: "Online stores that help people browse, trust, and buy without needing a treasure map. Buying should feel easy." },
-  { n: "04", slug: "mobile-apps",      icon: "mobile", title: "Mobile Apps",       body: "Mobile apps built around real people, real actions, and real life outside the design file. No one downloads an app hoping to suffer." },
-  { n: "05", slug: "seo-site-health",  icon: "seo",    title: "SEO",               body: "SEO-ready pages and technical foundations that help people find you without making your website sound like a robot. Search engines matter. Humans still have to read the page." },
-  { n: "06", slug: "crm-systems",      icon: "crm",    title: "CRM Platforms",     body: "Booking systems, pipelines, automations, and follow-up tools that help teams stay organized. Your CRM should not be a group chat with extra steps." },
+  { n: "01", slug: "web-development",  icon: "webdev",  title: "Custom Web Development",             body: "Building secure, performant, and responsive web platforms that turn visitors into users. We architect clean-code solutions engineered for seamless scalability and flawless performance." },
+  { n: "02", slug: "ui-ux-design",     icon: "uiux",   title: "UI / UX & Product Design",             body: "Crafting intuitive interfaces that drive engagement and foster user loyalty. Our user-centric design approach ensures that every interaction is smooth, memorable, and conversion-focused." },
+  { n: "03", slug: "ecommerce",        icon: "ecom",   title: "Strategic E-Commerce Platforms",       body: "Creating frictionless digital storefronts designed for maximum revenue generation. From seamless checkouts to personalized customer journeys, we build platforms that scale your online business." },
+  { n: "04", slug: "mobile-apps",      icon: "mobile", title: "Cross-Platform Mobile Apps",           body: "Developing feature-rich, high-performance iOS and Android applications. We utilize modern tech stacks to deliver apps that are robust, secure, and deliver an exceptional native-like experience." },
+  { n: "05", slug: "seo-site-health",  icon: "seo",    title: "Technical & Strategic SEO (GEO/AEO Ready)", body: "Dominating search results and AI-driven answer engines. We optimize your technical foundation and content architecture to maximize visibility, traffic, and sustainable authority in your niche." },
+  { n: "06", slug: "crm-systems",      icon: "crm",    title: "Custom CRM & Platform Solutions",      body: "Architecting scalable CRM systems tailored to your unique operational workflow. Streamline data, automate client management, and empower your teams with data-driven insights." },
 ];
 
 /* ── service icons ───────────────────────────────────────────────── */
@@ -807,7 +807,7 @@ export default function HomeFocused({
           color:         TK.green,
           textAlign:     "center",
           margin:        "0 0 clamp(0.6rem, 1vw, 1rem)",
-        }}>/ our services</p>
+        }}>Our Capabilities</p>
         <h2 className="tk-svc-heading" style={{
           fontFamily:    SANS,
           fontWeight:    700,
@@ -816,7 +816,7 @@ export default function HomeFocused({
           color:         TK.paper,
           textAlign:     "center",
           margin:        "0 0 clamp(1.5rem, 2.5vw, 2rem)",
-        }}>What we can make easier</h2>
+        }}>From Vision to Scalable Digital Infrastructure</h2>
 
         <p className="tk-svc-sub" style={{
           fontFamily: SANS,
