@@ -16,7 +16,6 @@ import SmoothScroll from '@/components/SmoothScroll'
 import type { Project } from '@/components/Work'
 import ImmersiveWorkCarousel from '@/components/immersive/ImmersiveWorkCarousel'
 import ParticleLayer from '@/components/ParticleLayer'
-import ImmersiveLoader from '@/components/immersive/ImmersiveLoader'
 import type { PublicService } from '@/lib/public-content'
 
 export default function HomeImmersive({
@@ -35,7 +34,6 @@ export default function HomeImmersive({
 
   return (
     <>
-      <ImmersiveLoader />
       <SmoothScroll />
       {/* ParticleLayer must live OUTSIDE <main> to avoid stacking context trapping z-index:-1 */}
       <ParticleLayer />

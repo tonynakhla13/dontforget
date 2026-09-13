@@ -273,6 +273,8 @@ function WebsiteFrame({
     <figure data-first-frame={tall || Boolean(videoSrc) ? "true" : undefined} className={`relative h-[68vh] w-[min(88vw,1080px)] shrink-0 overflow-hidden bg-gradient-to-br from-[#faf9f2] via-[#cfd4cb] to-[#6b7268] shadow-[0_34px_100px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.65)] ${tall ? "rounded-[1.55rem] p-1.5" : "rounded-[2.35rem] p-3"}`}>
       <div className={`relative h-full overflow-hidden ${tall ? "rounded-[1.15rem]" : "rounded-[1.75rem]"} ${variant === "light" ? "bg-[#eef1ed]" : "bg-[#070a0f]"}`}>
         {videoSrc ? (
+          /* Starts once the frame has scaled up, then plays at its own pace.
+             Muted + playsInline is what lets it start without a click. */
           <video
             data-frame-video
             src={videoSrc}
@@ -330,6 +332,7 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
         ? project.tags
         : [project.category ?? "Web design"];
   const firstScreen = project.tallImage ?? (project.slug === "elia-clinic" ? FIRST_SCREEN_IMAGE : gallery[0]);
+  // The dashboard picks the medium per project; video only wins when one is actually uploaded.
   const firstScreenVideo =
     project.heroMediaType === "video" && project.videoUrl?.trim() ? project.videoUrl.trim() : null;
   const followupGallery = gallery.filter((src) => src !== firstScreen);
@@ -354,6 +357,8 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
       const frameVideo = root.querySelector<HTMLVideoElement>("[data-frame-video]");
 
       const horizontalDistance = () => Math.max(1, track.scrollWidth - window.innerWidth);
+      // A video plays at its own pace, so it needs no scroll distance of its own.
+      // Only the tall screenshot has to be panned through.
       const panDistance = () => {
         if (frameVideo) return 0;
         if (tallScreen?.parentElement) {
@@ -366,6 +371,12 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
       const refreshFrame = requestAnimationFrame(refresh);
       window.addEventListener("load", refresh, { once: true });
 
+      // The video starts once the frame has finished scaling up, then runs at its
+      // own speed. The threshold is measured off the timeline below rather than
+      // hardcoded, so it stays correct if the step durations are retuned. Driving
+      // it from ScrollTrigger rather than a raw scroll listener keeps it working
+      // under this theme's smooth-scrolling, and muted playback is what lets it
+      // start without a click.
       let videoStarted = false;
       let framePoppedProgress = 1;
       const startVideo = () => {
@@ -407,8 +418,10 @@ export default function ProjectContent({ project }: { project: ProjectData }) {
           transformOrigin: "center center",
         });
 
+      // Everything queued so far ends with the frame at full size.
       const framePoppedTime = timeline.duration();
 
+      // Only the screenshot gets a pan beat; a video carries its own motion.
       if (!frameVideo && tallScreen?.parentElement) {
         timeline.to(tallScreen, {
           y: () => {

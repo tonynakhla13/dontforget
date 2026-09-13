@@ -243,8 +243,6 @@ export default function FocusedLayout({ children }: { children: React.ReactNode 
           }
         }
       `}</style>
-      <FocusedLivingBackground />
-      <NoxGrid />
       <div className="focused-theme-content">{children}</div>
     </>
   );

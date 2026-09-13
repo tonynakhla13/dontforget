@@ -1,13 +1,26 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
+
+/**
+ * The one loader for the whole site.
+ *
+ * The NOX wordmark walks in from the left — N first, then the rolling O that
+ * bumps it, then the X. Used by both the hard-load intro (`SiteIntroLoader`)
+ * and every soft navigation / theme switch (`ThemeLoadingExperience`), so the
+ * loading moment looks identical in focused, creative and immersive.
+ */
 
 const W = "#ffffff";
 const G = "#46D12A";
-const H = 130;
 
-let _c = 0;
-function RollingO() {
-  const id    = useRef(`ldr-o-${++_c}`).current;
+/** Full walk-in takes this long; shorter runs just scale the same timeline. */
+export const NOX_LOADER_DEFAULT_SECONDS = 4;
+
+/** Point in the timeline where every letter has landed and the bumps settled. */
+export const NOX_LOADER_SETTLED_RATIO = 0.8;
+
+function RollingO({ height }: { height: number }) {
+  const id    = useId().replace(/[:]/g, "");
   const pupil = useRef<SVGGElement>(null);
   const scale = useRef<SVGGElement>(null);
   const blink = useRef(false);
@@ -39,7 +52,7 @@ function RollingO() {
   },[]);
 
   return (
-    <svg viewBox="430 0 355 362" fill="none" style={{height:H,width:"auto",display:"block"}}>
+    <svg viewBox="430 0 355 362" fill="none" style={{height,width:"auto",display:"block"}}>
       <defs><clipPath id={id}><path d="M610.48,1.55c148.49-12.15,244.49,141.46,171.28,270.23-79.21,139.33-286.71,111.03-325.72-43.43C429.83,124.54,501.53,10.47,610.48,1.55Z"/></clipPath></defs>
       <path fill={W} d="M610.48,1.55c148.49-12.15,244.49,141.46,171.28,270.23-79.21,139.33-286.71,111.03-325.72-43.43C429.83,124.54,501.53,10.47,610.48,1.55Z"/>
       <g ref={pupil} clipPath={`url(#${id})`}><g ref={scale}>
@@ -49,17 +62,17 @@ function RollingO() {
   );
 }
 
-function LetterN() {
+function LetterN({ height }: { height: number }) {
   return (
-    <svg viewBox="0 0 378 362" fill="none" style={{height:H,width:"auto",display:"block"}}>
+    <svg viewBox="0 0 378 362" fill="none" style={{height,width:"auto",display:"block"}}>
       <path fill={W} d="M326.83,361.07v-174.4C311.9,10.26,63.25,14.4,51.98,189.67v171.4H0v-182.39C12.84,12.64,218.29-64.44,331.34,65.21c59.25,67.94,46.42,147.87,45.41,231.35-.25,20.82.7,41.69.64,62.47,0,1.17-.07,1.29-1.09,2.04h-49.47Z"/>
     </svg>
   );
 }
 
-function LetterX() {
+function LetterX({ height }: { height: number }) {
   return (
-    <svg viewBox="845 0 380 362" fill="none" style={{height:H,width:"auto",display:"block"}}>
+    <svg viewBox="845 0 380 362" fill="none" style={{height,width:"auto",display:"block"}}>
       <path fill={W} d="M912.02,1.25c55.05,59.15,109.74,118.76,163.28,179.22-18.41,23.68-40.14,44.54-60.35,66.64-34.38,37.59-68.37,75.54-102.88,113.01-.85.85-1.9.85-3,1-16.05,2.14-38.93-.72-56.06-.09-1.38.05-8.67,2.44-7.45-.44l162.74-179.91L845.56,1.25h66.47Z"/>
       <polygon fill={G} points="1224.36 1.25 1100.96 136.19 1067.9 101.22 1067.56 98.88 1156.9 1.25 1224.36 1.25"/>
       <path fill={W} d="M1157.9,361.07l-90.38-96.59,32.43-38.36c1.62,0,2.93,1.9,4,3,17.15,17.75,33.13,36.91,49.95,55,21.93,23.6,47.34,47.61,67.45,72.47.66.82,5.13,6.31,1.67,5.34-.53-.15-.88-.87-1.15-.87h-63.97Z"/>
@@ -67,7 +80,17 @@ function LetterX() {
   );
 }
 
-export default function FocusedLoaderContent() {
+export default function NoxLoader({
+  durationSeconds = NOX_LOADER_DEFAULT_SECONDS,
+  height = 130,
+}: {
+  /** How long the walk-in takes. The whole timeline scales with it. */
+  durationSeconds?: number;
+  /** Cap height of the letterforms, in px. */
+  height?: number;
+}) {
+  const d = `${durationSeconds}s`;
+
   return (
     <div style={{
       position:"absolute",inset:0,background:"#000",
@@ -97,17 +120,23 @@ export default function FocusedLoaderContent() {
           74%      { transform: translateX(12px); }
           77%,100% { transform: translateX(0); }
         }
-        .ldr-x      { animation: walk-x 4s cubic-bezier(.22,1,.36,1) forwards; }
-        .ldr-o      { animation: roll-o 4s cubic-bezier(.22,1,.36,1) forwards; }
-        .ldr-n      { animation: walk-n 4s cubic-bezier(.22,1,.36,1) forwards; }
-        .ldr-x-bump { animation: bump-x 4s linear forwards; }
-        .ldr-o-bump { animation: bump-o 4s linear forwards; }
+        .ldr-x      { animation: walk-x ${d} cubic-bezier(.22,1,.36,1) forwards; }
+        .ldr-o      { animation: roll-o ${d} cubic-bezier(.22,1,.36,1) forwards; }
+        .ldr-n      { animation: walk-n ${d} cubic-bezier(.22,1,.36,1) forwards; }
+        .ldr-x-bump { animation: bump-x ${d} linear forwards; }
+        .ldr-o-bump { animation: bump-o ${d} linear forwards; }
+        @media (prefers-reduced-motion: reduce) {
+          .ldr-x, .ldr-o, .ldr-n, .ldr-x-bump, .ldr-o-bump {
+            animation: none !important;
+            transform: none !important;
+          }
+        }
       `}</style>
 
       <div style={{display:"flex",alignItems:"center",gap:"clamp(6px,1.2vw,18px)"}}>
-        <div className="ldr-n"><LetterN /></div>
-        <div className="ldr-o-bump"><div className="ldr-o"><RollingO /></div></div>
-        <div className="ldr-x-bump"><div className="ldr-x"><LetterX /></div></div>
+        <div className="ldr-n"><LetterN height={height} /></div>
+        <div className="ldr-o-bump"><div className="ldr-o"><RollingO height={height} /></div></div>
+        <div className="ldr-x-bump"><div className="ldr-x"><LetterX height={height} /></div></div>
       </div>
 
       {/* green floor glow */}

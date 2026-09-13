@@ -135,7 +135,6 @@ async function renderRecoveredPresentation(locale: Locale, theme: Theme, tail: s
       page === "about" && !tail[1] ? <FocusedAbout /> :
       page === "work" && !tail[1] ? <FocusedWork locale={locale} /> :
       page === "services" && !tail[1] ? <FocusedServices /> :
-      page === "services" && tail[1] ? null :
       page === "blog" && !tail[1] ? <FocusedBlog /> :
       page === "contact" && !tail[1] ? <FocusedContact /> : null;
     return view ? <FocusedThemeLayout>{view}</FocusedThemeLayout> : null;
