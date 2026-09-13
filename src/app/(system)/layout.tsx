@@ -4,8 +4,8 @@ import { fontVariables } from "../fonts";
 import "../globals.css";
 
 export const metadata: Metadata = {
-  title: "DON'T FORGET - Admin",
-  description: "DON'T FORGET administration",
+  title: "NOX Studio - Admin",
+  description: "NOX Studio administration",
 };
 
 export default function SystemLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -125,7 +125,7 @@ export default function Contact() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/dont%20forget%20logo.png"
-            alt="DON'T FORGET"
+            alt="NOX Studio"
             style={{ height: 28, width: "auto" }}
           />
         </a>

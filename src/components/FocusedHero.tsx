@@ -40,7 +40,7 @@ export default function FocusedHero() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="text-7xl md:text-8xl lg:text-9xl font-black text-black leading-none mb-8 tracking-tight"
           >
-            Dontforget
+            NOX Studio
           </motion.h1>
 
           <motion.p

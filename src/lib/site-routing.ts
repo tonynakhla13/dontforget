@@ -14,6 +14,14 @@ export type { Locale, Theme };
 export const CORE_PAGES = ["about", "work", "services", "blog", "contact", "request"] as const;
 export type CorePage = (typeof CORE_PAGES)[number];
 
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://dontforget.studio").replace(/\/$/, "");
+
+/** Canonical (indexable) path for a page — always the "focused" theme, regardless of which theme is being rendered. */
+export function canonicalPath(locale: Locale, tail: string[]) {
+  const tailPath = tail.length ? `/${tail.map(encodeURIComponent).join("/")}` : "";
+  return `/${locale}/focused${tailPath}`;
+}
+
 export type CanonicalRoute = {
   locale: Locale;
   theme: Theme;

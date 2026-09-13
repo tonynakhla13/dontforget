@@ -126,15 +126,15 @@ function buildCRMPos(): Float32Array {
   return sampleCanvas(ctx, CW, CH, 6);
 }
 
-// ── shape 4: DON'T FORGET ─────────────────────────────────────────────
+// ── shape 4: NOX STUDIO ─────────────────────────────────────────────
 function buildLetterPos(): Float32Array {
   const CW = 1000, CH = 500;
   const ctx = makeCtx(CW, CH);
   ctx.fillStyle = "#fff";
   ctx.font = `900 185px 'Arial Black', Impact, sans-serif`;
   ctx.textBaseline = "middle";
-  drawTracked(ctx, "DON'T",  CW / 2, CH * 0.27, 34);
-  drawTracked(ctx, "FORGET", CW / 2, CH * 0.74, 34);
+  drawTracked(ctx, "NOX",    CW / 2, CH * 0.27, 34);
+  drawTracked(ctx, "STUDIO", CW / 2, CH * 0.74, 34);
   return sampleCanvas(ctx, CW, CH, 6);
 }
 

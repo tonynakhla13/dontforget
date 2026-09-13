@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { isLocale, isTheme } from "@/i18n/config";
 import { getContact, getPost, getPosts, getProject, getProjects, getService, getServices, getTeam } from "@/lib/public-content";
-import { pagePath, postPath, projectPath, servicePath, validTail, type Locale, type Theme } from "@/lib/site-routing";
+import { canonicalPath, pagePath, postPath, projectPath, servicePath, SITE_URL, validTail, type Locale, type Theme } from "@/lib/site-routing";
 import SiteShell from "@/components/site/SiteShell";
 import InquiryForm from "@/components/site/InquiryForm";
 import CanonicalPresentation from "@/components/site/CanonicalPresentation";
@@ -54,8 +54,9 @@ async function routeParams(params: Params) {
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { locale, theme, tail } = await routeParams(params);
-  const tailPath = tail.length ? `/${tail.join("/")}` : "";
+  const { locale, tail } = await routeParams(params);
+  const canonical = `${SITE_URL}${canonicalPath(locale, tail)}`;
+  const languages = { en: canonicalPath("en", tail), ar: canonicalPath("ar", tail) };
 
   /* ── Individual blog post — rich OG metadata ── */
   if (tail[0] === "blog" && tail[1]) {
@@ -81,7 +82,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
           description: desc,
           ...(post.coverImage && { images: [post.coverImage] }),
         },
-        alternates: { languages: { en: `/en/${theme}${tailPath}`, ar: `/ar/${theme}${tailPath}` } },
+        alternates: { canonical, languages },
       };
     }
   }
@@ -93,7 +94,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   return {
     title,
     description: page ? d.pages[page][1] : d.meta.description,
-    alternates: { languages: { en: `/en/${theme}${tailPath}`, ar: `/ar/${theme}${tailPath}` } },
+    alternates: { canonical, languages },
   };
 }
 

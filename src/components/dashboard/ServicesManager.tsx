@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import MediaPicker from "./MediaPicker";
+import { slugify } from "@/lib/content-admin";
 
 type MediaAssetItem = { id: string; url: string; originalName?: string | null; filename?: string | null };
 type TechItem = { id: string; name: string; icon?: string | null; iconUrl?: string | null };
@@ -36,10 +37,6 @@ const empty: ServiceForm = {
   active: true,
   attachments: [],
 };
-
-function slugify(str: string) {
-  return str.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
-}
 
 function lines(value: unknown) {
   return Array.isArray(value) ? value.join("\n") : "";
@@ -99,10 +96,15 @@ export default function ServicesManager({
   }
 
   async function save() {
+    const slug = (form.slug || slugify(form.title)).trim();
+    if (!slug) {
+      alert("Couldn't generate a URL slug from this title (e.g. an Arabic-only title). Please enter a slug manually.");
+      return;
+    }
     setSaving(true);
     const payload = {
       ...form,
-      slug: form.slug || slugify(form.title),
+      slug,
       benefits: parseLines(benefitsText),
       deliverables: [],
       process: parseLines(processText),

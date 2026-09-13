@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import MediaPicker from "./MediaPicker";
+import { slugify } from "@/lib/content-admin";
 
 const RichTextEditor = dynamic(() => import("./RichTextEditor"), { ssr: false });
 
@@ -110,10 +111,6 @@ function toFaqItems(val: unknown): FaqItem[] {
     }
     return { question: "", answer: "" };
   });
-}
-
-function slugify(str: string) {
-  return str.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
 }
 
 function useDragReorder<T>(items: T[], setItems: (items: T[]) => void) {
@@ -250,6 +247,11 @@ export default function ServiceForm({
   }
 
   async function save() {
+    const resolvedSlug = (slug || slugify(title)).trim();
+    if (!resolvedSlug) {
+      alert("Couldn't generate a URL slug from this title (e.g. an Arabic-only title). Please enter a slug manually.");
+      return;
+    }
     setSaving(true);
     const resolvedDeliverables = deliverables.map((item) => ({
       icon: item.iconMediaId ? resolveMediaUrl(item.iconMediaId) : item.icon,
@@ -259,7 +261,7 @@ export default function ServiceForm({
       image: item.imageMediaId ? resolveMediaUrl(item.imageMediaId) : item.image,
     }));
     const payload = {
-      title, titleAr, slug: slug || slugify(title),
+      title, titleAr, slug: resolvedSlug,
       description, descriptionAr, shortDescription, tagline, icon,
       order, featured, active: activeFlag,
       seoTitle, seoDescription,
