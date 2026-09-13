@@ -32,6 +32,7 @@ export type WorkProject = {
   slug: string;
   title: string;
   category: string | null;
+  projectType?: string | null;
   year: string | null;
   description: string | null;
   tags: string[];

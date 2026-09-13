@@ -14,6 +14,47 @@ import { gsap, ScrollTrigger } from "@/lib/gsap";
 import type { WorkProject } from "./page";
 import WorkHeroCards from "./WorkHeroCards";
 
+const WORK_TYPE_ORDER = ["website", "ecommerce", "web_app"] as const;
+const WORK_TYPE_LABELS: Record<string, string> = {
+  website: "Websites",
+  ecommerce: "E-commerce",
+  web_app: "Platforms",
+};
+
+function projectTypeOf(project: WorkProject) {
+  const explicitType = project.projectType?.trim().toLowerCase();
+  if (explicitType) return explicitType;
+
+  const category = project.category?.toLowerCase() ?? "";
+  if (category.includes("e-commerce") || category.includes("ecommerce")) return "ecommerce";
+  if (category.includes("platform") || category.includes("app")) return "web_app";
+  return "website";
+}
+
+function projectTypeLabel(type: string) {
+  return WORK_TYPE_LABELS[type] ?? type.replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+// Short form for the archive tile, where the label sits beside the year on one
+// mono line and the plural reads wrong.
+const WORK_TYPE_SHORT: Record<string, string> = {
+  website: "Site",
+  ecommerce: "Shop",
+  web_app: "Platform",
+};
+
+function hostOf(url: string | null | undefined) {
+  if (!url) return null;
+  const bare = url
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/^www\./i, "")
+    .replace(/\/+$/, "");
+  return bare || null;
+}
+
+type WorkTypeOption = { key: string; label: string; count: number };
+
 // ─────────────────────────────────────────────────────────────────────
 // Filter drawer — slides in from the right
 // ─────────────────────────────────────────────────────────────────────
@@ -115,15 +156,392 @@ function FilterPanel({
   );
 }
 
+function ImmersiveWorkHero({
+  projects,
+  typeOptions,
+}: {
+  projects: WorkProject[];
+  typeOptions: WorkTypeOption[];
+}) {
+  const projectCount = projects.length;
+  const liveCount = projects.filter((project) => Boolean(project.liveUrl)).length;
+  const formatOptions = typeOptions.filter((option) => option.key !== "All");
+
+  return (
+    <section
+      id="work-intro"
+      aria-labelledby="immersive-work-hero-title"
+      className="relative isolate overflow-hidden border-b border-[var(--border)]"
+    >
+      <div className="pointer-events-none absolute -right-[18%] top-[4%] h-[min(78vw,58rem)] w-[min(78vw,58rem)] rounded-full bg-[radial-gradient(circle,rgba(var(--teal-rgb),0.18),transparent_60%)] blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-18%] left-[-12%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(245,184,94,0.08),transparent_64%)] blur-3xl" />
+
+      <div className="wrap relative grid min-h-[min(680px,calc(100svh-8rem))] items-center gap-14 py-[clamp(6rem,10vw,8.5rem)] lg:grid-cols-[minmax(0,1.04fr)_minmax(0,1fr)] lg:gap-14">
+        <div className="relative z-10 max-w-2xl">
+          <p data-work-hero-enter className="eyebrow mb-6 opacity-0 [animation:work-signal-enter_0.85s_0.05s_cubic-bezier(.16,1,.3,1)_forwards]">
+            NOX / Work / Signal room
+          </p>
+          {/* Sized against the column it sits in (~0.5 of the wrap), not the
+              viewport — a vw-based scale here forced "has a pulse." onto its
+              own two lines and pushed the hero past 1200px tall. */}
+          <h1
+            id="immersive-work-hero-title"
+            data-work-hero-enter
+            className="hed text-[clamp(3.4rem,6.2vw,6.6rem)] leading-[0.82] tracking-[-0.05em] text-[var(--fg)] opacity-0 [animation:work-signal-enter_1s_0.12s_cubic-bezier(.16,1,.3,1)_forwards]"
+          >
+            The work
+            <br />
+            <span className="text-[var(--teal)]">has a pulse.</span>
+          </h1>
+          <p
+            data-work-hero-enter
+            className="mt-8 max-w-md text-[0.95rem] leading-[1.8] text-[var(--body)] opacity-0 [animation:work-signal-enter_0.85s_0.24s_cubic-bezier(.16,1,.3,1)_forwards]"
+          >
+            A living index of digital experiences built for the moment they launch — and the feeling that stays after.
+          </p>
+          <a
+            data-work-hero-enter
+            href="#work"
+            className="group mt-9 inline-flex items-center gap-3 border border-[rgba(var(--teal-rgb),0.42)] bg-[rgba(var(--teal-rgb),0.06)] px-4 py-3 font-mono text-[0.52rem] uppercase tracking-[0.26em] text-[var(--teal)] opacity-0 transition-[background,border-color,color,transform] duration-300 [animation:work-signal-enter_0.85s_0.34s_cubic-bezier(.16,1,.3,1)_forwards] hover:-translate-y-0.5 hover:border-[var(--teal)] hover:bg-[rgba(var(--teal-rgb),0.13)] hover:text-[var(--fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]"
+          >
+            Enter the archive
+            <span className="text-base leading-none transition-transform duration-300 group-hover:translate-y-0.5">↓</span>
+          </a>
+
+          <div
+            data-work-hero-enter
+            className="mt-14 grid max-w-md grid-cols-3 border-y border-[rgba(var(--teal-rgb),0.2)] opacity-0 [animation:work-signal-enter_0.85s_0.44s_cubic-bezier(.16,1,.3,1)_forwards]"
+          >
+            <div className="border-r border-[rgba(var(--teal-rgb),0.2)] py-4 pr-4">
+              <strong className="hed block text-[clamp(2rem,4vw,3.3rem)] leading-none text-[var(--fg)]">{String(projectCount).padStart(2, "0")}</strong>
+              <span className="mt-2 block font-mono text-[0.46rem] uppercase tracking-[0.22em] text-[var(--body)]">projects</span>
+            </div>
+            <div className="border-r border-[rgba(var(--teal-rgb),0.2)] px-4 py-4">
+              <strong className="hed block text-[clamp(2rem,4vw,3.3rem)] leading-none text-[var(--fg)]">{String(liveCount).padStart(2, "0")}</strong>
+              <span className="mt-2 block font-mono text-[0.46rem] uppercase tracking-[0.22em] text-[var(--body)]">live links</span>
+            </div>
+            <div className="py-4 pl-4">
+              <strong className="hed block text-[clamp(2rem,4vw,3.3rem)] leading-none text-[var(--fg)]">{String(formatOptions.length).padStart(2, "0")}</strong>
+              <span className="mt-2 block font-mono text-[0.46rem] uppercase tracking-[0.22em] text-[var(--body)]">formats</span>
+            </div>
+          </div>
+        </div>
+
+        {/* The board replaces the earlier radar stage. The radar's rings,
+            sweep and "01 / WEB" nodes were invented data, and its centre
+            repeated the project count already sitting in the tally to the
+            left. This shows the real thing instead: every domain in the
+            index, scrolling, with its actual live state. Duplicated once so
+            the -50% translate loops seamlessly.
+
+            aria-hidden because the archive below carries the same 36 entries
+            as real, reachable links — announcing them twice helps nobody. */}
+        <div
+          data-work-hero-enter
+          className="work-board relative w-full opacity-0 [animation:work-signal-enter_1.1s_0.28s_cubic-bezier(.16,1,.3,1)_forwards]"
+          aria-hidden="true"
+        >
+          <div className="work-board__bar">
+            <span>NOX / Live index</span>
+            <span className="work-board__count">
+              <i />
+              {String(liveCount).padStart(2, "0")} of {String(projectCount).padStart(2, "0")} live
+            </span>
+          </div>
+
+          <div className="work-board__viewport">
+            <div className="work-board__track">
+              {[...projects, ...projects].map((project, index) => {
+                const host = hostOf(project.liveUrl);
+                return (
+                  <div className="work-board__row" key={`${project.id}-${index}`}>
+                    <i className={`work-board__pip${host ? "" : " work-board__pip--off"}`} />
+                    <span className="work-board__host">{host ?? project.title}</span>
+                    <span className="work-board__type">
+                      {WORK_TYPE_SHORT[projectTypeOf(project)] ?? projectTypeLabel(projectTypeOf(project))}
+                    </span>
+                    <span className="work-board__year">{project.year ?? "—"}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="work-board__foot">
+            {formatOptions.map((option) => (
+              <span key={option.key} className="work-board__format">
+                {option.label} <b>{String(option.count).padStart(2, "0")}</b>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// The hero already made the statement; this is the instrument label for the
+// index below it, not a second headline.
+function ImmersiveArchiveLabel({
+  projectCount,
+  liveCount,
+}: {
+  projectCount: number;
+  liveCount: number;
+}) {
+  return (
+    <div
+      data-work-entrance
+      className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-b border-[rgba(var(--teal-rgb),0.22)] pb-4"
+    >
+      <h2 className="eyebrow !mb-0">NOX / Work archive</h2>
+      <p className="font-mono text-[0.66rem] uppercase tracking-[0.2em] text-[var(--body)]">
+        <span className="text-[var(--fg)]">{String(projectCount).padStart(2, "0")}</span> indexed
+        <span className="mx-2.5 opacity-40" aria-hidden="true">/</span>
+        <span className="text-[var(--teal)]">{String(liveCount).padStart(2, "0")}</span> live right now
+      </p>
+    </div>
+  );
+}
+
+// Rendered as a direct child of `.wrap`, alongside the grid, on purpose: a
+// sticky element can only travel inside its own containing block, so while
+// this lived in the header wrapper it unstuck after ~170px and spent the whole
+// archive scrolled off. Pinned at 66px — the compact navbar's height — so it
+// parks flush under the nav instead of sliding beneath it.
+function ImmersiveArchiveBar({
+  filteredCount,
+  searchQuery,
+  onSearchChange,
+  typeOptions,
+  activeType,
+  onTypeChange,
+  statusOptions,
+  activeStatus,
+  onStatusChange,
+  hasFilters,
+  onClear,
+}: {
+  filteredCount: number;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  typeOptions: WorkTypeOption[];
+  activeType: string;
+  onTypeChange: (value: string) => void;
+  statusOptions: WorkTypeOption[];
+  activeStatus: string;
+  onStatusChange: (value: string) => void;
+  hasFilters: boolean;
+  onClear: () => void;
+}) {
+  return (
+    <>
+      {/* No top margin on the sticky box: it is pinned by its margin box, so
+          an `mt-*` here would park the bar that many px below the nav and let
+          content scroll through the gap. Spacing lives on the label row. */}
+      <div
+        data-work-entrance
+        className="mb-9 border-b border-[rgba(var(--teal-rgb),0.2)] bg-[rgba(var(--bg-rgb),0.92)] py-3.5 backdrop-blur-xl md:sticky md:top-[66px] md:z-30"
+      >
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+          <label className="relative flex min-h-[3.25rem] flex-1 items-center border border-[rgba(var(--teal-rgb),0.2)] bg-[rgba(var(--bg-rgb),0.54)] transition-colors focus-within:border-[var(--teal)]">
+            <span className="sr-only">Search projects</span>
+            <svg className="ml-4 shrink-0 text-[var(--teal)]" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+              <circle cx="7" cy="7" r="4.5" />
+              <path d="m10.5 10.5 3.2 3.2" />
+            </svg>
+            <input
+              value={searchQuery}
+              onChange={(event) => onSearchChange(event.target.value)}
+              placeholder="Search projects, sectors, or domains"
+              className="min-w-0 flex-1 bg-transparent px-3.5 py-3 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-[var(--fg)] outline-none placeholder:text-[var(--body)] placeholder:opacity-70"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => onSearchChange("")}
+                className="mr-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--border)] text-[var(--body)] transition-colors hover:border-[var(--teal)] hover:text-[var(--teal)]"
+                aria-label="Clear search"
+              >
+                <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                  <path d="M1 1l8 8M9 1L1 9" />
+                </svg>
+              </button>
+            ) : null}
+          </label>
+
+          {/* Status, where the sector dropdown used to be. Sector had 27
+              distinct values across 36 projects — 24 of them matching exactly
+              one — so it listed near-unique strings rather than grouping
+              anything, and search covers those far better. Live / in build is
+              the split that actually has two sides, and it is the page's
+              whole claim. */}
+          <div
+            className="flex shrink-0 gap-2 overflow-x-auto pb-0.5"
+            role="group"
+            aria-label="Filter by status"
+          >
+            {statusOptions.map((option) => (
+              <FilterChip
+                key={option.key}
+                option={option}
+                isActive={activeStatus === option.key}
+                onSelect={onStatusChange}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          {/* The chips name themselves and carry their own counts, so the
+              "Filter by format" caption above them was doing no work. */}
+          <div className="flex min-w-0 gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by format">
+            {typeOptions.map((option) => (
+              <FilterChip
+                key={option.key}
+                option={option}
+                isActive={activeType === option.key}
+                onSelect={onTypeChange}
+              />
+            ))}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-5 font-mono text-[0.64rem] uppercase tracking-[0.16em]">
+            <span className="text-[var(--body)]">
+              <span className="text-[var(--fg)]">{String(filteredCount).padStart(2, "0")}</span> shown
+            </span>
+            {hasFilters ? (
+              <button
+                type="button"
+                onClick={onClear}
+                className="flex items-center gap-2 text-[var(--teal)] transition-colors hover:text-[var(--fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]"
+              >
+                Clear filters
+                <span aria-hidden="true">↗</span>
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <p className="sr-only" aria-live="polite">
+        Showing {filteredCount} project{filteredCount === 1 ? "" : "s"}.
+      </p>
+    </>
+  );
+}
+
+function FilterChip({
+  option,
+  isActive,
+  onSelect,
+}: {
+  option: WorkTypeOption;
+  isActive: boolean;
+  onSelect: (key: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={isActive}
+      onClick={() => onSelect(option.key)}
+      className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 font-mono text-[0.64rem] uppercase tracking-[0.12em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)] ${
+        isActive
+          ? "border-[var(--teal)] bg-[rgba(var(--teal-rgb),0.14)] text-[var(--teal)] shadow-[0_0_18px_rgba(var(--teal-rgb),0.12)]"
+          : "border-[var(--border)] text-[var(--body)] hover:border-[rgba(var(--teal-rgb),0.45)] hover:text-[var(--fg)]"
+      }`}
+    >
+      {option.label}
+      <span className={isActive ? "text-[var(--fg)]" : "opacity-55"}>{String(option.count).padStart(2, "0")}</span>
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Archive tile — the immersive index unit.
+//
+// Only 2 of the 36 portfolio entries carry a cover image, so the framed
+// 16:9 card used elsewhere rendered 34 identical placeholder panels and
+// pushed the archive past 10,000px of scroll. The tile drops the image
+// well and leads with what every entry actually has: a name, a sector,
+// and — for 33 of them — a live domain. Where a cover image does exist it
+// becomes a faint wash behind the text, so the grid stays on one rhythm.
+// ─────────────────────────────────────────────────────────────────────
+function ArchiveTile({
+  project,
+  projectBasePath,
+}: {
+  project: WorkProject;
+  projectBasePath?: string;
+}) {
+  const host = hostOf(project.liveUrl);
+  const type = projectTypeOf(project);
+  const href = projectBasePath
+    ? `${projectBasePath}/${encodeURIComponent(project.slug ?? project.id)}`
+    : `/work/${project.slug ?? project.id}`;
+
+  return (
+    <article data-card className="atile group" style={{ "--col-span": 1 } as CSSProperties}>
+      {project.coverImage ? (
+        <span
+          className="atile__wash"
+          style={{ backgroundImage: `url("${project.coverImage}")` }}
+          aria-hidden="true"
+        />
+      ) : null}
+
+      <span className="atile__tag">
+        {WORK_TYPE_SHORT[type] ?? projectTypeLabel(type)}
+        <b aria-hidden="true">·</b>
+        {project.year ? `’${project.year.slice(-2)}` : "—"}
+      </span>
+
+      <h3 className="atile__name hed">
+        <Link href={href} className="atile__link">
+          {project.title}
+        </Link>
+      </h3>
+
+      <p className="atile__sector">{project.category ?? "Digital experience"}</p>
+
+      {/* The address strip. A studio's deliverable is a running domain, so the
+          tile ends in the thing it shipped, recessed like a real address
+          field. For the three not yet public the field is simply empty. */}
+      {host ? (
+        <a
+          href={project.liveUrl!}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="atile__addr"
+        >
+          <i className="atile__pip" aria-hidden="true" />
+          <span className="atile__host">{host}</span>
+          <span className="atile__ext" aria-hidden="true">↗</span>
+          <span className="sr-only">(opens in a new tab)</span>
+        </a>
+      ) : (
+        <span className="atile__addr atile__addr--off">
+          <i className="atile__pip atile__pip--off" aria-hidden="true" />
+          <span className="atile__host">Not live yet</span>
+        </span>
+      )}
+    </article>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Project card — framed, matches the home immersive work-carousel cards
 // ─────────────────────────────────────────────────────────────────────
 function ProjectCard({
   project,
   filteredIndex,
+  revealOnScroll = true,
+  projectBasePath,
 }: {
   project: WorkProject;
   filteredIndex: number;
+  revealOnScroll?: boolean;
+  projectBasePath?: string;
 }) {
   const num = String(filteredIndex + 1).padStart(2, "0");
   const [imageFailed, setImageFailed] = useState(false);
@@ -134,10 +552,10 @@ function ProjectCard({
   // the same rule falls back to a full-width row below 768px).
   return (
     <Link
-      href={`/work/${project.slug ?? project.id}`}
+      href={projectBasePath ? `${projectBasePath}/${encodeURIComponent(project.slug ?? project.id)}` : `/work/${project.slug ?? project.id}`}
       data-card
       className="group relative block focus-visible:outline-none"
-      style={{ clipPath: "inset(0 0 100% 0)", willChange: "clip-path, transform", "--col-span": 6 } as CSSProperties}
+      style={{ clipPath: revealOnScroll ? "inset(0 0 100% 0)" : "inset(0 0 0% 0)", willChange: "clip-path, transform", "--col-span": 6 } as CSSProperties}
       aria-label={`View ${project.title}`}
     >
       <div className="flex h-full flex-col overflow-hidden rounded-[1.2rem] border border-[rgba(var(--teal-rgb),0.18)] bg-[linear-gradient(145deg,rgba(var(--surface-rgb),0.92),rgba(var(--bg-rgb),0.96))] transition-[border-color,transform,box-shadow] duration-500 group-hover:-translate-y-1 group-hover:border-[rgba(var(--teal-rgb),0.5)] group-hover:shadow-[inset_0_0_0_1px_rgba(var(--teal-rgb),0.22)] group-focus-visible:ring-2 group-focus-visible:ring-[var(--teal)]">
@@ -306,9 +724,21 @@ function WorkHero({ projects }: { projects: WorkProject[] }) {
 // ─────────────────────────────────────────────────────────────────────
 // Main
 // ─────────────────────────────────────────────────────────────────────
-export default function WorkListContent({ projects }: { projects: WorkProject[] }) {
+export default function WorkListContent({
+  projects,
+  variant = "default",
+  projectBasePath,
+}: {
+  projects: WorkProject[];
+  variant?: "default" | "immersive";
+  projectBasePath?: string;
+}) {
+  const isImmersiveArchive = variant === "immersive";
   const [activeFilter, setActiveFilter] = useState("All");
-  const [filterOpen, setFilterOpen]     = useState(false);
+  const [activeType, setActiveType] = useState("All");
+  const [activeStatus, setActiveStatus] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const gridRef        = useRef<HTMLDivElement>(null);
   const headerRef      = useRef<HTMLDivElement>(null);
@@ -324,10 +754,67 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
     return list;
   }, [projects]);
 
-  const filteredProjects = useMemo(
-    () => activeFilter === "All" ? projects : projects.filter((p) => p.category === activeFilter),
-    [projects, activeFilter]
+  const liveProjectCount = useMemo(
+    () => projects.filter((project) => Boolean(project.liveUrl)).length,
+    [projects]
   );
+
+  // Live / in build — the one split in this data with two real sides. Sector
+  // was 27 distinct values across 36 projects (24 of them matching exactly
+  // one), so it grouped nothing; search covers those far better.
+  const statusOptions = useMemo<WorkTypeOption[]>(() => {
+    const live = projects.filter((project) => Boolean(project.liveUrl)).length;
+    return [
+      { key: "All", label: "Any status", count: projects.length },
+      { key: "live", label: "Live", count: live },
+      { key: "building", label: "In build", count: projects.length - live },
+    ].filter((option) => option.count > 0);
+  }, [projects]);
+
+  const typeOptions = useMemo(() => {
+    const counts = projects.reduce<Record<string, number>>((result, project) => {
+      const type = projectTypeOf(project);
+      result[type] = (result[type] ?? 0) + 1;
+      return result;
+    }, {});
+    const remainingTypes = Object.keys(counts).filter((type) => !WORK_TYPE_ORDER.includes(type as (typeof WORK_TYPE_ORDER)[number]));
+    const orderedTypes = [...WORK_TYPE_ORDER, ...remainingTypes];
+
+    return [
+      { key: "All", label: "All work", count: projects.length },
+      ...orderedTypes
+        .filter((type) => counts[type])
+        .map((type) => ({ key: type, label: projectTypeLabel(type), count: counts[type] })),
+    ];
+  }, [projects]);
+
+  const filteredProjects = useMemo(() => {
+    if (!isImmersiveArchive) {
+      return activeFilter === "All" ? projects : projects.filter((project) => project.category === activeFilter);
+    }
+
+    const query = searchQuery.trim().toLowerCase();
+    return projects.filter((project) => {
+      if (activeType !== "All" && projectTypeOf(project) !== activeType) return false;
+      if (activeStatus !== "All" && (activeStatus === "live") !== Boolean(project.liveUrl)) return false;
+      if (!query) return true;
+
+      return [
+        project.title,
+        project.category,
+        project.description,
+        project.year,
+        // The domain is the archive's primary identifier, so it has to be
+        // searchable — the placeholder promises it.
+        hostOf(project.liveUrl),
+        ...project.tags,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+    });
+  }, [activeStatus, activeFilter, activeType, isImmersiveArchive, projects, searchQuery]);
 
   // Scroll reveal
   useEffect(() => {
@@ -347,17 +834,34 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
     return () => ctx.revert();
   }, []);
 
-  // "Proof in motion" header — scroll entrance (eyebrow → heading → filter rise in)
+  // Header entrance: the immersive archive opens immediately; the legacy view
+  // keeps its scroll-triggered reveal below the full-height carousel.
   useEffect(() => {
     const head = headerRef.current;
     if (!head) return;
+    // The immersive filter bar is a sibling of the header (it needs `.wrap` as
+    // its sticky containing block), so scope the query to the section.
+    const scope = isImmersiveArchive ? head.closest("section") ?? head : head;
+    const entranceTargets = Array.from(scope.querySelectorAll<HTMLElement>("[data-work-entrance]"));
     const eyebrow = head.querySelector<HTMLElement>(".eyebrow");
-    const title   = head.querySelector<HTMLElement>("h2");
-    const filter  = head.querySelector<HTMLElement>("button");
-    const targets = [eyebrow, title, filter].filter(Boolean) as HTMLElement[];
+    const title = head.querySelector<HTMLElement>("h2");
+    const filter = head.querySelector<HTMLElement>("button");
+    const targets = entranceTargets.length
+      ? entranceTargets
+      : [eyebrow, title, filter].filter(Boolean) as HTMLElement[];
     if (!targets.length) return;
     const ctx = gsap.context(() => {
       gsap.set(head, { autoAlpha: 1 });
+
+      if (isImmersiveArchive) {
+        gsap.fromTo(
+          targets,
+          { autoAlpha: 0, y: 24 },
+          { autoAlpha: 1, y: 0, duration: 0.75, stagger: 0.08, ease: "power3.out" }
+        );
+        return;
+      }
+
       gsap.set(targets, { autoAlpha: 0, y: 44 });
       if (title) gsap.set(title, { y: 66 });            // heading travels a touch further
       ScrollTrigger.create({
@@ -371,33 +875,411 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
       });
     }, head);
     return () => ctx.revert();
-  }, []);
+  }, [isImmersiveArchive]);
 
-  // Filter
-  const handleFilter = useCallback(async (cat: string) => {
-    if (cat === activeFilter || isAnimating.current) return;
+  const transitionResults = useCallback(async (change: () => void) => {
+    if (isAnimating.current) return;
     isAnimating.current = true;
 
-    const grid  = gridRef.current;
+    const grid = gridRef.current;
     const cards = Array.from(grid?.querySelectorAll<HTMLElement>("[data-card]") ?? []);
-    if (cards.length) {
-      await gsap.to(cards, { autoAlpha: 0, y: -16, scale: 0.96, duration: 0.20, stagger: { amount: 0.1, from: "start" }, ease: "power2.in" });
-    }
-    setActiveFilter(cat);
-    await new Promise<void>((r) => requestAnimationFrame(() => { requestAnimationFrame(() => r()); }));
+    try {
+      if (cards.length) {
+        await gsap.to(cards, { autoAlpha: 0, y: -16, scale: 0.96, duration: 0.20, stagger: { amount: 0.1, from: "start" }, ease: "power2.in" });
+      }
+      change();
+      await new Promise<void>((resolve) => requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve());
+      }));
 
-    const newCards = Array.from(grid?.querySelectorAll<HTMLElement>("[data-card]") ?? []);
-    if (newCards.length) {
-      gsap.set(newCards, { autoAlpha: 0, y: 20, scale: 0.96, clipPath: "inset(0 0 0% 0)" });
-      await gsap.to(newCards, { autoAlpha: 1, y: 0, scale: 1, duration: 0.36, stagger: { amount: 0.28, from: "start" }, ease: "power3.out" });
+      const newCards = Array.from(grid?.querySelectorAll<HTMLElement>("[data-card]") ?? []);
+      if (newCards.length) {
+        gsap.set(newCards, { autoAlpha: 0, y: 20, scale: 0.96, clipPath: "inset(0 0 0% 0)" });
+        await gsap.to(newCards, { autoAlpha: 1, y: 0, scale: 1, duration: 0.36, stagger: { amount: 0.28, from: "start" }, ease: "power3.out" });
+      }
+    } finally {
+      isAnimating.current = false;
     }
-    isAnimating.current = false;
-  }, [activeFilter]);
+  }, []);
+
+  const handleFilter = useCallback((cat: string) => {
+    if (cat === activeFilter) return;
+    void transitionResults(() => setActiveFilter(cat));
+  }, [activeFilter, transitionResults]);
+
+  const handleTypeChange = useCallback((type: string) => {
+    if (type === activeType) return;
+    void transitionResults(() => setActiveType(type));
+  }, [activeType, transitionResults]);
+
+  const handleStatusChange = useCallback((status: string) => {
+    if (status === activeStatus) return;
+    void transitionResults(() => setActiveStatus(status));
+  }, [activeStatus, transitionResults]);
+
+  const clearImmersiveFilters = useCallback(() => {
+    if (activeType === "All" && activeStatus === "All" && !searchQuery) return;
+    void transitionResults(() => {
+      setActiveType("All");
+      setActiveStatus("All");
+      setSearchQuery("");
+    });
+  }, [activeStatus, activeType, searchQuery, transitionResults]);
+
+  const hasImmersiveFilters = activeType !== "All" || activeStatus !== "All" || Boolean(searchQuery.trim());
 
   return (
     <>
       {/* ── CSS ── */}
       <style>{`
+        @keyframes work-signal-enter {
+          from { opacity: 0; transform: translate3d(0, 28px, 0); }
+          to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+
+        /* ── Archive grid — 3 across on desktop ────────────────────────
+           Fixed column counts rather than auto-fill: the tile is the unit
+           the layout is tuned around, and auto-fill kept pushing it to 5
+           narrow columns on a wide display. */
+        .archive-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr);
+          gap: 1rem;
+        }
+        /* 768px, not 640: below it the global [data-card] rule forces
+           grid-column 1 / -1, so a 2-col template there would just leave
+           every tile spanning both tracks. */
+        @media (min-width: 768px) {
+          .archive-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.25rem;
+          }
+        }
+        @media (min-width: 1024px) {
+          .archive-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        /* ── Archive tile ──────────────────────────────────────────────
+           A plate, not a bordered box: soft surface gradient plus a 1px
+           highlight along the top edge so it reads as an object catching
+           light. Hierarchy runs name → address → sector → tag, instead of
+           the four equal-weight bands the earlier version stacked up. */
+        .atile {
+          position: relative;
+          isolation: isolate;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.55rem;
+          overflow: hidden;
+          padding: 1.5rem 1.45rem 1.35rem;
+          border-radius: 14px;
+          border: 1px solid rgba(var(--teal-rgb), 0.13);
+          background:
+            linear-gradient(168deg, rgba(var(--surface-rgb), 0.9) 0%, rgba(var(--bg-rgb), 0.97) 62%);
+          box-shadow:
+            inset 0 1px 0 rgba(184, 255, 224, 0.09),
+            0 1px 2px rgba(0, 0, 0, 0.5);
+          transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s cubic-bezier(.16,1,.3,1);
+        }
+        .atile:hover {
+          transform: translateY(-3px);
+          border-color: rgba(var(--teal-rgb), 0.4);
+          box-shadow:
+            inset 0 1px 0 rgba(184, 255, 224, 0.16),
+            0 16px 40px rgba(0, 0, 0, 0.55),
+            0 0 34px rgba(var(--teal-rgb), 0.09);
+        }
+        .atile:focus-within {
+          border-color: var(--teal);
+          outline: 2px solid var(--teal);
+          outline-offset: 3px;
+        }
+        /* Cover art, where it exists, sits behind the text rather than
+           setting the tile's height — the grid keeps one rhythm. */
+        .atile__wash {
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          background-size: cover;
+          background-position: center;
+          opacity: 0.1;
+          filter: grayscale(1) contrast(1.15);
+          transition: opacity 0.5s ease, filter 0.5s ease;
+        }
+        .atile:hover .atile__wash {
+          opacity: 0.22;
+          filter: grayscale(0.4);
+        }
+
+        /* Format + year, deliberately the quietest thing on the tile. */
+        .atile__tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 0.3rem 0.6rem;
+          border: 1px solid rgba(var(--teal-rgb), 0.18);
+          border-radius: 999px;
+          font-family: var(--font-mono-next), monospace;
+          font-size: 0.52rem;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--body);
+        }
+        .atile__tag b {
+          font-weight: 400;
+          opacity: 0.4;
+        }
+
+        /* The focal point: bone, display face, allowed to be big. */
+        .atile__name {
+          margin-top: 0.55rem;
+          font-size: clamp(1.35rem, 1.9vw, 1.72rem);
+          line-height: 1.04;
+          letter-spacing: -0.012em;
+          text-transform: uppercase;
+          color: var(--fg);
+          text-wrap: balance;
+        }
+        .atile__link {
+          color: inherit;
+          outline: none;
+        }
+        /* Stretched hit area — the whole tile opens the case page, while the
+           address strip below stays independently clickable. */
+        .atile__link::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+        }
+        .atile__sector {
+          font-size: 0.84rem;
+          line-height: 1.5;
+          color: var(--body);
+        }
+
+        /* Signature: the recessed address field. */
+        .atile__addr {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          gap: 0.55rem;
+          width: 100%;
+          margin-top: auto;
+          padding: 0.62rem 0.75rem;
+          border: 1px solid rgba(var(--teal-rgb), 0.2);
+          border-radius: 8px;
+          background: rgba(0, 0, 0, 0.42);
+          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+          font-family: var(--font-mono-next), monospace;
+          font-size: 0.76rem;
+          letter-spacing: 0.01em;
+          color: var(--teal);
+          transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+        }
+        .atile__addr:not(.atile__addr--off):hover {
+          border-color: var(--teal);
+          background: rgba(var(--teal-rgb), 0.09);
+          color: var(--fg);
+        }
+        .atile__addr:focus-visible {
+          outline: 2px solid var(--teal);
+          outline-offset: 2px;
+        }
+        .atile__addr--off {
+          border-style: dashed;
+          border-color: rgba(245, 184, 94, 0.32);
+          color: rgba(245, 184, 94, 0.72);
+        }
+        .atile__pip {
+          flex-shrink: 0;
+          width: 0.42rem;
+          height: 0.42rem;
+          border-radius: 50%;
+          background: var(--teal);
+          box-shadow: 0 0 9px rgba(var(--teal-rgb), 0.9);
+        }
+        .atile__pip--off {
+          background: transparent;
+          border: 1px solid rgba(245, 184, 94, 0.75);
+          box-shadow: none;
+        }
+        .atile__host {
+          min-width: 0;
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .atile__ext {
+          flex-shrink: 0;
+          opacity: 0.5;
+          transition: opacity 0.3s ease, transform 0.3s cubic-bezier(.16,1,.3,1);
+        }
+        .atile__addr:hover .atile__ext {
+          opacity: 1;
+          transform: translate(2px, -2px);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .atile,
+          .atile__wash,
+          .atile__ext,
+          .atile__addr {
+            transition: none;
+          }
+          .atile:hover {
+            transform: none;
+          }
+        }
+
+        /* ── Live index board ──────────────────────────────────────────
+           An opaque instrument panel, so the ambient blob field reads
+           behind it rather than through it. */
+        .work-board {
+          overflow: hidden;
+          isolation: isolate;
+          border: 1px solid rgba(var(--teal-rgb), 0.26);
+          background:
+            linear-gradient(165deg, rgba(var(--surface-rgb), 0.96), rgba(3, 8, 6, 0.99));
+          box-shadow:
+            inset 0 0 0 1px rgba(184, 255, 224, 0.05),
+            0 26px 90px rgba(0, 0, 0, 0.55),
+            0 0 70px rgba(var(--teal-rgb), 0.07);
+        }
+        .work-board::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          z-index: 3;
+          pointer-events: none;
+          background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 7px);
+          mix-blend-mode: screen;
+          opacity: 0.4;
+        }
+        .work-board__bar,
+        .work-board__foot {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          padding: 0.85rem clamp(1rem, 2.2vw, 1.5rem);
+          font-family: var(--font-mono-next), monospace;
+          font-size: 0.58rem;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: rgba(248, 245, 238, 0.6);
+        }
+        .work-board__bar {
+          border-bottom: 1px solid rgba(var(--teal-rgb), 0.18);
+        }
+        .work-board__count {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: var(--teal);
+        }
+        .work-board__count i {
+          width: 0.36rem;
+          height: 0.36rem;
+          border-radius: 50%;
+          background: var(--teal);
+          box-shadow: 0 0 10px var(--teal);
+        }
+        .work-board__viewport {
+          position: relative;
+          height: clamp(17rem, 38vh, 25rem);
+          overflow: hidden;
+          -webkit-mask-image: linear-gradient(180deg, transparent, #000 13%, #000 87%, transparent);
+          mask-image: linear-gradient(180deg, transparent, #000 13%, #000 87%, transparent);
+        }
+        .work-board__track {
+          display: flex;
+          flex-direction: column;
+          animation: work-board-scroll 78s linear infinite;
+        }
+        .work-board:hover .work-board__track {
+          animation-play-state: paused;
+        }
+        @keyframes work-board-scroll {
+          from { transform: translateY(0); }
+          to   { transform: translateY(-50%); }
+        }
+        .work-board__row {
+          display: grid;
+          grid-template-columns: 0.45rem minmax(0, 1fr) auto 3rem;
+          align-items: center;
+          gap: 0.85rem;
+          padding: 0.72rem clamp(1rem, 2.2vw, 1.5rem);
+          border-bottom: 1px solid rgba(var(--teal-rgb), 0.08);
+          font-family: var(--font-mono-next), monospace;
+          font-size: 0.8rem;
+          line-height: 1.2;
+        }
+        .work-board__pip {
+          width: 0.4rem;
+          height: 0.4rem;
+          border-radius: 50%;
+          background: var(--teal);
+          box-shadow: 0 0 9px rgba(var(--teal-rgb), 0.85);
+        }
+        .work-board__pip--off {
+          background: transparent;
+          border: 1px solid rgba(245, 184, 94, 0.7);
+          box-shadow: none;
+        }
+        .work-board__host {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          color: rgba(248, 245, 238, 0.9);
+        }
+        .work-board__type,
+        .work-board__year {
+          font-size: 0.6rem;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--body);
+          white-space: nowrap;
+        }
+        .work-board__year {
+          text-align: right;
+          color: rgba(184, 255, 224, 0.55);
+        }
+        .work-board__foot {
+          border-top: 1px solid rgba(var(--teal-rgb), 0.18);
+        }
+        .work-board__format {
+          color: rgba(184, 255, 224, 0.66);
+          white-space: nowrap;
+        }
+        .work-board__format b {
+          font-weight: 400;
+          color: var(--fg);
+        }
+        @media (max-width: 767px) {
+          .work-board__viewport {
+            height: 15rem;
+          }
+          .work-board__foot {
+            gap: 0.6rem;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-work-hero-enter] {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+          }
+          .work-board__track {
+            animation: none !important;
+          }
+        }
+
         @keyframes work-scan {
           0%   { top:-2px;  opacity:0.0; }
           5%   { opacity:0.9; }
@@ -716,67 +1598,140 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
       `}</style>
 
       {/* ── Hero ── */}
-      <WorkHero projects={projects} />
+      {isImmersiveArchive ? (
+        <ImmersiveWorkHero projects={projects} typeOptions={typeOptions} />
+      ) : (
+        <WorkHero projects={projects} />
+      )}
 
       {/* ── Grid section ── */}
-      <section id="work" className="section-py border-b border-[var(--border)]" style={{ background: "transparent" }}>
+      <section
+        id="work"
+        className={isImmersiveArchive
+          ? "border-b border-[var(--border)] pb-[clamp(5rem,10vw,9rem)] pt-[clamp(5rem,8vw,7rem)]"
+          : "section-py border-b border-[var(--border)]"}
+        style={{ background: "transparent" }}
+      >
         <div className="wrap">
 
-          {/* Section header + filter — heading centered, GSAP scroll entrance */}
-          <div ref={headerRef} className="mb-10 flex flex-col items-center gap-5 text-center" style={{ visibility: "hidden" }}>
-            <div>
-              <p className="eyebrow mb-3">All projects</p>
-              <h2 className="hed text-[clamp(2.7rem,5.4vw,6rem)] leading-[0.88] text-[#F8F5EE]">
-                Proof in<br />
-                <span className="text-[var(--teal)]">motion.</span>
-              </h2>
+          {/* Archive header + filter. Immersive opens here; the legacy view keeps its centered header. */}
+          <div
+            ref={headerRef}
+            className={isImmersiveArchive ? "mb-5" : "mb-10 flex flex-col items-center gap-5 text-center"}
+            style={{ visibility: isImmersiveArchive ? "visible" : "hidden" }}
+          >
+            {isImmersiveArchive ? (
+              <ImmersiveArchiveLabel
+                projectCount={projects.length}
+                liveCount={liveProjectCount}
+              />
+            ) : (
+              <>
+                <div>
+                  <p data-work-entrance className="eyebrow mb-3">All projects</p>
+                  <h2 data-work-entrance className="hed text-[clamp(2.7rem,5.4vw,6rem)] leading-[0.88] text-[#F8F5EE]">
+                    Proof in<br />
+                    <span className="text-[var(--teal)]">motion.</span>
+                  </h2>
+                </div>
+                <button
+                  data-work-entrance
+                  onClick={() => setFilterOpen(true)}
+                  className="flex w-fit items-center gap-2 rounded-full border border-[var(--border)] bg-black/24 px-4 py-2 font-mono text-[0.50rem] uppercase tracking-[0.22em] text-[var(--body)] backdrop-blur-md transition-all duration-200 hover:border-[var(--teal)] hover:text-[var(--teal)]"
+                >
+                  {/* Filter icon */}
+                  <svg width="11" height="9" viewBox="0 0 11 9" fill="none" stroke="currentColor" strokeWidth="1.3">
+                    <path d="M0.5 1h10M2.5 4.5h6M4.5 8h2" />
+                  </svg>
+                  Filter
+                  {activeFilter !== "All" && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--teal)]" />
+                  )}
+                </button>
+              </>
+            )}
+          </div>
+
+          {isImmersiveArchive ? (
+            <ImmersiveArchiveBar
+              filteredCount={filteredProjects.length}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              typeOptions={typeOptions}
+              activeType={activeType}
+              onTypeChange={handleTypeChange}
+              statusOptions={statusOptions}
+              activeStatus={activeStatus}
+              onStatusChange={handleStatusChange}
+              hasFilters={hasImmersiveFilters}
+              onClear={clearImmersiveFilters}
+            />
+          ) : null}
+
+          {!isImmersiveArchive ? (
+            <div className="mb-8 flex items-center justify-between border-y border-[var(--border)] py-4">
+              <span className="font-mono text-[0.46rem] uppercase tracking-[0.38em] text-[var(--body)] opacity-65">
+                {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}
+                {activeFilter !== "All" && (
+                  <span className="ml-2 text-[var(--teal)]">— {activeFilter}</span>
+                )}
+              </span>
+              <span className="hidden font-mono text-[0.46rem] uppercase tracking-[0.32em] text-[var(--body)] opacity-45 md:inline">
+                Hover to inspect
+              </span>
             </div>
-            <button
-              onClick={() => setFilterOpen(true)}
-              className="flex w-fit items-center gap-2 rounded-full border border-[var(--border)] bg-black/24 px-4 py-2 font-mono text-[0.50rem] uppercase tracking-[0.22em] text-[var(--body)] backdrop-blur-md transition-all duration-200 hover:border-[var(--teal)] hover:text-[var(--teal)]"
-            >
-              {/* Filter icon */}
-              <svg width="11" height="9" viewBox="0 0 11 9" fill="none" stroke="currentColor" strokeWidth="1.3">
-                <path d="M0.5 1h10M2.5 4.5h6M4.5 8h2" />
-              </svg>
-              Filter
-              {activeFilter !== "All" && (
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--teal)]" />
-              )}
-            </button>
-          </div>
+          ) : null}
 
-          <div className="mb-8 flex items-center justify-between border-y border-[var(--border)] py-4">
-            <span className="font-mono text-[0.46rem] uppercase tracking-[0.38em] text-[var(--body)] opacity-65">
-              {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}
-              {activeFilter !== "All" && (
-                <span className="ml-2 text-[var(--teal)]">— {activeFilter}</span>
-              )}
-            </span>
-            <span className="hidden font-mono text-[0.46rem] uppercase tracking-[0.32em] text-[var(--body)] opacity-45 md:inline">
-              Hover to inspect
-            </span>
-          </div>
-
-          {/* Cards — 12-column grid. Each [data-card] sets --col-span:6 → 2-up on
-              desktop. `display:grid` + the 12-col template are inline so nothing can
-              purge or override them; the per-card span is what controls the layout. */}
+          {/* Cards — the legacy view keeps the 12-column grid, where each
+              [data-card] sets --col-span:6 for a 2-up row. The immersive
+              archive is 36 entries deep, so it packs instead: auto-fill at a
+              17.5rem floor gives 2-up on tablet, 3-up around 1100px and 4–5
+              across a wide desktop, and each tile sets --col-span:1 so the
+              global [data-card] span rule still resolves. */}
           <div
             ref={gridRef}
-            className="grid gap-4 sm:gap-6 lg:gap-7"
-            style={{ display: "grid", gridTemplateColumns: "repeat(12, minmax(0, 1fr))" }}
+            className={isImmersiveArchive ? "archive-grid" : "grid gap-4 sm:gap-6 lg:gap-7"}
+            style={
+              isImmersiveArchive
+                ? undefined
+                : { display: "grid", gridTemplateColumns: "repeat(12, minmax(0, 1fr))" }
+            }
           >
             {filteredProjects.length === 0 ? (
-              <div className="py-32 text-center" style={{ gridColumn: "1 / -1" }}>
-                <p className="eyebrow mb-4">No results</p>
-                <p className="text-[var(--body)] text-[0.9rem]">No projects in this category yet.</p>
+              <div className="py-28 text-center" style={{ gridColumn: "1 / -1" }}>
+                <p className="eyebrow mb-4">No matches</p>
+                <p className="text-[0.9rem] text-[var(--body)]">
+                  {isImmersiveArchive
+                    ? "Try a different term, or clear the filters to see all "
+                      + projects.length + " projects."
+                    : "No projects in this category yet."}
+                </p>
+                {isImmersiveArchive && hasImmersiveFilters ? (
+                  <button
+                    type="button"
+                    onClick={clearImmersiveFilters}
+                    className="mt-6 inline-flex items-center gap-2 border border-[rgba(var(--teal-rgb),0.42)] px-5 py-3 font-mono text-[0.64rem] uppercase tracking-[0.18em] text-[var(--teal)] transition-colors hover:border-[var(--teal)] hover:bg-[rgba(var(--teal-rgb),0.1)] hover:text-[var(--fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]"
+                  >
+                    Clear filters
+                    <span aria-hidden="true">↗</span>
+                  </button>
+                ) : null}
               </div>
+            ) : isImmersiveArchive ? (
+              filteredProjects.map((project) => (
+                <ArchiveTile
+                  key={project.id}
+                  project={project}
+                  projectBasePath={projectBasePath}
+                />
+              ))
             ) : (
               filteredProjects.map((project, index) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
                   filteredIndex={index}
+                  revealOnScroll
                 />
               ))
             )}
@@ -786,17 +1741,22 @@ export default function WorkListContent({ projects }: { projects: WorkProject[] 
       </section>
 
       {/* ── Filter drawer ── */}
-      <FilterPanel
-        isOpen={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        categories={categories}
-        activeFilter={activeFilter}
-        onFilter={handleFilter}
-        projectCount={filteredProjects.length}
-      />
+      {!isImmersiveArchive ? (
+        <FilterPanel
+          isOpen={filterOpen}
+          onClose={() => setFilterOpen(false)}
+          categories={categories}
+          activeFilter={activeFilter}
+          onFilter={handleFilter}
+          projectCount={filteredProjects.length}
+        />
+      ) : null}
 
       {/* ── CTA ── */}
-      <BottomCTA />
+      {/* The immersive archive closes with the voice-note contact section the
+          immersive home page uses; the route renders it, the way the home page
+          composes it. */}
+      {!isImmersiveArchive ? <BottomCTA /> : null}
     </>
   );
 }
