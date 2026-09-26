@@ -62,6 +62,8 @@ It neither deletes nor modifies PostgreSQL data.
 
 The exporter parses PostgreSQL timestamps without time zones as UTC, matching
 Prisma. This prevents the exporting computer's timezone from shifting timestamps.
+The importer binds UTC timestamp strings and reads MariaDB with `dateStrings`,
+avoiding the native driver's local-JavaScript-timezone conversion of Date objects.
 
 The application verification script requires a current production build. It starts
 local servers on ports 3182 and 3183, creates uniquely named test records, tests

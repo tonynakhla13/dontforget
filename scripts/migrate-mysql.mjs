@@ -29,7 +29,7 @@ function normalized(name, row, fromMysql = false) {
   return Object.fromEntries(fields(name).map((field) => {
     let value = row[field.name];
     if (value == null) value = null;
-    else if (field.type === "DateTime") value = new Date(value).toISOString();
+    else if (field.type === "DateTime") value = new Date(fromMysql ? `${value.replace(" ", "T")}Z` : value).toISOString();
     else if (field.type === "Boolean") value = Boolean(value);
     else if (field.type === "Json" && fromMysql && typeof value === "string") value = JSON.parse(value);
     return [field.name, value];
@@ -63,7 +63,7 @@ if (action === "snapshot") {
   }
   const snapshot = JSON.parse(fs.readFileSync(snapshotPath));
   if (order.some((name) => !Array.isArray(snapshot.tables[name]))) throw new Error("Incomplete snapshot.");
-  const db = await mariadb.createConnection({ host: target.remoteHost, port: target.port, user: target.user, password: target.password, database: target.database, timezone: "+00:00", charset: "utf8mb4", autoJsonMap: false, connectTimeout: 15_000 });
+  const db = await mariadb.createConnection({ host: target.remoteHost, port: target.port, user: target.user, password: target.password, database: target.database, timezone: "+00:00", charset: "utf8mb4", dateStrings: true, autoJsonMap: false, connectTimeout: 15_000 });
   try {
     if ((await db.query("SELECT DATABASE() AS name"))[0].name !== target.database) throw new Error("Wrong target database.");
     if (action === "import") {
@@ -85,7 +85,9 @@ if (action === "snapshot") {
                 if (field.isRequired) throw new Error(`Missing required value: ${name}.${field.name}`);
                 return null;
               }
-              if (field.type === "DateTime") return new Date(value);
+              // Native MariaDB Date objects use the local JS timezone even when
+              // the SQL session is UTC. Bind and read explicit UTC strings.
+              if (field.type === "DateTime") return new Date(value).toISOString().replace("T", " ").replace("Z", "");
               if (field.type === "Json") return JSON.stringify(value);
               return value;
             });
