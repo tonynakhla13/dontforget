@@ -160,7 +160,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $standaloneRoot "server.js") -PathTy
 # Remove env files from the generated build output as well as from the ZIP.
 # Next can copy them into standalone during output tracing.
 $generatedEnvFiles = Get-ChildItem -LiteralPath $standaloneRoot -Recurse -File -Force | Where-Object {
-    $_.Name -match '^\.env(?:\..*)?$'
+    $_.Name -match '(^\.env(?:\..*)?$|\.env$)'
 }
 foreach ($envFile in $generatedEnvFiles) {
     Remove-Item -LiteralPath $envFile.FullName -Force
@@ -208,10 +208,10 @@ Copy-DirectoryContents -Source (Join-Path $buildRoot "static") -Destination $sta
 $stagingPrismaRoot = Join-Path $stagingRoot "prisma"
 New-Item -ItemType Directory -Path $stagingPrismaRoot -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot "prisma\schema.prisma") -Destination (Join-Path $stagingPrismaRoot "schema.prisma") -Force
-if (Test-Path -LiteralPath (Join-Path $projectRoot "prisma\migrations") -PathType Container) {
+if (Test-Path -LiteralPath (Join-Path $projectRoot "prisma\mysql-migrations") -PathType Container) {
     Copy-DirectoryContents `
-        -Source (Join-Path $projectRoot "prisma\migrations") `
-        -Destination (Join-Path $stagingPrismaRoot "migrations")
+        -Source (Join-Path $projectRoot "prisma\mysql-migrations") `
+        -Destination (Join-Path $stagingPrismaRoot "mysql-migrations")
 }
 
 # The source config loads dotenv, which is a development dependency. This
@@ -221,7 +221,7 @@ import { defineConfig } from "prisma/config";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
-  migrations: { path: "prisma/migrations" },
+  migrations: { path: "prisma/mysql-migrations" },
   datasource: { url: process.env.DATABASE_URL! },
 });
 "@ | Set-Content -LiteralPath (Join-Path $stagingRoot "prisma.config.ts") -Encoding UTF8
@@ -229,14 +229,14 @@ export default defineConfig({
 # Output tracing can copy local env files used during the build. Never deploy
 # them: Hostinger environment variables must be configured in its panel.
 $stagedEnvFiles = Get-ChildItem -LiteralPath $stagingRoot -Recurse -File -Force | Where-Object {
-    $_.Name -match '^\.env(?:\..*)?$'
+    $_.Name -match '(^\.env(?:\..*)?$|\.env$)'
 }
 foreach ($envFile in $stagedEnvFiles) {
     Remove-Item -LiteralPath $envFile.FullName -Force
 }
 
 $remainingEnvFiles = Get-ChildItem -LiteralPath $stagingRoot -Recurse -File -Force | Where-Object {
-    $_.Name -match '^\.env(?:\..*)?$'
+    $_.Name -match '(^\.env(?:\..*)?$|\.env$)'
 }
 if ($remainingEnvFiles) {
     throw "Refusing to create an archive because an environment file remains in staging."
@@ -270,7 +270,7 @@ packages such as sharp are the Linux versions:
 
 1. Use Node.js 20.9 or newer.
 2. Configure the app environment variables in Hostinger before installing.
-   At minimum this app needs DATABASE_URL, JWT_SECRET, the Supabase variables,
+   At minimum this app needs a MySQL DATABASE_URL, JWT_SECRET,
    and any Cloudinary variables used by your deployment.
 3. In the extracted app directory, run:
 

@@ -7,10 +7,10 @@ config({ path: ".env" });
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
-    path: "prisma/migrations",
+    path: "prisma/mysql-migrations",
     seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env.DATABASE_URL!,
+    url: (process.env.NOX_MYSQL_DATABASE_URL || process.env.DATABASE_URL)!,
   },
 });

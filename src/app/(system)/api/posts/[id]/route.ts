@@ -1,3 +1,4 @@
+import { stringList } from "@/lib/string-lists";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
@@ -38,8 +39,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       contentAr: contentAr || null,
       coverImage: coverImage || null,
       heroImage: heroImage || null,
-      tags: tags || [],
-      tagsAr: tagsAr || [],
+      tags: stringList(tags),
+      tagsAr: stringList(tagsAr),
       status,
       order: order ?? 0,
       publishedAt: nowPublished && !wasPublished ? new Date() : current.publishedAt,

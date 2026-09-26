@@ -1,5 +1,8 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+NOX uses Hostinger MySQL/MariaDB. See [database setup, migration and rollback](docs/mysql-migration.md)
+before changing the database connection or deploying schema changes.
+
 ## Getting Started
 
 First, run the development server:

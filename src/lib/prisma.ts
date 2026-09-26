@@ -1,23 +1,33 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { createDatabaseAdapter } from "./database-adapter.mjs";
+import { stringList } from "./string-lists";
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+const globalForPrisma = globalThis as unknown as { prismaMysql?: ReturnType<typeof createPrismaClient> };
 
 function createPrismaClient() {
-  const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL,
-    // Fail fast when the database is unreachable (e.g. a paused Supabase
-    // project) instead of leaving requests hanging until the browser gives up.
-    connectionTimeoutMillis: 10_000,
-    idleTimeoutMillis: 30_000,
-    max: 10,
-  });
   return new PrismaClient({
-    adapter,
+    adapter: createDatabaseAdapter(),
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  }).$extends({
+    name: "nox-string-lists",
+    result: {
+      project: {
+        tags: { needs: { tags: true }, compute: (row) => stringList(row.tags) },
+        tagsAr: { needs: { tagsAr: true }, compute: (row) => stringList(row.tagsAr) },
+        images: { needs: { images: true }, compute: (row) => stringList(row.images) },
+      },
+      post: {
+        tags: { needs: { tags: true }, compute: (row) => stringList(row.tags) },
+        tagsAr: { needs: { tagsAr: true }, compute: (row) => stringList(row.tagsAr) },
+      },
+      inquiry: {
+        audioUrls: { needs: { audioUrls: true }, compute: (row) => stringList(row.audioUrls) },
+        assetNames: { needs: { assetNames: true }, compute: (row) => stringList(row.assetNames) },
+      },
+    },
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+export const prisma = globalForPrisma.prismaMysql ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== "production") globalForPrisma.prismaMysql = prisma;

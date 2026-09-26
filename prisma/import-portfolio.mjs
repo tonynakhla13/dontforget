@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { createDatabaseAdapter } from "../src/lib/database-adapter.mjs";
 import portfolioProjects from "../src/data/portfolio-projects.json" with { type: "json" };
 
 config({ path: ".env.local" });
@@ -12,7 +12,7 @@ if (!connectionString) {
 }
 
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString }),
+  adapter: createDatabaseAdapter(connectionString),
 });
 
 try {

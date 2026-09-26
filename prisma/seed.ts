@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { createDatabaseAdapter } from "../src/lib/database-adapter.mjs";
 import { PORTFOLIO_PROJECTS } from "../src/data/portfolio-projects";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const adapter = createDatabaseAdapter();
 const prisma = new PrismaClient({ adapter });
 
 async function main() {

@@ -11,6 +11,17 @@ const preferenceOptions = {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (
+    process.env.NOX_READ_ONLY === "1" &&
+    pathname.startsWith("/api/") &&
+    !["GET", "HEAD", "OPTIONS"].includes(request.method) &&
+    !["/api/auth/login", "/api/auth/logout"].includes(pathname)
+  ) {
+    return NextResponse.json(
+      { error: "Database upgrade in progress. Please try again shortly." },
+      { status: 503, headers: { "Retry-After": "60" } },
+    );
+  }
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const savedLocale = request.cookies.get(LOCALE_COOKIE)?.value;
   const savedTheme = request.cookies.get(THEME_COOKIE)?.value;
@@ -45,5 +56,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/login", "/en/:path*", "/ar/:path*"],
+  matcher: ["/", "/api/:path*", "/dashboard/:path*", "/login", "/en/:path*", "/ar/:path*"],
 };

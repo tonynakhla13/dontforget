@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { Inquiry, InquiryStatus } from "@prisma/client";
+import type { Inquiry as StoredInquiry, InquiryStatus } from "@prisma/client";
+
+type Inquiry = Omit<StoredInquiry, "audioUrls" | "assetNames"> & {
+  audioUrls: string[];
+  assetNames: string[];
+};
 
 const STATUS_LABELS: Record<InquiryStatus, string> = {
   NEW: "New",

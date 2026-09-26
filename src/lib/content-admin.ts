@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { stringList } from "./string-lists";
 
 type AttachmentInput = {
   mediaId?: string;
@@ -56,6 +57,9 @@ function attachmentRows(attachments: unknown) {
 
 export function projectData(body: Record<string, unknown>): Prisma.ProjectCreateInput {
   const data = pick(body, projectFields) as Prisma.ProjectCreateInput;
+  for (const field of ["tags", "tagsAr", "images"] as const) {
+    data[field] = stringList(body[field]);
+  }
   const serviceIds = Array.isArray(body.serviceIds) ? body.serviceIds.filter((id): id is string => typeof id === "string") : [];
   const attachments = attachmentRows(body.attachments);
   if (attachments) data.attachments = { create: attachments };
@@ -67,6 +71,9 @@ export function projectData(body: Record<string, unknown>): Prisma.ProjectCreate
 
 export function projectUpdateData(body: Record<string, unknown>): Prisma.ProjectUpdateInput {
   const data = pick(body, projectFields) as Prisma.ProjectUpdateInput;
+  for (const field of ["tags", "tagsAr", "images"] as const) {
+    if (Object.prototype.hasOwnProperty.call(body, field)) data[field] = stringList(body[field]);
+  }
   if (Array.isArray(body.attachments)) data.attachments = { deleteMany: {}, create: attachmentRows(body.attachments) ?? [] };
   if (Array.isArray(body.serviceIds)) {
     const serviceIds = body.serviceIds.filter((id): id is string => typeof id === "string");

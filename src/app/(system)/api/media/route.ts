@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type");
   const assets = await prisma.mediaAsset.findMany({
     where: {
-      ...(folder ? { folder: { contains: folder, mode: "insensitive" } } : {}),
+      ...(folder ? { folder: { contains: folder } } : {}),
       ...(type ? { mimeType: { startsWith: `${type}/` } } : {}),
     },
     orderBy: { createdAt: "desc" },
